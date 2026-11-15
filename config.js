@@ -1,5 +1,5 @@
-// Supabase project of Sisi's Garden. The anon key is public by design; the database rules protect the data.
+// Supabase project of Sisi's Garden. The publishable key is public by design; the database rules protect the data.
 window.GARDEN_CONFIG = {
-  url: 'YOUR_SUPABASE_URL',
-  key: 'YOUR_SUPABASE_ANON_KEY',
+  url: 'https://alwltukayrnnbqjwiidh.supabase.co',
+  key: 'sb_publishable_T9MPlhGvdJjD9DcBx-uATQ_Esw-I3BI',
 };
