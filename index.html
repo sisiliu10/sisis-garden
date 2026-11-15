@@ -2063,7 +2063,7 @@ const Snd=(()=>{
   // browsers (Safari most of all) only let sound start or resume inside a real tap or key press
   function unlock(){const c=get();if(c&&c.state!=='running'){try{const p=c.resume&&c.resume();if(p&&p.catch)p.catch(()=>{});
       const b=c.createBuffer(1,1,22050),sn=c.createBufferSource();sn.buffer=b;sn.connect(c.destination);sn.start(0);}catch(e){}}return c;}
-  return {get,unlock,started:()=>!!ctx};
+  return {get,unlock,started:()=>!!ctx,state:()=>ctx?ctx.state:'none'};
 })();
 /* ================= lofi music (generated live, no samples) ================= */
 const Lofi=(()=>{
@@ -2128,12 +2128,13 @@ const Lofi=(()=>{
   }
   return {start,stop,get on(){return on;}};
 })();
-let musicWanted=true;try{musicWanted=localStorage.getItem('garden-music')!=='off';}catch(e){}
+let musicWanted=true;try{musicWanted=localStorage.getItem('garden-lofi')!=='off';}catch(e){}
 const bMusic=document.getElementById('bMusic');
 function paintMusic(){bMusic.classList.toggle('off',!musicWanted);bMusic.title=musicWanted?'Music off':'Music on';bMusic.setAttribute('aria-label',bMusic.title);}
 paintMusic();
-bMusic.addEventListener('click',e=>{e.stopPropagation();Snd.unlock();musicWanted=!musicWanted;try{localStorage.setItem('garden-music',musicWanted?'on':'off');}catch(_){}
-  paintMusic();musicWanted?Lofi.start():Lofi.stop();});
+bMusic.addEventListener('click',e=>{e.stopPropagation();Snd.unlock();musicWanted=!musicWanted;try{localStorage.setItem('garden-lofi',musicWanted?'on':'off');}catch(_){}
+  paintMusic();musicWanted?Lofi.start():Lofi.stop();
+  setTimeout(()=>{const st=Snd.state();toast(!musicWanted?'Music off. Splashes and other sounds stay on.':st==='running'?'Music on.':'Music on, but the browser is still holding the sound back ('+st+'). Tap anywhere once more.',3500);},350);});
 // every tap or key press wakes the sound up again (after a tab switch, a call, a locked phone ...)
 function onGesture(e){Snd.unlock();if(e.target&&e.target.id==='bMusic')return;if(musicWanted&&!Lofi.on&&!document.hidden)Lofi.start();}
 ['pointerdown','mousedown','touchend','click','keydown'].forEach(ev=>addEventListener(ev,onGesture,{capture:true,passive:true}));
@@ -2711,7 +2712,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794785884"></script>
+<script src="config.js?v=1794786097"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -2860,6 +2861,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 00:41'; help.appendChild(ver);
   }
 
   function openImport() {
