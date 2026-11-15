@@ -362,7 +362,7 @@
     <p><b>Size = progress.</b> Set each project's progress with the slider. Seed → Sprout → Sapling → Budding → In bloom, and past 65% the plant keeps getting bigger until it's giant at 100%.</p>
     <p><b>Skill beds</b> sit below the hedge. A bed fills up with flowers as the skill grows. Water it whenever you practise.</p>
     <p><b>Water = work.</b> Water a plant whenever you worked on that project. Every watering asks for one line on what you did, so each plant keeps its own log (you'll find it in the plant card and on the computer in the cottage). Plants dry out over a week. Ignore one for 5+ days and weeds sprout; after 9 days the flies arrive. Watering pulls the weeds.</p>
-    <p>Walk with <kbd>WASD</kbd> or the arrow keys, or tap the grass. Double-tap to run. The pool is next to the fountain: walk in, or tap the diving board for a big jump. The double swing sits top right: tap it to sit down, tap it again to swing higher (or press space). Tap anywhere else to get off; if you are swinging high, you fly off. Tap a friend on the swing to give them a push. To move a plant or bed, open it and tap Move, then tap the new spot. Tap a plant to walk to it, press <kbd>E</kbd> to water.</p>
+    <p>Walk with <kbd>WASD</kbd> or the arrow keys, or tap the grass. Double-tap to run. The pool is next to the fountain: walk in, or tap the diving board for a big jump. The double swing sits top right: tap it to sit down, tap it again to swing higher (or press space). Tap anywhere else to get off; if you are swinging high, you fly off. Tap a friend on the swing to give them a push. An alpaca grazes near the fountain: tap it to ride (faster than walking, double-tap to gallop), tap yourself to get off. To move a plant or bed, open it and tap Move, then tap the new spot. Tap a plant to walk to it, press <kbd>E</kbd> to water.</p>
     <p><b>Atmosphere.</b> The garden follows your real clock, from sunrise to a starry night. When every plant is well watered, rain showers pass through, followed by a rainbow. Log something every day for 7 days in a row and a cat moves in.</p>
     <p><b>The cottage</b> top left: walk through the door to go inside. The computer on the desk opens a dashboard of everything you're growing, and the bookshelf keeps your reading list: reading now, want to read, and read, each with its English title and a two-line summary.</p>
     <p><b>Quiz show.</b> The arcade machine in the cottage opens a quiz show. Everyone in the same garden can join: 8 questions, 15 seconds each, faster answers score more. Pick a level (easy, medium, hard), add a topic if you like, and Claude writes the questions.</p>
@@ -618,10 +618,12 @@ function drawAvatar(ctx,fx,fy,look,o){
   if(o.sit){
     // sitting on the swing: hands up on the chains, legs kick forward or tuck back with the swing
     const k=o.kick||0;
-    if(k>.3){r(3,20,2,2,legC);r(7,20,2,2,legC);r(2,22,2,1,legC);r(6,22,2,1,legC);r(0,23,3,2,O);r(4,23,3,2,O);}
+    if(o.ride){r(3,20,2,3,legC);r(9,20,2,3,legC);r(2,23,3,2,O);r(9,23,3,2,O);}
+    else if(k>.3){r(3,20,2,2,legC);r(7,20,2,2,legC);r(2,22,2,1,legC);r(6,22,2,1,legC);r(0,23,3,2,O);r(4,23,3,2,O);}
     else if(k<-.3){r(5,20,2,2,legC);r(9,20,2,2,legC);r(5,22,3,2,O);r(9,22,3,2,O);}
     else{r(4,20,2,3,legC);r(8,20,2,3,legC);r(3,23,3,2,O);r(8,23,3,2,O);}
-    r(1,12,3,2,tc);r(10,12,3,2,tc);r(0,9,2,4,tc);r(12,9,2,4,tc);r(0,12,2,1,td);r(12,12,2,1,td);r(0,8,2,1,sk);r(12,8,2,1,sk);
+    if(o.ride){r(1,12,1,5,O);r(12,12,1,5,O);r(2,12,2,5,tc);r(10,12,2,5,tc);r(2,16,2,1,td);r(10,16,2,1,td);r(2,17,2,1,sk);r(10,17,2,1,sk);}
+    else{r(1,12,3,2,tc);r(10,12,3,2,tc);r(0,9,2,4,tc);r(12,9,2,4,tc);r(0,12,2,1,td);r(12,12,2,1,td);r(0,8,2,1,sk);r(12,8,2,1,sk);}
   }else if(o.run){
     // running: one knee pulled up high, the other leg stretched back; arms swing hard
     const A=f!==2, up=A?4:8, dn=A?8:4, so=A?-1:1;
@@ -1520,7 +1522,7 @@ function roomPeers(){
 function isHostPeer(p){ return !p.isMe&&!!visiting&&((!!p.by&&p.by===visiting.id)||(!!p.presence&&p.presence.u===visiting.id)); }
 function sendPresence(now){
   if(!room||now-lastPresT<90) return;
-  const st={g:gardenKey(),u:myId||null,sw:av.swim||av.jump?1:0,say:(mySay&&mySay.until>performance.now())?{n:mySay.n,t:mySay.t}:null,x:Math.round(av.x*2)/2,y:Math.round((av.y-(av.kh||0))*2)/2,act:myAct,sg:mySeat===null?null:{s:mySeat,a:Math.round(swA*100)/100},s:scene==='house'?'h':'g',b:av.back?1:0,m:av.moving?1:0,r:av.run&&av.moving?1:0,n:(me().name||'Friend').slice(0,14),l:me().look,w:av.water>0?1:0};
+  const st={g:gardenKey(),u:myId||null,sw:av.swim||av.jump?1:0,say:(mySay&&mySay.until>performance.now())?{n:mySay.n,t:mySay.t}:null,x:Math.round(av.x*2)/2,y:Math.round((av.y-(av.kh||0))*2)/2,act:myAct,al:riding?1:0,sg:mySeat===null?null:{s:mySeat,a:Math.round(swA*100)/100},s:scene==='house'?'h':'g',b:av.back?1:0,m:av.moving?1:0,r:av.run&&av.moving?1:0,n:(me().name||'Friend').slice(0,14),l:me().look,w:av.water>0?1:0};
   const k=JSON.stringify(st); if(k===lastPres&&now-lastPresT<2500) return;
   lastPres=k; lastPresT=now; try{const pr=room.presence(st);if(pr&&pr.catch)pr.catch(()=>{});}catch(e){}
 }
@@ -1536,7 +1538,8 @@ function livePeers(){
     gh.x+=(tx-gh.x)*.25; gh.y+=(ty-gh.y)*.25; gh.seen=now;
     if(q.say&&typeof q.say.t==='string'&&q.say.n!==gh.sayN){gh.sayN=q.say.n;gh.sayT=q.say.t.slice(0,80);gh.sayUntil=now+6000+q.say.t.length*60;}
     const sgq=q.sg&&(q.sg.s===0||q.sg.s===1)?{s:q.sg.s,a:clamp(num(q.sg.a,0),-1.2,1.2)}:null;
-    out.push({sg:sgq,say:gh.sayUntil>now?gh.sayT:'',id:p.peer,by:p.by,x:gh.x,y:gh.y,scene:q.s==='h'?'house':'garden',back:!!q.b,moving:!!q.m,run:!!q.r,swim:!!q.sw,water:!!q.w,name:str(q.n,14)||'Friend',look:cleanLook(q.l)});
+    if(Math.abs(tx-gh.x)>.6)gh.dir=tx>gh.x?1:-1;
+    out.push({ride:!!q.al,sg:sgq,say:gh.sayUntil>now?gh.sayT:'',id:p.peer,by:p.by,x:gh.x,y:gh.y,scene:q.s==='h'?'house':'garden',back:!!q.b,moving:!!q.m,run:!!q.r,swim:!!q.sw,water:!!q.w,name:str(q.n,14)||'Friend',look:cleanLook(q.l)});
   }
   return out;
 }
@@ -1925,7 +1928,7 @@ addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
 let lastTap={t:0,x:0,y:0};
 cvs.addEventListener('pointerdown',e=>{
-  pendAct=null;pendSit=null;
+  pendAct=null;pendSit=null;pendRide=false;
   if(mySeat!==null&&scene==='garden'){const lx0=e.clientX/S-OX,ly0=e.clientY/S+camR-OY;const pp0=peerAt(lx0,ly0);if(!pp0){if(onSwing(lx0,ly0)){pump(.9);return;}leaveSwing({x:lx0,y:ly0});return;}}
   {const now=performance.now(),dbl=now-lastTap.t<350&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<40;lastTap={t:dbl?0:now,x:e.clientX,y:e.clientY};av.run=dbl;}
   if(document.activeElement&&document.activeElement.tagName==='INPUT')document.activeElement.blur();
@@ -1939,6 +1942,8 @@ cvs.addEventListener('pointerdown',e=>{
   for(const p of projects()){const [px,py]=posOf(p),s=scaleOf(p),top=plantTop(p);if(Math.abs(lx-px)<12*Math.min(s,1.6)+2&&ly>py-top-14&&ly<py+12){hit=p;break;}}
   if(!hit)for(const b of skills()){const [bx,by]=posOf(b);if(Math.abs(lx-bx)<BED_W/2+2&&ly>by-BED_H/2-12&&ly<by+BED_H/2+6){hit=b;break;}}
   {const pp=peerAt(lx,ly);if(pp&&!moving){av.run=false;openActMenu(pp,e.clientX,e.clientY);return;}}
+  if(!moving&&riding&&Math.abs(lx-av.x)<12&&ly>av.y-36&&ly<av.y+4){dismount();return;}
+  if(!moving&&!riding&&mySeat===null&&alpIdle()&&Math.abs(lx-alp.x)<14&&ly>alp.y-33&&ly<alp.y+4){goRide();return;}
   if(!moving&&mySeat===null&&onSwing(lx,ly)){av.run=false;goSwing();return;}
   if(hit){av.target=besideTarget(hit);return;}
   if(Math.abs(lx-FOUNT.x)<28&&ly>FOUNT.y-28&&ly<FOUNT.y+12){av.target={x:FOUNT.x,y:FOUNT.y+14};return;}
@@ -2032,6 +2037,7 @@ const bJump=document.getElementById('bJump');
 function updateJump(){const need=TH-H>8;bJump.hidden=!need;if(need){const up=camR>(TH-H)/2,narrow=innerWidth<560;bJump.textContent=narrow?(up?'↑':'↓'):(up?'Projects ↑':'Skills ↓');}}
 bJump.onclick=()=>{const toSkills=camR<=(TH-H)/2;av.target=null;av.x=120;av.y=toSkills?374:216;av.back=false;camY=clamp(av.y+OY-H*.55,0,Math.max(0,TH-H));};
 function enterGarden(){
+  riding=false;pendRide=false;
   av.swim=false;av.jump=null;
   if(moving)endMove();
   if(scene==='house')exitHouse(true);
@@ -2150,6 +2156,7 @@ function actFx(k,ax,ay,bx,by,fromMe,toMe,toId){
     if(toMe)startKnock(ax,ay);}
 }
 function startKnock(ax,ay){
+  if(riding)dismount();
   if(scene!=='garden'||av.jump)return;let dx=av.x-ax,dy=av.y-ay,d=Math.hypot(dx,dy)||1;dx/=d;dy/=d;if(Math.abs(dx)<.3){dx=dx<0?-.6:.6;}
   let dist=46,tx,ty;for(;dist>6;dist-=6){tx=clamp(av.x+dx*dist,-OX+8,CW+OX-8);ty=clamp(av.y+dy*dist*.5,146,WORLD_H-6);if(isWater(tx,ty)||!blocked(tx,ty))break;}
   if(dist<=6)return;av.target=null;av.swim=false;knock={fx:av.x,fy:av.y,tx,ty,t:0,d:.6,spin:dx<0?-1:1};
@@ -2201,6 +2208,7 @@ function seatPos(i,a){const [px,py]=seatPivot(i),s=Math.sin(a)*SW.L;return [px+s
 function seatTaken(i){if(mySeat===i)return true;return livePeers().some(p=>p.sg&&p.sg.s===i&&p.scene==='garden');}
 function onSwing(lx,ly){return lx>SW.x-36&&lx<SW.x+36&&ly>SW.top-12&&ly<SW.y+13;}
 function goSwing(){
+  if(riding)dismount();
   let best=null,bd=1e9;[0,1].forEach(i=>{if(seatTaken(i))return;const [gx,gy]=seatGround(i),d=Math.hypot(av.x-gx,av.y-gy);if(d<bd){bd=d;best=i;}});
   if(best===null){toast('Both seats are taken. Tap a friend on the swing to give them a push.',4000);return;}
   const [gx,gy]=seatGround(best);pendSit=best;av.target={x:gx-6,y:gy+4,onArrive:()=>{pendSit=null;sitDown(best);}};
@@ -2254,6 +2262,42 @@ function leaveSwing(tgt){
   standUp(); if(tgt) av.target={x:clamp(tgt.x,-OX+6,CW+OX-6),y:clamp(tgt.y,145,WORLD_H-6)};
 }
 
+/* ================= alpaca to ride ================= */
+const alp={x:164,y:240,hx:164,hy:240,tx:164,ty:240,next:performance.now()+9000,dir:-1,moving:false};
+let riding=false,pendRide=false;
+function alpIdle(){return !riding&&!livePeers().some(p=>p.ride&&p.scene==='garden');}
+function drawAlpaca(x,y,dir,frame,t){
+  x=Math.round(x);y=Math.round(y);const C='#f4ecdc',Cl='#fffaf0',Cs='#d8ccb2',H='#6b5a46',O='#2a2430';
+  ell(x,y,11,2,'rgba(40,80,40,.28)');
+  [-6,-3,3,6].forEach((lx,i)=>{const lift=frame&&((i%2)===(frame-1))?1:0;R(x+lx-1,y-7,2,6-lift,Cs);R(x+lx-1,y-1-lift,2,1,H);});
+  R(x-9,y-15,18,9,C);R(x-8,y-16,16,1,C);R(x-10,y-13,1,5,C);R(x+9,y-13,1,5,C);R(x-8,y-6,16,1,Cs);
+  R(x-7,y-16,3,1,Cl);R(x+2,y-16,4,1,Cl);R(x-dir*10-1,y-14,2,3,Cl);
+  const nx=x+dir*7;R(nx-2,y-23,4,10,C);R(nx-2,y-17,4,1,Cs);
+  const hx=x+dir*8;R(hx-3,y-28,6,6,C);R(hx-2,y-29,4,1,Cl);R(hx-3,y-31,1,3,C);R(hx+2,y-31,1,3,C);
+  R(dir>0?hx+2:hx-5,y-25,4,3,Cl);R(dir>0?hx+5:hx-5,y-25,1,1,O);R(hx+dir,y-26,1,1,O);R(dir>0?hx+3:hx-4,y-23,2,1,'#e9a0a8');
+  R(x-4,y-16,8,3,'#e8506c');R(x-4,y-14,8,1,'#f2c94c');R(x-4,y-13,1,2,'#f2c94c');R(x+3,y-13,1,2,'#f2c94c');
+}
+function drawRider(x,y,dir,look,moving,t,heart){
+  const fr=moving?Math.floor(t*7)%2+1:0,bob=moving&&fr===1?1:0;
+  drawAlpaca(x,y-bob,dir,fr,t);
+  drawAvatar(g,x-dir,y-9-bob,look,{sit:true,ride:true,shadow:false,blink:(t%4)<.12,heart,t});
+  R(Math.round(x-dir)-2,Math.round(y)-13-bob,4,2,'#e8506c');
+}
+function goRide(){if(av.swim||av.jump||knock||mySeat!==null)return;pendRide=true;av.run=false;av.target={x:alp.x,y:alp.y+3};}
+function mount(){pendRide=false;riding=true;av.target=null;av.x=alp.x;av.y=alp.y;av.dir=alp.dir;lastPres='';for(let i=0;i<5;i++)spawn({kind:'spark',x:av.x+(Math.random()*14-7),y:av.y-22-Math.random()*8,vy:-10,life:.5});}
+function dismount(){if(!riding)return;riding=false;alp.x=alp.hx=alp.tx=av.x;alp.y=alp.hy=alp.ty=av.y;alp.dir=av.dir||1;alp.next=performance.now()+4000;
+  const nx=av.x-(av.dir||1)*11;if(!blocked(nx,av.y+2)&&!isWater(nx,av.y+2)){av.x=nx;av.y+=2;}lastPres='';}
+function updateAlpaca(dt){
+  if(scene!=='garden')return;
+  if(riding){alp.x=av.x;alp.y=av.y;return;}
+  if(pendRide){if(!alpIdle()){pendRide=false;}else if(Math.hypot(av.x-alp.x,av.y-(alp.y+3))<11){mount();return;}else if(!av.target)pendRide=false;}
+  const now=performance.now();
+  if(now>alp.next&&!pendRide){alp.next=now+3500+Math.random()*4500;for(let k=0;k<6;k++){const tx=alp.hx+(Math.random()*36-18),ty=alp.hy+(Math.random()*20-10);
+    if(!blocked(tx,ty)&&!isWater(tx,ty)&&ty>150&&ty<345&&tx>-OX+14&&tx<CW+OX-14){alp.tx=tx;alp.ty=ty;break;}}}
+  const dx=alp.tx-alp.x,dy=alp.ty-alp.y,d=Math.hypot(dx,dy);alp.moving=d>1&&!pendRide;
+  if(alp.moving){alp.x+=dx/d*11*dt;alp.y+=dy/d*11*dt;if(Math.abs(dx)>.5)alp.dir=dx>0?1:-1;}
+}
+
 /* ================= hint ================= */
 function hideHint(){}
 
@@ -2279,12 +2323,12 @@ function drawBubbles(){
 }
 function frame(now){
   const dt=Math.min(.05,(now-last)/1000);last=now;const t=(now-t0)/1000;
-  update(dt,t);render(t);drawBubbles();processActs();sendPresence(now);tickLive(now);
+  update(dt,t);updateAlpaca(dt);render(t);drawBubbles();processActs();sendPresence(now);tickLive(now);
   uiTick+=dt;if(uiTick>.5){uiTick=0;refreshLabels();if(!editing)updateDialog(false);}
   requestAnimationFrame(frame);
 }
 function isWater(x,y){if(!av.swim&&x>BOARD.x0-2&&Math.abs(y-BOARD.y)<4)return false;return x>POOL.x0+3&&x<POOL.x1-3&&y>POOL.y0+5&&y<POOL.y1-2;}
-function startJump(tx,ty,high){av.jump={t:0,fx:av.x,fy:av.y,tx:clamp(tx,POOL.x0+8,POOL.x1-8),ty:clamp(ty,POOL.y0+9,POOL.y1-5),h:high?22:10,d:high?.75:.45};av.target=null;av.run=false;}
+function startJump(tx,ty,high){if(riding)dismount();av.jump={t:0,fx:av.x,fy:av.y,tx:clamp(tx,POOL.x0+8,POOL.x1-8),ty:clamp(ty,POOL.y0+9,POOL.y1-5),h:high?22:10,d:high?.75:.45};av.target=null;av.run=false;}
 function splash(x,y,n){for(let i=0;i<n;i++)spawn({kind:'splash',x:x+(Math.random()*10-5),y:y-2,vx:(Math.random()-.5)*50,vy:-30-Math.random()*30,floor:y,life:.8});}
 function update(dt,t){
   if(scene==='garden'&&updateSwing(dt)){updateCat(dt);return updateRest(dt,t);}
@@ -2298,7 +2342,7 @@ function update(dt,t){
   else if(!dx&&!dy&&av.target){const tx=av.target.x-av.x,ty=av.target.y-av.y,dd=Math.hypot(tx,ty);if(dd<1.2){const cb=av.target.onArrive;av.target=null;av.run=false;if(cb)cb();}else{dx=tx/dd;dy=ty/dd;}}
   const len=Math.hypot(dx,dy); av.moving=false;
   if(len>0){
-    dx/=len;dy/=len;const sp=(av.swim?38:av.run?150:70)*dt,nx=av.x+dx*sp,ny=av.y+dy*sp;let mx=false,my=false;
+    dx/=len;dy/=len;if(Math.abs(dx)>.2)av.dir=dx>0?1:-1;const sp=(av.swim?38:riding?(av.run?185:112):av.run?150:70)*dt,nx=av.x+dx*sp,ny=av.y+dy*sp;let mx=false,my=false;
     if(scene==='garden'&&!av.swim&&isWater(nx,ny)){startJump(nx+dx*10,ny+dy*10,false);return updateRest(dt,t);}
     if(scene==='garden'&&av.swim&&!isWater(nx,ny)){av.swim=false;splash(av.x,av.y-4,6);}
     if(!blocked(nx,av.y)){av.x=nx;mx=true;} if(!blocked(av.x,ny)){av.y=ny;my=true;}
@@ -2312,7 +2356,7 @@ function update(dt,t){
 }
 function updateRest(dt,t){
   if(scene==='house'){houseUpdate(dt,t);return;}
-  if(av.x>55&&av.x<65&&av.y<150.5){enterHouse();return;}
+  if(av.x>55&&av.x<65&&av.y<150.5){if(riding)dismount();enterHouse();return;}
   setPrompt(av.x>46&&av.x<74&&av.y<172&&!editing?'Go inside':null,'↑');
   smokeT+=dt;if(smokeT>.45){smokeT=0;spawn({kind:'smoke',x:HC+10+Math.random()*2,y:HB-42,vx:3+Math.random()*3,vy:-6-Math.random()*3,life:2.2});}
   let best=null,bd=1e9;
@@ -2371,14 +2415,16 @@ function render(t){
   drawPool(t);
   list.push({y:FOUNT.y,d:()=>drawFountain(t)});
   list.push({y:SW.y,d:()=>drawSwing(t)});
+  if(alpIdle())list.push({y:alp.y,d:()=>drawAlpaca(alp.x,alp.y,alp.dir,alp.moving?Math.floor(t*5)%2+1:0,t)});
   list.push({y:HB,d:()=>drawCottage(t)});
   const myLook=me().look, blink=(t%4)<.12;
   if(av.jump){const J=av.jump,k=Math.min(1,J.t);list.push({y:9999,d:()=>drawAvatar(g,av.x,av.y-Math.sin(Math.PI*k)*J.h,myLook,{frame:1,back:false,blink:false,t,shadow:false})});}
   else if(av.swim) list.push({y:av.y,d:()=>drawSwimmer(av.x,av.y,myLook,{t,moving:av.moving,back:av.back,blink})});
+  else if(mySeat===null&&riding) list.push({y:av.y,d:()=>drawRider(av.x,av.y,av.dir||1,myLook,av.moving,t,myHeartUntil>performance.now()?'#e8506c':null)});
   else if(mySeat===null) list.push({y:av.y,d:()=>{const rn=av.run&&av.moving,fr=av.moving?(rn?[1,2][Math.floor(t*10)%2]:[1,0,2,0][Math.floor(t*8)%4]):0;
     drawAvatar(g,av.x,av.y-(rn&&fr===1?1:0)-(av.kh||0),myLook,{run:rn||!!knock,frame:knock?1:fr,back:av.back,blink:blink||!!knock,can:!rn&&!knock&&!visiting&&(av.water>0||!!active),pour:av.water>0&&av.water<1.15,heart:myHeartUntil>performance.now()?'#e8506c':(visiting?null:moodColor(gardenAvg(home))),t,shadow:!knock});}});
   if(hasCat()) list.push({y:cat.y,d:()=>drawCat(t)});
-  livePeers().filter(p=>p.scene==='garden'&&!p.sg).forEach(p=>list.push({y:p.y,d:()=>p.swim?drawSwimmer(p.x,p.y,p.look,{t,moving:p.moving,back:p.back}):drawAvatar(g,p.x,p.y,p.look,{run:p.run&&p.moving,frame:p.moving?(p.run?[1,2][Math.floor(t*10)%2]:[1,0,2,0][Math.floor(t*8+p.x)%4]):0,back:p.back,blink:((t+p.x)%4)<.12,can:p.water,pour:p.water,heart:(ghosts[p.id]&&ghosts[p.id].heartUntil>performance.now())?'#e8506c':null,t})}));
+  livePeers().filter(p=>p.scene==='garden'&&!p.sg).forEach(p=>list.push({y:p.y,d:()=>p.ride&&!p.swim?drawRider(p.x,p.y,(ghosts[p.id]&&ghosts[p.id].dir)||1,p.look,p.moving,t,(ghosts[p.id]&&ghosts[p.id].heartUntil>performance.now())?'#e8506c':null):p.swim?drawSwimmer(p.x,p.y,p.look,{t,moving:p.moving,back:p.back}):drawAvatar(g,p.x,p.y,p.look,{run:p.run&&p.moving,frame:p.moving?(p.run?[1,2][Math.floor(t*10)%2]:[1,0,2,0][Math.floor(t*8+p.x)%4]):0,back:p.back,blink:((t+p.x)%4)<.12,can:p.water,pour:p.water,heart:(ghosts[p.id]&&ghosts[p.id].heartUntil>performance.now())?'#e8506c':null,t})}));
   {const nowp=performance.now(),drip=(x,y)=>{if(Math.random()<.6)spawn({kind:'drop',x:x+Math.round(Math.random()*10-5),y:y-20+Math.random()*10,vy:10,floor:y,life:1});};
    if(myWetUntil>nowp&&!av.swim)drip(av.x,av.y);
    livePeers().forEach(p=>{const gh=ghosts[p.id];if(gh&&gh.wetUntil>nowp&&p.scene==='garden'&&!p.swim)drip(p.x,p.y);});}
@@ -2495,7 +2541,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794781095"></script>
+<script src="config.js?v=1794781660"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
