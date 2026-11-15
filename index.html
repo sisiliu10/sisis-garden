@@ -2106,7 +2106,6 @@ const Lofi=(()=>{
     if(i%4===2&&Math.random()<.32)tone(mtof(PENTA[Math.floor(Math.random()*PENTA.length)]),t,S16*6,.045,'sine');
   }
   function tick(){
-    if(ctx.state!=='running')return;
     if(nextT<ctx.currentTime-.25)nextT=ctx.currentTime+.06;
     while(nextT<ctx.currentTime+.15){
       const sw=(step%2)?S16*.18:0;
@@ -2456,7 +2455,7 @@ const Sfx=(()=>{
     }
   }
   function splash(big,vol){
-    if(document.hidden)return;const c=Snd.get();if(!c)return;if(c.state!=='running'){Snd.unlock();return;}
+    if(document.hidden||!Snd.started())return;const c=Snd.get();if(!c)return;if(c.state==='suspended'){Snd.unlock();return;}
     try{build(c,c.currentTime+.01,big,vol);}catch(e){}
   }
   return {splash};
@@ -2712,7 +2711,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794786097"></script>
+<script src="config.js?v=1794786390"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -2721,6 +2720,26 @@ function maybeAutoVisit(){
   const $ = id => document.getElementById(id);
   const gate = $('gate'), gMsg = $('gMsg'), gForm = $('gForm'), gEmail = $('gEmail'), gBtn = $('gBtn');
   const showGate = (msg, form) => { gate.hidden = false; gMsg.textContent = msg || ''; gForm.hidden = !form; };
+
+  /* ---------- always the newest version, without hard reloads ---------- */
+  const BUILD = '16.11. 00:46';
+  const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
+  let updChip = null;
+  async function checkVersion(auto) {
+    try {
+      const r = await fetch('version.txt?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) return;
+      const v = (await r.text()).trim(); if (!v || v === BUILD) return;
+      let done = null; try { done = sessionStorage.getItem('upd'); } catch (e) {}
+      if (auto && done !== v) { try { sessionStorage.setItem('upd', v); } catch (e) {} goNew(v); return; }
+      if (!updChip) { updChip = document.createElement('button'); updChip.type = 'button'; updChip.className = 'btn dark';
+        updChip.style.cssText = 'position:fixed;left:50%;top:58px;transform:translateX(-50%);z-index:60;white-space:nowrap';
+        updChip.textContent = 'New version, tap to update'; document.body.appendChild(updChip); }
+      updChip.onclick = () => goNew(v);
+    } catch (e) {}
+  }
+  if (!/access_token|error_description/.test(location.hash)) checkVersion(true);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkVersion(false); });
+  setInterval(() => { if (!document.hidden) checkVersion(false); }, 180000);
 
   if (!window.supabase || !CFG.url || !CFG.key || /YOUR_/.test(CFG.url + CFG.key)) {
     showGate('Setup missing: add the Supabase URL and key in config.js.', false); return;
@@ -2861,7 +2880,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 00:41'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 00:46'; help.appendChild(ver);
   }
 
   function openImport() {
