@@ -1541,6 +1541,7 @@ function livePeers(){
     const tx=q.s==='h'?clamp(q.x,-200,400):clamp(q.x,-OX+14,CW+OX-14), ty=clamp(q.y,0,600);
     let gh=ghosts[p.peer]; if(!gh) gh=ghosts[p.peer]={x:tx,y:ty};
     gh.x+=(tx-gh.x)*.25; gh.y+=(ty-gh.y)*.25; gh.seen=now;
+    {const swn=!!q.sw&&q.s!=='h';if(gh.swp===false&&swn&&scene==='garden')setTimeout(()=>Sfx.splash(false,.45),380);gh.swp=swn;}
     if(q.say&&typeof q.say.t==='string'&&q.say.n!==gh.sayN){gh.sayN=q.say.n;gh.sayT=q.say.t.slice(0,80);gh.sayUntil=now+6000+q.say.t.length*60;}
     const sgq=q.sg&&(q.sg.s===0||q.sg.s===1)?{s:q.sg.s,a:clamp(num(q.sg.a,0),-1.2,1.2)}:null;
     if(Math.abs(tx-gh.x)>.6)gh.dir=tx>gh.x?1:-1;
@@ -2121,7 +2122,7 @@ const Lofi=(()=>{
 })();
 let musicWanted=true;try{musicWanted=localStorage.getItem('garden-music')!=='off';}catch(e){}
 const bMusic=document.getElementById('bMusic');
-function paintMusic(){bMusic.classList.toggle('off',!musicWanted);bMusic.title=musicWanted?'Music off':'Music on';bMusic.setAttribute('aria-label',bMusic.title);}
+function paintMusic(){bMusic.classList.toggle('off',!musicWanted);bMusic.title=musicWanted?'Sound off':'Sound on';bMusic.setAttribute('aria-label',bMusic.title);}
 paintMusic();
 bMusic.addEventListener('click',e=>{e.stopPropagation();musicWanted=!musicWanted;try{localStorage.setItem('garden-music',musicWanted?'on':'off');}catch(_){}
   paintMusic();gestured=true;window.__musicStarted=1;musicWanted?Lofi.start():Lofi.stop();});
@@ -2158,7 +2159,7 @@ function heartBurst(x,y,n){for(let i=0;i<n;i++)spawn({kind:'heart',x:x+(Math.ran
 function actFx(k,ax,ay,bx,by,fromMe,toMe,toId){
   const now=performance.now();
   if(k==='swing'){for(let i=0;i<5;i++)spawn({kind:'spark',x:bx+(Math.random()*12-6),y:by-14-Math.random()*8,vy:-10,life:.5});if(toMe&&mySeat!==null){swV+=swV<-.3?-.4:1.7;}return;}
-  if(k==='balloon'){const d=Math.min(.9,.35+Math.hypot(bx-ax,by-ay)/260);spawn({kind:'balloon',sx:ax,sy:ay-18,tx:bx,ty:by-14,x:ax,y:ay-18,life:d,onHit:()=>{splash(bx,by-14,22);
+  if(k==='balloon'){const d=Math.min(.9,.35+Math.hypot(bx-ax,by-ay)/260);spawn({kind:'balloon',sx:ax,sy:ay-18,tx:bx,ty:by-14,x:ax,y:ay-18,life:d,onHit:()=>{splash(bx,by-14,22,.7,false);
     if(toMe)myWetUntil=performance.now()+4000;else if(toId&&ghosts[toId])ghosts[toId].wetUntil=performance.now()+4000;}});return;}
   if(k==='hug'){heartBurst((ax+bx)/2,(ay+by)/2,9);if(fromMe||toMe)myHeartUntil=now+1800;}
   else if(k==='kiss'){for(let i=0;i<4;i++)spawn({kind:'heart',x:ax+(bx-ax)*.2,y:ay-20,vx:(bx-ax)*1.6+(Math.random()-.5)*8,vy:-6-Math.random()*6,life:.7+i*.12});setTimeout(()=>heartBurst(bx,by,5),450);if(fromMe||toMe)myHeartUntil=now+1500;}
@@ -2421,6 +2422,28 @@ document.getElementById('lnForm').addEventListener('submit',e=>{e.preventDefault
 document.getElementById('lnClose').addEventListener('click',closeLine);
 lineM.addEventListener('pointerdown',e=>{if(e.target===lineM)closeLine();});
 
+/* ================= sound effects (generated live, no samples) ================= */
+const Sfx=(()=>{
+  let ctx=null;
+  function ac(){if(!ctx){try{ctx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}}if(ctx.state==='suspended'&&ctx.resume)ctx.resume();return ctx;}
+  // water splash: a hissy burst that opens up and falls, a low "plop" underneath, a few droplets after
+  function splash(big,vol){
+    if(!musicWanted||document.hidden)return;const c=ac();if(!c)return;
+    const t=c.currentTime+.01,dur=big?.95:.55,v=(vol===undefined?1:vol)*(big?.5:.34);
+    const len=Math.floor(c.sampleRate*dur),buf=c.createBuffer(1,len,c.sampleRate),d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=Math.random()*2-1;
+    const n=c.createBufferSource();n.buffer=buf;
+    const bp=c.createBiquadFilter();bp.type='bandpass';bp.Q.value=.7;bp.frequency.setValueAtTime(big?800:1300,t);bp.frequency.exponentialRampToValueAtTime(big?3400:4200,t+.1);bp.frequency.exponentialRampToValueAtTime(450,t+dur);
+    const g1=c.createGain();g1.gain.setValueAtTime(.0001,t);g1.gain.linearRampToValueAtTime(v,t+.02);g1.gain.exponentialRampToValueAtTime(.001,t+dur);
+    n.connect(bp);bp.connect(g1);g1.connect(c.destination);n.start(t);n.stop(t+dur);
+    const o=c.createOscillator(),g2=c.createGain();o.type='sine';o.frequency.setValueAtTime(big?170:250,t);o.frequency.exponentialRampToValueAtTime(big?52:85,t+.24);
+    g2.gain.setValueAtTime(v*.95,t);g2.gain.exponentialRampToValueAtTime(.001,t+.3);o.connect(g2);g2.connect(c.destination);o.start(t);o.stop(t+.32);
+    for(let i=0;i<(big?6:3);i++){const tt=t+.14+Math.random()*(big?.5:.3),od=c.createOscillator(),gd=c.createGain(),f=900+Math.random()*1500;od.type='sine';
+      od.frequency.setValueAtTime(f,tt);od.frequency.exponentialRampToValueAtTime(f*1.9,tt+.05);gd.gain.setValueAtTime(.0001,tt);gd.gain.linearRampToValueAtTime(v*.2,tt+.008);gd.gain.exponentialRampToValueAtTime(.001,tt+.09);
+      od.connect(gd);gd.connect(c.destination);od.start(tt);od.stop(tt+.1);}
+  }
+  return {splash};
+})();
+
 /* ================= hint ================= */
 function hideHint(){}
 
@@ -2452,7 +2475,7 @@ function frame(now){
 }
 function isWater(x,y){if(!av.swim&&x>BOARD.x0-2&&Math.abs(y-BOARD.y)<4)return false;return x>POOL.x0+3&&x<POOL.x1-3&&y>POOL.y0+5&&y<POOL.y1-2;}
 function startJump(tx,ty,high){if(riding)dismount();av.jump={t:0,fx:av.x,fy:av.y,tx:clamp(tx,POOL.x0+8,POOL.x1-8),ty:clamp(ty,POOL.y0+9,POOL.y1-5),h:high?22:10,d:high?.75:.45};av.target=null;av.run=false;}
-function splash(x,y,n){for(let i=0;i<n;i++)spawn({kind:'splash',x:x+(Math.random()*10-5),y:y-2,vx:(Math.random()-.5)*50,vy:-30-Math.random()*30,floor:y,life:.8});}
+function splash(x,y,n,vol,big){Sfx.splash(big===undefined?n>=20:big,vol===undefined?(n<10?.35:1):vol);for(let i=0;i<n;i++)spawn({kind:'splash',x:x+(Math.random()*10-5),y:y-2,vx:(Math.random()-.5)*50,vy:-30-Math.random()*30,floor:y,life:.8});}
 function update(dt,t){
   if(pendSlide&&!slide){const [bx,by]=slBase();if(Math.hypot(av.x-bx,av.y-by)<8){pendSlide=false;av.target=null;slide={ph:'climb',t:0};}else if(!av.target)pendSlide=false;}
   if(slide&&scene==='garden'){updateSlide(dt);updateCat(dt);return updateRest(dt,t);}
@@ -2671,7 +2694,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794784625"></script>
+<script src="config.js?v=1794785004"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
