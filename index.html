@@ -226,6 +226,7 @@
     .chip .long{display:none}
     .hud .btn,.chip{font-size:13px;padding:5px 8px}
   }
+#clTip{position:fixed;display:none;z-index:7;gap:10px;align-items:center;background:var(--paper);border:2px solid var(--ink);box-shadow:3px 3px 0 rgba(42,36,48,.25);padding:6px 6px 6px 10px;font-size:15px;max-width:min(300px,calc(100vw - 12px))}#clTip.show{display:flex}#clTip span{overflow-wrap:anywhere}
 #actMenu{position:fixed;display:none;gap:6px;z-index:7}#actMenu.show{display:flex}#actMenu .btn{white-space:nowrap}
 #bMusic.off{opacity:.45;text-decoration:line-through}
 </style>
@@ -362,7 +363,7 @@
     <p><b>Size = progress.</b> Set each project's progress with the slider. Seed → Sprout → Sapling → Budding → In bloom, and past 65% the plant keeps getting bigger until it's giant at 100%.</p>
     <p><b>Skill beds</b> sit below the hedge. A bed fills up with flowers as the skill grows. Water it whenever you practise.</p>
     <p><b>Water = work.</b> Water a plant whenever you worked on that project. Every watering asks for one line on what you did, so each plant keeps its own log (you'll find it in the plant card and on the computer in the cottage). Plants dry out over a week. Ignore one for 5+ days and weeds sprout; after 9 days the flies arrive. Watering pulls the weeds.</p>
-    <p>Walk with <kbd>WASD</kbd> or the arrow keys, or tap the grass. Double-tap to run. The pool is next to the fountain: walk in, or tap the diving board for a big jump. A slide stands top right: tap it, and you climb the ladder and slide down. The clothesline bottom left is your to-do list: tap it to hang up a to-do, every piece of laundry is one, and it comes off the line when you mark it done. An alpaca grazes near the fountain: tap it to ride (faster than walking, double-tap to gallop), tap yourself to get off. To move a plant or bed, open it and tap Move, then tap the new spot. Tap a plant to walk to it, press <kbd>E</kbd> to water.</p>
+    <p>Walk with <kbd>WASD</kbd> or the arrow keys, or tap the grass. Double-tap to run. The pool is next to the fountain: walk in, or tap the diving board for a big jump. A slide stands top right: tap it, and you climb the ladder and slide down. Below the hedge, skills grow on the left and your to-dos hang on the clotheslines on the right: every piece of laundry is one to-do. Tap the basket or the line to hang up a new one, tap a piece to see it and take it down when it is done. An alpaca grazes near the fountain: tap it to ride (faster than walking, double-tap to gallop), tap yourself to get off. To move a plant or bed, open it and tap Move, then tap the new spot. Tap a plant to walk to it, press <kbd>E</kbd> to water.</p>
     <p><b>Atmosphere.</b> The garden follows your real clock, from sunrise to a starry night. When every plant is well watered, rain showers pass through, followed by a rainbow. Log something every day for 7 days in a row and a cat moves in.</p>
     <p><b>The cottage</b> top left: walk through the door to go inside. The computer on the desk opens a dashboard of everything you're growing, and the bookshelf keeps your reading list: reading now, want to read, and read, each with its English title and a two-line summary.</p>
     <p><b>Quiz show.</b> The arcade machine in the cottage opens a quiz show. Everyone in the same garden can join: 8 questions, 15 seconds each, faster answers score more. Pick a level (easy, medium, hard), add a topic if you like, and Claude writes the questions.</p>
@@ -386,7 +387,7 @@ const TOPS={sunflower:[5,10,15,23,34],lantern:[5,10,13,19,22],plum:[5,10,14,27,2
 const FOUNT={x:120,y:258};
 const WORLD_H=486, BED_W=46, BED_H=28;
 const POOL={x0:136,x1:194,y0:292,y1:328}, BOARD={x0:190,x1:216,y:310};
-const BED_SLOTS=[[32,394],[90,394],[150,394],[208,394],[32,450],[90,450],[150,450],[208,450]];
+const BED_SLOTS=[[30,390],[84,390],[30,436],[84,436]];
 const FLOWERS=['peony','tulip','daisy','lavender','cornflower','marigold'];
 const FLOWER_LABEL={peony:'Peony',tulip:'Tulip',daisy:'Daisy',lavender:'Lavender',cornflower:'Cornflower',marigold:'Marigold'};
 const FLOWER_COL={peony:['#f2779a','#ffd0dc','#c94a6e'],tulip:['#e8435a','#ff9aa8','#b02a3e'],daisy:['#ffffff','#f2c94c','#d9d9d9'],lavender:['#9b7bd6','#c7b1f0','#6f52a8'],cornflower:['#4f7fe0','#a9c3ff','#2f56a8'],marigold:['#f39a1e','#ffd06a','#c46a0c']};
@@ -458,7 +459,7 @@ function cleanGarden(g){
     if(used2.has(c.slot)){for(let s=0;s<BED_SLOTS.length;s++)if(!used2.has(s)){c.slot=s;break;}}
     used2.add(c.slot);skills.push(c);});
   return {v:2,name:str(g.name,14)||'Someone',look:cleanLook(g.look),projects,skills,saved:num(g.saved,0),owner:!!g.owner,cat:!!g.cat,sb:g.sb!==false,nb:Array.isArray(g.nb)?g.nb.filter(x=>x&&/^https:\/\//.test(x.u||'')).slice(0,10).map(x=>({n:str(x.n,30)||'Friend',u:str(x.u,300)})):[],created:g.created!==false,
-    todos:Array.isArray(g.todos)?g.todos.filter(x=>x&&typeof x.text==='string'&&x.text.trim()).slice(0,10).map((x,i)=>Object.assign({id:str(x.id,24)||('t'+i),text:str(x.text,60),t:num(x.t,0)},Number.isInteger(x.k)?{k:x.k%8}:{},Number.isInteger(x.c)?{c:x.c%8}:{})):[],
+    todos:Array.isArray(g.todos)?g.todos.filter(x=>x&&typeof x.text==='string'&&x.text.trim()).slice(0,10).map((x,i)=>Object.assign({id:str(x.id,24)||('t'+i),text:str(x.text,60),t:num(x.t,0)},Number.isInteger(x.k)?{k:x.k%10}:{},Number.isInteger(x.c)?{c:x.c%8}:{})):[],
     notes:(g.notes&&typeof g.notes==='object')?Object.fromEntries(Object.entries(g.notes).slice(0,20).map(([k,v])=>[k,str(v,90)])):{},
     logs:(g.logs&&typeof g.logs==='object')?Object.fromEntries(Object.entries(g.logs).slice(0,20).filter(([k,v])=>Array.isArray(v)).map(([k,v])=>[k,v.slice(-LOG_MAX).filter(e=>e&&typeof e.text==='string').map(e=>({t:num(e.t,0),text:str(e.text,140)}))])):{}};
 }
@@ -501,7 +502,7 @@ const plantTop=p=>p.bed?12:TOPS[p.kind][stageOf(p)]*scaleOf(p);
 const slotOf=p=>(p.bed?BED_SLOTS:SLOTS)[p.slot]||SLOTS[0];
 const posOf=p=>{
   if(!p.pos) return slotOf(p);
-  const m=p.bed?BED_W/2+4:30, lo=-OX+m, hi=CW+OX-m, cx=clamp(p.pos.x,lo,hi);
+  const m=p.bed?BED_W/2+4:30, lo=-OX+m, hi=p.bed?88:CW+OX-m, cx=clamp(p.pos.x,lo,hi);
   if(Math.abs(cx-p.pos.x)<=16) return [cx,p.pos.y];
   // placed on a wider screen, out of view here: fall back to its own spot when that is free
   const sl=slotOf(p), free=!(p.bed?skills():projects()).some(q=>{if(q===p)return false;
@@ -587,8 +588,11 @@ function drawBG(){
   for(let i=0;i<n/5;i++){const x=Math.floor(r()*W),y=gt+6+Math.floor(r()*(TH-gt-6)),c=['#e85a5a','#5a86e8','#ffffff','#ffffff','#f2c94c'][Math.floor(r()*5)];R(x,y,1,1,c);if(r()<.4)R(x+1,y+2,1,1,'#ffffff');}
   // skills area: path, hedge with a gate
   const fy=OY+356, px0=OX+113;
-  R(px0,fy,14,TH-fy,'#d8c08f');R(px0,fy,1,TH-fy,'#c4a978');R(px0+13,fy,1,TH-fy,'#c4a978');
-  for(let i=0;i<(TH-fy)/5;i++){R(px0+2+Math.floor(r()*10),fy+Math.floor(r()*(TH-fy)),2,1,'#bfa577');}
+  {const x0=px0-1,w=16;R(x0,fy,w,TH-fy,'#b08f5e');R(x0,fy,1,TH-fy,'#7f6842');R(x0+w-1,fy,1,TH-fy,'#7f6842');
+    const stone=(sx,y,sw)=>{const c=r()<.35?'#efe5cf':'#e0d3b6';R(sx,y,sw,5,c);R(sx+1,y,sw-2,1,'#fbf5e6');R(sx+1,y+4,sw-2,1,'#a3946f');R(sx+sw-1,y+1,1,3,'#c2b392');
+      R(sx,y,1,1,'#b08f5e');R(sx+sw-1,y,1,1,'#b08f5e');R(sx,y+4,1,1,'#b08f5e');R(sx+sw-1,y+4,1,1,'#b08f5e');if(r()<.3)R(sx+2+Math.floor(r()*(sw-4)),y+2,1,1,'#c2b392');};
+    let row=0;for(let y=fy+2;y<TH-5;y+=6,row++){if(row%2){stone(x0+2,y,5);stone(x0+8,y,6);}else{stone(x0+2,y,7);stone(x0+10,y,4);}}
+    for(let y=fy+5;y<TH;y+=8+Math.floor(r()*7)){const sx=r()<.5?x0-1:x0+w-1;R(sx,y,2,1,'#4f9e43');R(sx+(r()<.5?0:1),y-1,1,1,'#6cbc58');}}
   for(let x=-4;x<W+8;x+=6){if(x>OX+98&&x<OX+142)continue;disc(x,fy,4,'#3c8a3a');disc(x-1,fy-1,3,'#4f9e43');R(x-1,fy-3,2,1,'#6cbc58');if(r()<.25){R(x+1,fy-2,1,1,'#e2483c');}}
   [OX+100,OX+137].forEach(gx=>{R(gx,fy-7,3,11,'#7a4a2c');R(gx,fy-7,3,1,'#a8714a');R(gx+2,fy-6,1,10,'#5a3420');});
   // pool deck in the middle of the garden
@@ -1564,6 +1568,7 @@ function onlineIds(){ const set=new Set(); if(!lobby) return set; try{lobby.peer
 /* ================= world UI ================= */
 const labelsEl=document.createElement('div'); worldEl.appendChild(labelsEl);
 const signEl=document.createElement('div'); signEl.className='sign'; signEl.textContent='SKILLS ↓'; worldEl.appendChild(signEl);
+const signEl2=document.createElement('div'); signEl2.className='sign'; signEl2.textContent='TO-DOS ↓'; worldEl.appendChild(signEl2);
 let labels={};
 function rebuildLabels(){
   labelsEl.innerHTML=''; labels={};
@@ -1578,7 +1583,7 @@ function rebuildLabels(){
 }
 function layoutWorldUI(){
   document.getElementById('title').style.top=Math.round(OY*.42+10)+'px';
-  signEl.style.left=(OX+148)+'px'; signEl.style.top=(OY+344)+'px';
+  signEl.style.left=(OX+63)+'px'; signEl.style.top=(OY+344)+'px'; signEl2.style.left=(OX+143)+'px'; signEl2.style.top=(OY+344)+'px';
   rebuildLabels(); placeDialog();
 }
 function gardenAvg(gd){const ps=gd?gd.projects.concat(gd.skills||[]):[];return ps.length?ps.reduce((a,p)=>a+waterOf(p),0)/ps.length:100;}
@@ -1684,7 +1689,7 @@ document.getElementById('moveCancel').onclick=()=>endMove();
 function endMove(){moving=null;moveHover=null;moveBar.hidden=true;lastActive=undefined;}
 function canPlace(p,x,y){
   if(p.bed){
-    if(y<376||y>470||x<-OX+BED_W/2+2||x>CW+OX-BED_W/2-2) return false;
+    if(y<376||y>470||x<-OX+BED_W/2+2||x>88) return false;
     if(Math.abs(x-120)<BED_W/2+9) return false;
     return !skills().some(b=>b!==p&&Math.abs(posOf(b)[0]-x)<BED_W+4&&Math.abs(posOf(b)[1]-y)<BED_H+4);
   }
@@ -1696,7 +1701,7 @@ function canPlace(p,x,y){
 }
 function placeAt(lx,ly){
   const p=moving,x=Math.round(lx),y=Math.round(ly);
-  if(!canPlace(p,x,y)){document.getElementById('moveTxt').textContent=p.bed?'Da passt das Beet nicht hin. Unten bei den Skills, nicht auf dem Weg.':'Da passt die Pflanze nicht hin. Woanders auf der Wiese probieren.';return;}
+  if(!canPlace(p,x,y)){document.getElementById('moveTxt').textContent=p.bed?'Da passt das Beet nicht hin. Unten links bei den Skills.':'Da passt die Pflanze nicht hin. Woanders auf der Wiese probieren.';return;}
   p.pos={x,y};persist();rebuildLabels();
   for(let i=0;i<10;i++)spawn({kind:'puff',x:x+(Math.random()*20-10),y:y+(Math.random()*4-2),vy:-6,life:.5});
   av.target=besideTarget(p);endMove();
@@ -1909,7 +1914,7 @@ function blocked(x,y){
   for(const b of skills()){const [bx,by]=posOf(b);if(x>bx-BED_W/2-3&&x<bx+BED_W/2+3&&y>by-BED_H/2+3&&y<by+BED_H/2+3)return true;}
 
   if(scene==='garden'&&Math.hypot(x-(SL.x+15),(y-(SL.y-1))*1.5)<7) return true;
-  if(scene==='garden'&&Math.abs(y-CL.y)<2.5&&(Math.abs(x-CL.x0)<3||Math.abs(x-CL.x1)<3)) return true;
+  if(scene==='garden'&&lineBlocked(x,y)) return true;
   if(visiting&&Math.abs(x-host.x)<14&&Math.abs(y-host.y)<5) return true;
   for(const p of projects()){const s=Math.min(scaleOf(p),1.6),[px,py]=posOf(p),rx=(p.kind==='tree'?7:6)*s;const ex=(x-px)/rx,ey=(y-py)/(4*s);if(ex*ex+ey*ey<1)return true;}
   return false;
@@ -1948,7 +1953,7 @@ cvs.addEventListener('pointerdown',e=>{
   if(!moving&&riding&&Math.abs(lx-av.x)<12&&ly>av.y-36&&ly<av.y+4){dismount();return;}
   if(!moving&&!riding&&mySeat===null&&alpIdle()&&Math.abs(lx-alp.x)<14&&ly>alp.y-33&&ly<alp.y+4){goRide();return;}
   if(!moving&&onSlide(lx,ly)){goSlide();return;}
-  if(!moving&&onLine(lx,ly)){av.target=null;openLine();return;}
+  if(!moving&&onLine(lx,ly)){av.target=null;const gi=garmentAt(lx,ly);if(gi>=0)openTip(gi,e.clientX,e.clientY);else openLine();return;}
   if(hit){av.target=besideTarget(hit);return;}
   if(Math.abs(lx-FOUNT.x)<28&&ly>FOUNT.y-28&&ly<FOUNT.y+12){av.target={x:FOUNT.x,y:FOUNT.y+14};return;}
   av.target={x:clamp(lx,-OX+6,CW+OX-6),y:clamp(ly,145,WORLD_H-6)};
@@ -2334,44 +2339,69 @@ function drawSlide(t){
   if(mine&&mine.ph==='slide')drawAvatar(g,av.x,av.y,L,{sit:true,kick:1,shadow:false,blink:false,t});
 }
 
-/* ================= clothesline = to-do list ================= */
-const CL={x0:10,x1:96,y:306,h:24,max:10};
-const CL_COL=['#f4a7b9','#9fc4ef','#f2d16b','#b8e0a8','#c9a6e8','#ffffff','#f58a6c','#8fd3c8'];
-const tdKind=td=>Number.isInteger(td.k)?td.k%8:(hashStr(td.id||td.text)>>>0)%8, tdCol=td=>CL_COL[Number.isInteger(td.c)?td.c%CL_COL.length:(hashStr(td.id||td.text)>>>3)%CL_COL.length];
+/* ================= clotheslines = to-do list ================= */
+const GD={"G":[{"r":["...ooooooooo...",".ooaaaxxxaaaoo.","oahaaaaxaaaaaao","oaaaaaaaaaaaaao","oabaaaaaaaaabao",".oooxxxxxxxooo.","...oaaaaaaao...","...oxxxxxxxo...","...oaaaaaaao...","...oxxxxxxxo...","...oaaaaaaao...","...obbbbbbbo...","...ooooooooo..."],"p":[4,10]},{"r":["ooooooooooo","oxxkxxxkxxo","oahaaaaaaao","oahaabaaabo","oahaaoaaabo","oahao.oaabo","oahao.oaabo","oahao.oaabo","oahao.oaabo","oahao.oaabo","oahao.oaabo","oahao.oaabo","owwwo.owwwo","ooooo.ooooo"],"p":[2,8]},{"r":["oooo...oooo..","oxxo...oxxo..","owwo...owwo..","oxxo...oxxo..","oaao...oaao..","ohao...ohao..","oaaoo..oaaoo.","oaaaxo.oaaaxo","obbbxo.obbbxo",".oooo...oooo."],"p":[1,8]},{"r":["...oo...oo...","..oaao.oaao..","..oaaoooaao..","..oaaaaaaao..","..ohaaaaaao..","...oxxxxxo...","..oaaaaaaao..",".oahaaaaaaao.",".oaaaawaaaao.","oahaaaaaaaaao","oaawaaaaawaao","oaaaaaaaaaaao","obbbbbbbbbbbo","ooooooooooooo"],"p":[3,9]},{"r":[".....ooooo.....","....obbbbbo....","..ooobbbbbooo..",".oaaaowbwoaaao.","oaahaawawaaaaao","oaaoaaaaaaaoaao","oaaoaaaaaaaoaao","oaaoaaaaaaaoaao","oaaoabbbbbaoaao","oaaoabaaabaoaao","oxxoaaaaaaaoxxo","oooobbbbbbboooo","...ooooooooo..."],"p":[6,8]},{"r":["ooooooooooooo","oxxxxxwxxxxxo","oahaaawaaaaao","oaawaaaaawaao","oahaaaoaaaabo","oaawao.oawabo","oahaao.oaaabo","obbbbo.obbbbo","oooooo.oooooo"],"p":[2,10]},{"r":[".ooooooo.","oaaaaaaao","oahaoaaao","oxxxoxxxo","oaaaoaaao","oahaoaaao","oxxxoxxxo","oaaaoaaao","oaaaobbbo","oxxxowowo","oahao....","oaaao....","oxxxo....","obbbo....","owowo...."],"p":[4]},{"r":["....ooooooo....","..oooxxxxxooo..",".oaaaaaaaaaaao.","oaahaaaaaaaaaao","oaaowxwxwxwoaao","oaaoxwxwxwxoaao","oaaoaaaaaaaoaao","oaaoaaaaaaaoaao","oaaoaaaaaaaoaao","oxxoaaaaaaaoxxo","oooobbbbbbboooo","...oxxxxxxxo...","...ooooooooo..."],"p":[4,10]},{"r":["ooooooooooo","oaaaaaaaaao","oxxxxxxxxxo","oahaaaaaaao","oahaaaaaaao","oaaaaaaaaao","oaaaaaaaaao","oaaaaaaaaao","oxxxxxxxxxo","oaaaaaaaaao","oxxxxxxxxxo","obbbbbbbbbo","owowowowowo"],"p":[2,8]},{"r":["....ooo....","...owwwo...","...owwwo...","..ooooooo..",".oaahaaaao.","oaahaaaaaao","oaaaaaaaaao","oxwxwxwxwxo","oxxxxxxxxxo","oxbxbxbxbxo",".ooooooooo."],"p":[5]}],"COL":[["#f08aa0","#fff3e0"],["#6f9fd8","#f2d16b"],["#f2cf63","#e2603c"],["#7fcf9a","#fff3e0"],["#b99ae6","#5f4a9a"],["#fff3e0","#e8506c"],["#f08a5c","#fff3e0"],["#6fc9cf","#2f6fa8"]],"BASKET":["..oooooooo..",".owwxxwwaao.","oooooooooooo","okbkbkbkbkbo","obkbkbkbkbko","okbkbkbkbkbo",".obkbkbkbko.","..oooooooo.."]};
+const CLN={x0:134,x1:233,rows:[398,436],h:28,per:5,max:10,bx:223,by:406};
+const tdKind=td=>Number.isInteger(td.k)?td.k%GD.G.length:(hashStr(td.id||td.text)>>>0)%GD.G.length;
+const tdCi=td=>Number.isInteger(td.c)?td.c%GD.COL.length:(hashStr(td.id||td.text)>>>3)%GD.COL.length;
 const todosOf=()=>{const v=V();return v&&Array.isArray(v.todos)?v.todos:[];};
-function clPos(i,n,t){const f=(i+1)/(n+1),x=CL.x0+3+(CL.x1-CL.x0-6)*f;return [x,CL.y-CL.h+Math.sin(Math.PI*f)*3,Math.sin(t*1.6+i*1.3)*.8];}
-function drawGarment(x,y,kind,c,sw){
-  x=Math.round(x+sw);y=Math.round(y);const d=shade(c,-.18);
-  R(x,y-1,1,2,'#c9a36a');
-  if(kind===0){R(x-3,y+1,7,6,c);R(x-4,y+1,1,3,c);R(x+4,y+1,1,3,c);R(x-1,y+1,3,1,d);R(x-3,y+6,7,1,d);}
-  else if(kind===1){R(x-3,y+1,6,3,c);R(x-3,y+4,2,5,c);R(x+1,y+4,2,5,c);R(x-3,y+3,6,1,d);}
-  else if(kind===2){R(x-1,y+1,3,6,c);R(x-1,y+6,5,2,c);R(x-1,y+1,3,1,d);}
-  else if(kind===3){R(x-2,y+1,5,3,c);R(x-3,y+4,7,2,c);R(x-4,y+6,9,3,c);R(x-4,y+8,9,1,d);}
-  else if(kind===4){R(x-3,y+1,7,9,c);R(x-3,y+7,7,1,d);R(x-3,y+3,7,1,d);}
-  else if(kind===5){R(x-3,y+1,7,7,c);R(x-5,y+2,2,5,c);R(x+4,y+2,2,5,c);R(x-2,y,5,2,d);R(x-1,y+5,3,1,d);}
-  else if(kind===6){R(x-3,y+1,7,2,c);R(x-3,y+3,3,3,c);R(x+1,y+3,3,3,c);R(x-3,y+1,7,1,d);}
-  else{R(x-1,y+1,3,10,c);R(x-1,y+3,3,1,d);R(x-1,y+7,3,1,d);R(x-1,y+11,1,1,c);R(x+1,y+11,1,1,c);}
+const gCache={};let basketCv=null;
+function spriteCanvas(rows,pal){const cv=document.createElement('canvas');cv.width=rows[0].length;cv.height=rows.length;const c=cv.getContext('2d');
+  rows.forEach((r,y)=>{for(let x=0;x<r.length;x++){const ch=r[x];if(ch==='.')continue;c.fillStyle=pal[ch];c.fillRect(x,y,1,1);}});return cv;}
+function garmentCanvas(k,ci){const key=k+'|'+ci;if(!gCache[key]){const [a,x]=GD.COL[ci];
+  gCache[key]=spriteCanvas(GD.G[k].r,{o:mix(a,'#2a2430',.68),a,b:mix(a,'#000000',.18),h:mix(a,'#ffffff',.45),x,w:ci===5?'#f2d16b':'#fffdf7',k:mix(x,'#2a2430',.5)});}return gCache[key];}
+function ropeY(row,x){const f=(x-CLN.x0)/(CLN.x1-CLN.x0);return CLN.rows[row]-CLN.h+2+Math.sin(Math.PI*f)*3;}
+function clSlot(i){const row=Math.floor(i/CLN.per),j=i%CLN.per,x=CLN.x0+8+(CLN.x1-CLN.x0-16)*(j+.5)/CLN.per;return {row,x,y:ropeY(row,x)};}
+function lineRows(){return todosOf().length>CLN.per?2:1;}
+function drawPin(x,y){R(x,y-2,2,5,'#4a2c1a');R(x,y-2,1,4,'#f0c987');R(x+1,y-2,1,4,'#c08a4a');}
+function drawPost(px,gy){const h=CLN.h,O='#4a2c1a',W='#a8714a',Wl='#c98f63',Wd='#7a4a2c';
+  ell(px,gy,5,1,'rgba(30,58,30,.3)');
+  R(px-2,gy-h,5,h,O);R(px-1,gy-h+1,3,h-1,W);R(px-1,gy-h+1,1,h-1,Wl);R(px+1,gy-h+1,1,h-1,Wd);
+  R(px-5,gy-h-1,11,4,O);R(px-4,gy-h,9,2,W);R(px-4,gy-h,9,1,Wl);
 }
-function drawLine(t){
-  const W='#7a4a2c',Wl='#a8714a',y=CL.y,top=y-CL.h;
-  [CL.x0,CL.x1].forEach(px=>{ell(px,y,4,1,'rgba(40,80,40,.28)');R(px-1,top-3,2,CL.h+3,W);R(px-1,top-3,1,CL.h+3,Wl);R(px-3,top-2,6,1,W);});
-  for(let x=CL.x0;x<=CL.x1;x++){const f=(x-CL.x0)/(CL.x1-CL.x0);R(x,Math.round(top+Math.sin(Math.PI*f)*3),1,1,'#e9e2d4');}
-  const L=todosOf().slice(0,CL.max);
-  L.forEach((td,i)=>{const [x,ly,sw]=clPos(i,L.length,t);drawGarment(x,ly,tdKind(td),tdCol(td),sw);});
-  if(!L.length&&!visiting){/* empty line: one lonely clothespin */R(Math.round((CL.x0+CL.x1)/2),top+2,1,2,'#c9a36a');}
+function drawGarment(x,ly,td,sw){
+  const k=tdKind(td),cv=garmentCanvas(k,tdCi(td)),w=cv.width,h=cv.height,x0=Math.round(x-w/2),y0=Math.round(ly),b1=Math.ceil(h*.4),b2=Math.ceil(h*.72),s1=Math.round(sw*.5),s2=Math.round(sw);
+  g.drawImage(cv,0,0,w,b1,x0,y0,w,b1);g.drawImage(cv,0,b1,w,b2-b1,x0+s1,y0+b1,w,b2-b1);g.drawImage(cv,0,b2,w,h-b2,x0+s2,y0+b2,w,h-b2);
+  GD.G[k].p.forEach(px=>drawPin(x0+px,y0));
 }
-function onLine(lx,ly){return lx>CL.x0-6&&lx<CL.x1+6&&ly>CL.y-CL.h-8&&ly<CL.y+4;}
+function drawLineRow(row,t){
+  const gy=CLN.rows[row];
+  drawPost(CLN.x0,gy);drawPost(CLN.x1,gy);
+  for(let x=CLN.x0+1;x<CLN.x1;x++){const y=Math.round(ropeY(row,x));R(x,y+1,1,1,'rgba(74,44,26,.4)');R(x,y,1,1,'#f6efdd');}
+  const L=todosOf().slice(0,CLN.max);
+  L.forEach((td,i)=>{const s=clSlot(i);if(s.row===row)drawGarment(s.x,s.y,td,Math.sin(t*1.5+i*1.7)*1.3);});
+  if(row===0&&!L.length)[.3,.5,.72].forEach(f=>{const x=Math.round(CLN.x0+(CLN.x1-CLN.x0)*f);drawPin(x,Math.round(ropeY(0,x)));});
+}
+function drawBasket(){
+  if(!basketCv)basketCv=spriteCanvas(GD.BASKET,{o:'#4a2c1a',k:'#e0b06a',b:'#b98444',w:'#fffdf7',x:'#f08aa0',a:'#6f9fd8'});
+  ell(CLN.bx,CLN.by,7,2,'rgba(30,58,30,.3)');g.drawImage(basketCv,CLN.bx-6,CLN.by-8);
+}
+function garmentAt(lx,ly){const L=todosOf().slice(0,CLN.max);for(let i=L.length-1;i>=0;i--){const s=clSlot(i),cv=garmentCanvas(tdKind(L[i]),tdCi(L[i]));if(Math.abs(lx-s.x)<cv.width/2+2&&ly>s.y-3&&ly<s.y+cv.height+2)return i;}return -1;}
+function onLine(lx,ly){if(Math.hypot(lx-CLN.bx,ly-(CLN.by-4))<9)return true;if(lx<CLN.x0-7||lx>CLN.x1+7)return false;
+  for(let r=0;r<lineRows();r++){const gy=CLN.rows[r];if(ly>gy-CLN.h-5&&ly<gy+3)return true;}return false;}
+function lineBlocked(x,y){for(let r=0;r<lineRows();r++){if(Math.abs(y-CLN.rows[r])<2.5&&(Math.abs(x-CLN.x0)<3.5||Math.abs(x-CLN.x1)<3.5))return true;}return Math.hypot(x-CLN.bx,(y-(CLN.by-2))*1.4)<6;}
+// tap a piece of laundry: its to-do pops up with a Done button
+const clTip=document.createElement('div');clTip.id='clTip';document.body.appendChild(clTip);
+function closeTip(){clTip.classList.remove('show');}
+function openTip(i,cx,cy){
+  const td=todosOf()[i];if(!td)return;clTip.innerHTML='';const tx=document.createElement('span');tx.textContent=td.text;clTip.appendChild(tx);
+  if(!visiting&&home){const b=document.createElement('button');b.type='button';b.className='btn dark';b.textContent='Done ✓';b.addEventListener('click',e=>{e.stopPropagation();closeTip();doneTodo(td.id);});clTip.appendChild(b);}
+  clTip.classList.add('show');const w=clTip.offsetWidth,h=clTip.offsetHeight;clTip.style.left=clamp(cx-w/2,6,Math.max(6,innerWidth-w-6))+'px';clTip.style.top=clamp(cy-h-18,6,innerHeight-h-6)+'px';
+}
+addEventListener('pointerdown',e=>{if(!clTip.contains(e.target))closeTip();},true);
 const lineM=document.createElement('div');lineM.className='modal';lineM.id='lineM';
-lineM.innerHTML='<div class="panel"><h2>Clothesline</h2><div class="lead" id="lnLead"></div><form id="lnForm" autocomplete="off" style="display:flex;gap:8px;margin-top:12px"><input class="inp" id="lnIn" maxlength="60" placeholder="z. B. Retouren absenden" style="flex:1;min-width:0"><button class="btn dark" type="submit">Hang up</button></form><div id="lnList" style="margin-top:12px"></div><div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn" type="button" id="lnClose">Close</button></div></div>';
+lineM.innerHTML='<div class="panel"><h2>To-dos</h2><div class="lead" id="lnLead"></div><form id="lnForm" autocomplete="off" style="display:flex;gap:8px;margin-top:12px"><input class="inp" id="lnIn" maxlength="60" placeholder="z. B. Retouren absenden" style="flex:1;min-width:0"><button class="btn dark" type="submit">Hang up</button></form><div id="lnList" style="margin-top:12px"></div><div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn" type="button" id="lnClose">Close</button></div></div>';
 document.body.appendChild(lineM);
 function renderLine(){
   const L=todosOf(),own=!visiting&&!!home,box=document.getElementById('lnList');box.innerHTML='';
-  document.getElementById('lnForm').style.display=own&&L.length<CL.max?'flex':'none';
-  document.getElementById('lnLead').textContent=own?(L.length?'Every piece on the line is one to-do. Take it down when it is done.':'Nothing on the line. Hang up your first to-do.')+(L.length>=CL.max?' The line is full, take something down first.':''):(L.length?(V().name+' has '+L.length+' to-do'+(L.length>1?'s':'')+' on the line.'):'Nothing on the line right now.');
-  L.forEach(td=>{const r=document.createElement('div');r.className='nbrow';r.style.cssText='display:flex;gap:10px;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee6d6';
-    const sw=document.createElement('canvas');sw.width=13;sw.height=14;sw.style.cssText='flex:none;width:39px;height:42px;image-rendering:pixelated;background:#8fc77e;border:2px solid var(--ink)';{const keep=X;X=sw.getContext('2d');drawGarment(6,1,tdKind(td),tdCol(td),0);X=keep;}
+  document.getElementById('lnForm').style.display=own&&L.length<CLN.max?'flex':'none';
+  document.getElementById('lnLead').textContent=own?(L.length?'Every piece of laundry is one to-do. Take it down when it is done.':'Nothing on the line. Hang up your first to-do.')+(L.length>=CLN.max?' Both lines are full, take something down first.':''):(L.length?(V().name+' has '+L.length+' to-do'+(L.length>1?'s':'')+' on the line.'):'Nothing on the line right now.');
+  L.forEach(td=>{const r=document.createElement('div');r.style.cssText='display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid #eee6d6';
+    const src=garmentCanvas(tdKind(td),tdCi(td)),ic=document.createElement('canvas');ic.width=src.width;ic.height=src.height;ic.getContext('2d').drawImage(src,0,0);
+    ic.style.cssText='image-rendering:pixelated;width:'+src.width*3+'px;height:'+src.height*3+'px';
+    const bx=document.createElement('span');bx.style.cssText='flex:none;width:50px;height:50px;display:flex;align-items:center;justify-content:center';bx.appendChild(ic);
     const tx=document.createElement('span');tx.textContent=td.text;tx.style.cssText='flex:1;min-width:0;overflow-wrap:anywhere';
-    r.appendChild(sw);r.appendChild(tx);
+    r.appendChild(bx);r.appendChild(tx);
     if(own){const b=document.createElement('button');b.type='button';b.className='btn';b.textContent='Done ✓';b.onclick=()=>doneTodo(td.id);r.appendChild(b);}
     box.appendChild(r);});
 }
@@ -2379,12 +2409,15 @@ function openLine(){renderLine();lineM.classList.add('show');}
 function closeLine(){lineM.classList.remove('show');}
 function doneTodo(id){
   if(!home||visiting)return;const L=home.todos||[],i=L.findIndex(x=>x.id===id);if(i<0)return;
-  const n=Math.min(L.length,CL.max);if(i<n){const [x,ly]=clPos(i,n,0);for(let k=0;k<8;k++)spawn({kind:'spark',x:x+(Math.random()*10-5),y:ly+2+Math.random()*8,vy:-12-Math.random()*8,life:.6});}
-  L.splice(i,1);persist();renderLine();if(!L.length)closeLine();
+  if(i<CLN.max){const s=clSlot(i),td=L[i],cv=garmentCanvas(tdKind(td),tdCi(td));
+    spawn({kind:'cloth',img:cv,x:s.x-cv.width/2,y:s.y,vx:Math.random()*40-20,vy:-70,life:1.1});
+    for(let k=0;k<8;k++)spawn({kind:'spark',x:s.x+(Math.random()*12-6),y:s.y+2+Math.random()*10,vy:-12-Math.random()*8,life:.6});}
+  L.splice(i,1);persist();if(lineM.classList.contains('show')){renderLine();if(!L.length)closeLine();}
 }
 document.getElementById('lnForm').addEventListener('submit',e=>{e.preventDefault();if(!home||visiting)return;const inp=document.getElementById('lnIn'),tx=inp.value.trim();if(!tx)return;
-  home.todos=(home.todos||[]);if(home.todos.length>=CL.max)return;{const free=a=>{const used=new Set(home.todos.map(a));const opts=[0,1,2,3,4,5,6,7].filter(v=>!used.has(v));return opts.length?opts[Math.floor(Math.random()*opts.length)]:Math.floor(Math.random()*8);};
-    home.todos.push({id:'t'+Date.now().toString(36)+Math.floor(Math.random()*1e3).toString(36),text:tx.slice(0,60),t:Date.now(),k:free(x=>x.k),c:free(x=>x.c)});}inp.value='';persist();renderLine();});
+  home.todos=(home.todos||[]);if(home.todos.length>=CLN.max)return;
+  const free=(n,f)=>{const used=new Set(home.todos.map(f)),opts=[];for(let v=0;v<n;v++)if(!used.has(v))opts.push(v);return opts.length?opts[Math.floor(Math.random()*opts.length)]:Math.floor(Math.random()*n);};
+  home.todos.push({id:'t'+Date.now().toString(36)+Math.floor(Math.random()*1e3).toString(36),text:tx.slice(0,60),t:Date.now(),k:free(GD.G.length,tdKind),c:free(GD.COL.length,tdCi)});inp.value='';persist();renderLine();});
 document.getElementById('lnClose').addEventListener('click',closeLine);
 lineM.addEventListener('pointerdown',e=>{if(e.target===lineM)closeLine();});
 
@@ -2478,6 +2511,7 @@ function updateRest(dt,t){
     else if(q.kind==='spray'||q.kind==='splash'){q.vy+=70*dt;q.x+=q.vx*dt;q.y+=q.vy*dt;if(q.y>=q.floor)q.age=q.life;}
     else if(q.kind==='spark'||q.kind==='puff'){q.y+=q.vy*dt;}
     else if(q.kind==='heart'){q.x+=q.vx*dt;q.y+=q.vy*dt;q.vx*=.97;}
+    else if(q.kind==='cloth'){q.vy+=170*dt;q.x+=q.vx*dt;q.y+=q.vy*dt;}
     else if(q.kind==='balloon'){const k=Math.min(1,q.age/q.life);q.x=q.sx+(q.tx-q.sx)*k;q.y=q.sy+(q.ty-q.sy)*k-Math.sin(Math.PI*k)*22;if(k>=1&&!q.done){q.done=1;q.age=q.life;q.onHit&&q.onHit();}}
     else if(q.kind==='smoke'){q.x+=q.vx*dt;q.y+=q.vy*dt;}
     else if(q.kind==='petal'){q.x+=q.vx*dt+Math.sin(q.age*3)*.15;q.y+=q.vy*dt;if(q.y>=q.floor)q.age=q.life;}
@@ -2507,7 +2541,8 @@ function render(t){
   drawPool(t);
   list.push({y:FOUNT.y,d:()=>drawFountain(t)});
   list.push({y:SL.y,d:()=>drawSlide(t)});
-  list.push({y:CL.y,d:()=>drawLine(t)});
+  for(let r0=0;r0<lineRows();r0++)list.push({y:CLN.rows[r0],d:()=>drawLineRow(r0,t)});
+  list.push({y:CLN.by,d:()=>drawBasket()});
   if(alpIdle())list.push({y:alp.y,d:()=>drawAlpaca(alp.x,alp.y,alp.dir,alp.moving?Math.floor(t*5)%2+1:0,t)});
   list.push({y:HB,d:()=>drawCottage(t)});
   const myLook=me().look, blink=(t%4)<.12;
@@ -2533,6 +2568,7 @@ function render(t){
     else if(q.kind==='spark'){g.globalAlpha=1-q.age/q.life;R(x,y-1,1,3,'#fff6b0');R(x-1,y,3,1,'#fff6b0');R(x,y,1,1,'#ffffff');g.globalAlpha=1;}
     else if(q.kind==='puff'){g.globalAlpha=1-q.age/q.life;R(x,y,2,2,'#e9e2d4');g.globalAlpha=1;}
     else if(q.kind==='petal')R(x,y,2,1,'#f9b8cc');
+    else if(q.kind==='cloth'){g.globalAlpha=Math.max(0,Math.min(1,2.2*(1-q.age/q.life)));g.drawImage(q.img,x,y);g.globalAlpha=1;}
     else if(q.kind==='balloon'){R(x-2,y-2,4,4,'#4fb3e8');R(x-1,y-3,2,1,'#4fb3e8');R(x-3,y-1,1,2,'#4fb3e8');R(x+2,y-1,1,2,'#2f7fc0');R(x-1,y+2,2,1,'#2f7fc0');R(x-1,y-2,1,1,'#bfe9ff');R(x,y+3,1,1,'#2a2430');}
     else if(q.kind==='heart'){g.globalAlpha=Math.min(1,2*(1-q.age/q.life));[[0,0],[2,0],[-1,1],[0,1],[1,1],[2,1],[3,1],[0,2],[1,2],[2,2],[1,3]].forEach(([a,b])=>R(x+a-1,y+b,1,1,'#e8506c'));R(x-1,y+1,1,1,'#ffb3c4');g.globalAlpha=1;}
     else if(q.kind==='smoke'){g.globalAlpha=.55*(1-q.age/q.life);const r=1+Math.floor(q.age*1.5);R(x-r+1,y-r+1,r*2,r*2,'#eef2f6');g.globalAlpha=1;}
@@ -2635,7 +2671,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794783828"></script>
+<script src="config.js?v=1794784625"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
