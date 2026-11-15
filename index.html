@@ -588,11 +588,8 @@ function drawBG(){
   for(let i=0;i<n/5;i++){const x=Math.floor(r()*W),y=gt+6+Math.floor(r()*(TH-gt-6)),c=['#e85a5a','#5a86e8','#ffffff','#ffffff','#f2c94c'][Math.floor(r()*5)];R(x,y,1,1,c);if(r()<.4)R(x+1,y+2,1,1,'#ffffff');}
   // skills area: path, hedge with a gate
   const fy=OY+356, px0=OX+113;
-  {const x0=px0-1,w=16;R(x0,fy,w,TH-fy,'#b08f5e');R(x0,fy,1,TH-fy,'#7f6842');R(x0+w-1,fy,1,TH-fy,'#7f6842');
-    const stone=(sx,y,sw)=>{const c=r()<.35?'#efe5cf':'#e0d3b6';R(sx,y,sw,5,c);R(sx+1,y,sw-2,1,'#fbf5e6');R(sx+1,y+4,sw-2,1,'#a3946f');R(sx+sw-1,y+1,1,3,'#c2b392');
-      R(sx,y,1,1,'#b08f5e');R(sx+sw-1,y,1,1,'#b08f5e');R(sx,y+4,1,1,'#b08f5e');R(sx+sw-1,y+4,1,1,'#b08f5e');if(r()<.3)R(sx+2+Math.floor(r()*(sw-4)),y+2,1,1,'#c2b392');};
-    let row=0;for(let y=fy+2;y<TH-5;y+=6,row++){if(row%2){stone(x0+2,y,5);stone(x0+8,y,6);}else{stone(x0+2,y,7);stone(x0+10,y,4);}}
-    for(let y=fy+5;y<TH;y+=8+Math.floor(r()*7)){const sx=r()<.5?x0-1:x0+w-1;R(sx,y,2,1,'#4f9e43');R(sx+(r()<.5?0:1),y-1,1,1,'#6cbc58');}}
+  R(px0,fy,14,TH-fy,'#d8c08f');R(px0,fy,1,TH-fy,'#c4a978');R(px0+13,fy,1,TH-fy,'#c4a978');
+  for(let i=0;i<(TH-fy)/5;i++){R(px0+2+Math.floor(r()*10),fy+Math.floor(r()*(TH-fy)),2,1,'#bfa577');}
   for(let x=-4;x<W+8;x+=6){if(x>OX+98&&x<OX+142)continue;disc(x,fy,4,'#3c8a3a');disc(x-1,fy-1,3,'#4f9e43');R(x-1,fy-3,2,1,'#6cbc58');if(r()<.25){R(x+1,fy-2,1,1,'#e2483c');}}
   [OX+100,OX+137].forEach(gx=>{R(gx,fy-7,3,11,'#7a4a2c');R(gx,fy-7,3,1,'#a8714a');R(gx+2,fy-6,1,10,'#5a3420');});
   // pool deck in the middle of the garden
@@ -2059,6 +2056,15 @@ function enterGarden(){
   rebuildLabels();refreshChrome();
 }
 
+/* ================= one shared audio context, woken up by every tap ================= */
+const Snd=(()=>{
+  let ctx=null;
+  function get(){if(!ctx){try{ctx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){ctx=null;}}return ctx;}
+  // browsers (Safari most of all) only let sound start or resume inside a real tap or key press
+  function unlock(){const c=get();if(c&&c.state!=='running'){try{const p=c.resume&&c.resume();if(p&&p.catch)p.catch(()=>{});
+      const b=c.createBuffer(1,1,22050),sn=c.createBufferSource();sn.buffer=b;sn.connect(c.destination);sn.start(0);}catch(e){}}return c;}
+  return {get,unlock,started:()=>!!ctx};
+})();
 /* ================= lofi music (generated live, no samples) ================= */
 const Lofi=(()=>{
   let ctx=null,out=null,on=false,timer=null,step=0,nextT=0,bar=0,noiseBuf=null,vinyl=null;
@@ -2069,7 +2075,7 @@ const Lofi=(()=>{
   const PENTA=[72,74,76,79,81,84];
   function noise(){const b=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return b;}
   function init(){
-    ctx=new (window.AudioContext||window.webkitAudioContext)();
+    ctx=Snd.get();if(!ctx)return;
     const lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2200;lp.Q.value=.4;
     out=ctx.createGain();out.gain.value=0;out.connect(lp);lp.connect(ctx.destination);
     noiseBuf=noise();
@@ -2100,6 +2106,8 @@ const Lofi=(()=>{
     if(i%4===2&&Math.random()<.32)tone(mtof(PENTA[Math.floor(Math.random()*PENTA.length)]),t,S16*6,.045,'sine');
   }
   function tick(){
+    if(ctx.state!=='running')return;
+    if(nextT<ctx.currentTime-.25)nextT=ctx.currentTime+.06;
     while(nextT<ctx.currentTime+.15){
       const sw=(step%2)?S16*.18:0;
       play(step,nextT+sw);
@@ -2107,8 +2115,8 @@ const Lofi=(()=>{
     }
   }
   function start(){
-    if(!ctx)init();
-    ctx.resume&&ctx.resume();
+    if(!ctx){init();if(!ctx)return;}
+    Snd.unlock();
     if(!timer){nextT=ctx.currentTime+.1;step=0;timer=setInterval(tick,30);}
     out.gain.cancelScheduledValues(ctx.currentTime);out.gain.setTargetAtTime(.5,ctx.currentTime,.6);
     on=true;
@@ -2116,20 +2124,20 @@ const Lofi=(()=>{
   function stop(){
     on=false;if(!ctx)return;
     out.gain.cancelScheduledValues(ctx.currentTime);out.gain.setTargetAtTime(0,ctx.currentTime,.2);
-    setTimeout(()=>{if(!on){clearInterval(timer);timer=null;ctx.suspend&&ctx.suspend();}},900);
+    setTimeout(()=>{if(!on){clearInterval(timer);timer=null;}},900);
   }
   return {start,stop,get on(){return on;}};
 })();
 let musicWanted=true;try{musicWanted=localStorage.getItem('garden-music')!=='off';}catch(e){}
 const bMusic=document.getElementById('bMusic');
-function paintMusic(){bMusic.classList.toggle('off',!musicWanted);bMusic.title=musicWanted?'Sound off':'Sound on';bMusic.setAttribute('aria-label',bMusic.title);}
+function paintMusic(){bMusic.classList.toggle('off',!musicWanted);bMusic.title=musicWanted?'Music off':'Music on';bMusic.setAttribute('aria-label',bMusic.title);}
 paintMusic();
-bMusic.addEventListener('click',e=>{e.stopPropagation();musicWanted=!musicWanted;try{localStorage.setItem('garden-music',musicWanted?'on':'off');}catch(_){}
-  paintMusic();gestured=true;window.__musicStarted=1;musicWanted?Lofi.start():Lofi.stop();});
-let gestured=false;
-function firstGesture(e){if(gestured||(e.target&&e.target.id==='bMusic'))return;gestured=true;window.__musicStarted=1;if(musicWanted&&!Lofi.on)Lofi.start();}
-['pointerdown','keydown','touchend'].forEach(ev=>addEventListener(ev,firstGesture,{capture:true}));
-document.addEventListener('visibilitychange',()=>{if(document.hidden){if(Lofi.on)Lofi.stop();}else if(musicWanted&&!Lofi.on&&window.__musicStarted)Lofi.start();});
+bMusic.addEventListener('click',e=>{e.stopPropagation();Snd.unlock();musicWanted=!musicWanted;try{localStorage.setItem('garden-music',musicWanted?'on':'off');}catch(_){}
+  paintMusic();musicWanted?Lofi.start():Lofi.stop();});
+// every tap or key press wakes the sound up again (after a tab switch, a call, a locked phone ...)
+function onGesture(e){Snd.unlock();if(e.target&&e.target.id==='bMusic')return;if(musicWanted&&!Lofi.on&&!document.hidden)Lofi.start();}
+['pointerdown','mousedown','touchend','click','keydown'].forEach(ev=>addEventListener(ev,onGesture,{capture:true,passive:true}));
+document.addEventListener('visibilitychange',()=>{if(document.hidden){if(Lofi.on)Lofi.stop();}else if(musicWanted&&!Lofi.on&&Snd.started())Lofi.start();});
 
 /* ================= actions: hug, kiss, push ================= */
 let myAct=null,actN=0,myHeartUntil=0,myWetUntil=0,knock=null;const actSeen={};
@@ -2424,8 +2432,6 @@ lineM.addEventListener('pointerdown',e=>{if(e.target===lineM)closeLine();});
 
 /* ================= sound effects (generated live, no samples) ================= */
 const Sfx=(()=>{
-  let ctx=null;
-  function ac(){if(!ctx){try{ctx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}}if(ctx.state==='suspended'&&ctx.resume)ctx.resume();return ctx;}
   // water splash, built from noise and bubbles (no pitched "thump"):
   // a soft low whoosh of displaced water, a bright spray that swells and rains back down, and lots of little bubbles
   function build(c,t,big,vol){
@@ -2449,7 +2455,7 @@ const Sfx=(()=>{
     }
   }
   function splash(big,vol){
-    if(!musicWanted||document.hidden)return;const c=ac();if(!c)return;
+    if(document.hidden)return;const c=Snd.get();if(!c)return;if(c.state!=='running'){Snd.unlock();return;}
     try{build(c,c.currentTime+.01,big,vol);}catch(e){}
   }
   return {splash};
@@ -2705,7 +2711,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794785355"></script>
+<script src="config.js?v=1794785884"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -2768,16 +2774,20 @@ function maybeAutoVisit(){
   /* ---------- live room (Supabase Realtime presence) ---------- */
   const peerKey = Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
   let ch = null, connected = false, mine = {}, snap = [], connFns = [], lastTrack = 0, tTimer = null, retry = null;
+  const sessT = Date.now();
+  // One avatar per person: my own other tabs or an old session of mine are never shown,
+  // and of somebody else's sessions only the newest counts (a reload leaves a stale one behind for a moment).
   function rebuild() {
-    const st = ch ? ch.presenceState() : {}, out = [];
-    let me = false;
+    const st = ch ? ch.presenceState() : {}, best = {};
     for (const k in st) {
-      const metas = st[k]; if (!metas || !metas.length) continue;
-      const m = metas[metas.length - 1], isMe = k === peerKey; if (isMe) me = true;
-      out.push(Object.freeze({ peer: k, by: m.u || null, isMe, sameTab: isMe, kind: 'viewer', guest: false,
-        presence: Object.freeze(isMe ? Object.assign({}, mine) : (m.p || {})), updatedAt: Date.now() }));
+      const metas = st[k]; if (!metas || !metas.length || k === peerKey) continue;
+      const m = metas[metas.length - 1], u = m.u || k;
+      if (u === uid) continue;
+      if (!best[u] || (m.s || 0) > (best[u].m.s || 0)) best[u] = { k, m };
     }
-    if (!me) out.push(Object.freeze({ peer: peerKey, by: uid, isMe: true, sameTab: true, kind: 'viewer', guest: false, presence: Object.freeze(Object.assign({}, mine)), updatedAt: Date.now() }));
+    const out = [Object.freeze({ peer: peerKey, by: uid, isMe: true, sameTab: true, kind: 'viewer', guest: false, presence: Object.freeze(Object.assign({}, mine)), updatedAt: Date.now() })];
+    for (const u in best) { const { k, m } = best[u];
+      out.push(Object.freeze({ peer: k, by: m.u || null, isMe: false, sameTab: false, kind: 'viewer', guest: false, presence: Object.freeze(m.p || {}), updatedAt: Date.now() })); }
     snap = Object.freeze(out);
   }
   function setConn(c) { if (c === connected) return; connected = c; connFns.forEach(f => { try { f(c); } catch (e) {} }); }
@@ -2785,7 +2795,7 @@ function maybeAutoVisit(){
     clearTimeout(tTimer); tTimer = null;
     if (!ch || !connected) return;
     lastTrack = performance.now();
-    ch.track({ u: uid, p: mine }).catch(() => {});
+    ch.track({ u: uid, s: sessT, p: mine }).catch(() => {});
   }
   function schedule() {
     rebuild();
@@ -2809,6 +2819,8 @@ function maybeAutoVisit(){
       });
   }
   document.addEventListener('visibilitychange', () => { if (!document.hidden && !connected) connect(); });
+  // leaving the page: take my avatar out right away instead of waiting for the server to notice
+  addEventListener('pagehide', () => { try { if (ch) { ch.untrack(); sb.removeChannel(ch); } } catch (e) {} });
   addEventListener('online', () => { if (!connected) connect(); });
   const room = {
     peers: () => snap,
