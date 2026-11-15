@@ -458,7 +458,7 @@ function cleanGarden(g){
     if(used2.has(c.slot)){for(let s=0;s<BED_SLOTS.length;s++)if(!used2.has(s)){c.slot=s;break;}}
     used2.add(c.slot);skills.push(c);});
   return {v:2,name:str(g.name,14)||'Someone',look:cleanLook(g.look),projects,skills,saved:num(g.saved,0),owner:!!g.owner,cat:!!g.cat,sb:g.sb!==false,nb:Array.isArray(g.nb)?g.nb.filter(x=>x&&/^https:\/\//.test(x.u||'')).slice(0,10).map(x=>({n:str(x.n,30)||'Friend',u:str(x.u,300)})):[],created:g.created!==false,
-    todos:Array.isArray(g.todos)?g.todos.filter(x=>x&&typeof x.text==='string'&&x.text.trim()).slice(0,10).map((x,i)=>({id:str(x.id,24)||('t'+i),text:str(x.text,60),t:num(x.t,0)})):[],
+    todos:Array.isArray(g.todos)?g.todos.filter(x=>x&&typeof x.text==='string'&&x.text.trim()).slice(0,10).map((x,i)=>Object.assign({id:str(x.id,24)||('t'+i),text:str(x.text,60),t:num(x.t,0)},Number.isInteger(x.k)?{k:x.k%8}:{},Number.isInteger(x.c)?{c:x.c%8}:{})):[],
     notes:(g.notes&&typeof g.notes==='object')?Object.fromEntries(Object.entries(g.notes).slice(0,20).map(([k,v])=>[k,str(v,90)])):{},
     logs:(g.logs&&typeof g.logs==='object')?Object.fromEntries(Object.entries(g.logs).slice(0,20).filter(([k,v])=>Array.isArray(v)).map(([k,v])=>[k,v.slice(-LOG_MAX).filter(e=>e&&typeof e.text==='string').map(e=>({t:num(e.t,0),text:str(e.text,140)}))])):{}};
 }
@@ -2337,6 +2337,7 @@ function drawSlide(t){
 /* ================= clothesline = to-do list ================= */
 const CL={x0:10,x1:96,y:306,h:24,max:10};
 const CL_COL=['#f4a7b9','#9fc4ef','#f2d16b','#b8e0a8','#c9a6e8','#ffffff','#f58a6c','#8fd3c8'];
+const tdKind=td=>Number.isInteger(td.k)?td.k%8:(hashStr(td.id||td.text)>>>0)%8, tdCol=td=>CL_COL[Number.isInteger(td.c)?td.c%CL_COL.length:(hashStr(td.id||td.text)>>>3)%CL_COL.length];
 const todosOf=()=>{const v=V();return v&&Array.isArray(v.todos)?v.todos:[];};
 function clPos(i,n,t){const f=(i+1)/(n+1),x=CL.x0+3+(CL.x1-CL.x0-6)*f;return [x,CL.y-CL.h+Math.sin(Math.PI*f)*3,Math.sin(t*1.6+i*1.3)*.8];}
 function drawGarment(x,y,kind,c,sw){
@@ -2346,26 +2347,29 @@ function drawGarment(x,y,kind,c,sw){
   else if(kind===1){R(x-3,y+1,6,3,c);R(x-3,y+4,2,5,c);R(x+1,y+4,2,5,c);R(x-3,y+3,6,1,d);}
   else if(kind===2){R(x-1,y+1,3,6,c);R(x-1,y+6,5,2,c);R(x-1,y+1,3,1,d);}
   else if(kind===3){R(x-2,y+1,5,3,c);R(x-3,y+4,7,2,c);R(x-4,y+6,9,3,c);R(x-4,y+8,9,1,d);}
-  else{R(x-3,y+1,7,9,c);R(x-3,y+7,7,1,d);R(x-3,y+3,7,1,d);}
+  else if(kind===4){R(x-3,y+1,7,9,c);R(x-3,y+7,7,1,d);R(x-3,y+3,7,1,d);}
+  else if(kind===5){R(x-3,y+1,7,7,c);R(x-5,y+2,2,5,c);R(x+4,y+2,2,5,c);R(x-2,y,5,2,d);R(x-1,y+5,3,1,d);}
+  else if(kind===6){R(x-3,y+1,7,2,c);R(x-3,y+3,3,3,c);R(x+1,y+3,3,3,c);R(x-3,y+1,7,1,d);}
+  else{R(x-1,y+1,3,10,c);R(x-1,y+3,3,1,d);R(x-1,y+7,3,1,d);R(x-1,y+11,1,1,c);R(x+1,y+11,1,1,c);}
 }
 function drawLine(t){
   const W='#7a4a2c',Wl='#a8714a',y=CL.y,top=y-CL.h;
   [CL.x0,CL.x1].forEach(px=>{ell(px,y,4,1,'rgba(40,80,40,.28)');R(px-1,top-3,2,CL.h+3,W);R(px-1,top-3,1,CL.h+3,Wl);R(px-3,top-2,6,1,W);});
   for(let x=CL.x0;x<=CL.x1;x++){const f=(x-CL.x0)/(CL.x1-CL.x0);R(x,Math.round(top+Math.sin(Math.PI*f)*3),1,1,'#e9e2d4');}
   const L=todosOf().slice(0,CL.max);
-  L.forEach((td,i)=>{const [x,ly,sw]=clPos(i,L.length,t),h=hashStr(td.id||td.text);drawGarment(x,ly,(h>>>0)%5,CL_COL[(h>>>3)%CL_COL.length],sw);});
+  L.forEach((td,i)=>{const [x,ly,sw]=clPos(i,L.length,t);drawGarment(x,ly,tdKind(td),tdCol(td),sw);});
   if(!L.length&&!visiting){/* empty line: one lonely clothespin */R(Math.round((CL.x0+CL.x1)/2),top+2,1,2,'#c9a36a');}
 }
 function onLine(lx,ly){return lx>CL.x0-6&&lx<CL.x1+6&&ly>CL.y-CL.h-8&&ly<CL.y+4;}
 const lineM=document.createElement('div');lineM.className='modal';lineM.id='lineM';
-lineM.innerHTML='<div class="panel"><h2>Clothesline</h2><div class="lead" id="lnLead"></div><form id="lnForm" autocomplete="off" style="display:flex;gap:8px;margin-top:12px"><input class="inp" id="lnIn" maxlength="60" placeholder="z. B. Für Master bewerben" style="flex:1;min-width:0"><button class="btn dark" type="submit">Hang up</button></form><div id="lnList" style="margin-top:12px"></div><div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn" type="button" id="lnClose">Close</button></div></div>';
+lineM.innerHTML='<div class="panel"><h2>Clothesline</h2><div class="lead" id="lnLead"></div><form id="lnForm" autocomplete="off" style="display:flex;gap:8px;margin-top:12px"><input class="inp" id="lnIn" maxlength="60" placeholder="z. B. Retouren absenden" style="flex:1;min-width:0"><button class="btn dark" type="submit">Hang up</button></form><div id="lnList" style="margin-top:12px"></div><div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn" type="button" id="lnClose">Close</button></div></div>';
 document.body.appendChild(lineM);
 function renderLine(){
   const L=todosOf(),own=!visiting&&!!home,box=document.getElementById('lnList');box.innerHTML='';
   document.getElementById('lnForm').style.display=own&&L.length<CL.max?'flex':'none';
   document.getElementById('lnLead').textContent=own?(L.length?'Every piece on the line is one to-do. Take it down when it is done.':'Nothing on the line. Hang up your first to-do.')+(L.length>=CL.max?' The line is full, take something down first.':''):(L.length?(V().name+' has '+L.length+' to-do'+(L.length>1?'s':'')+' on the line.'):'Nothing on the line right now.');
   L.forEach(td=>{const r=document.createElement('div');r.className='nbrow';r.style.cssText='display:flex;gap:10px;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee6d6';
-    const h=hashStr(td.id||td.text),sw=document.createElement('span');sw.style.cssText='flex:none;width:12px;height:12px;border:2px solid var(--ink);background:'+CL_COL[(h>>>3)%CL_COL.length];
+    const sw=document.createElement('canvas');sw.width=13;sw.height=14;sw.style.cssText='flex:none;width:39px;height:42px;image-rendering:pixelated;background:#8fc77e;border:2px solid var(--ink)';{const keep=X;X=sw.getContext('2d');drawGarment(6,1,tdKind(td),tdCol(td),0);X=keep;}
     const tx=document.createElement('span');tx.textContent=td.text;tx.style.cssText='flex:1;min-width:0;overflow-wrap:anywhere';
     r.appendChild(sw);r.appendChild(tx);
     if(own){const b=document.createElement('button');b.type='button';b.className='btn';b.textContent='Done ✓';b.onclick=()=>doneTodo(td.id);r.appendChild(b);}
@@ -2379,7 +2383,8 @@ function doneTodo(id){
   L.splice(i,1);persist();renderLine();if(!L.length)closeLine();
 }
 document.getElementById('lnForm').addEventListener('submit',e=>{e.preventDefault();if(!home||visiting)return;const inp=document.getElementById('lnIn'),tx=inp.value.trim();if(!tx)return;
-  home.todos=(home.todos||[]);if(home.todos.length>=CL.max)return;home.todos.push({id:'t'+Date.now().toString(36)+Math.floor(Math.random()*1e3).toString(36),text:tx.slice(0,60),t:Date.now()});inp.value='';persist();renderLine();});
+  home.todos=(home.todos||[]);if(home.todos.length>=CL.max)return;{const free=a=>{const used=new Set(home.todos.map(a));const opts=[0,1,2,3,4,5,6,7].filter(v=>!used.has(v));return opts.length?opts[Math.floor(Math.random()*opts.length)]:Math.floor(Math.random()*8);};
+    home.todos.push({id:'t'+Date.now().toString(36)+Math.floor(Math.random()*1e3).toString(36),text:tx.slice(0,60),t:Date.now(),k:free(x=>x.k),c:free(x=>x.c)});}inp.value='';persist();renderLine();});
 document.getElementById('lnClose').addEventListener('click',closeLine);
 lineM.addEventListener('pointerdown',e=>{if(e.target===lineM)closeLine();});
 
@@ -2630,7 +2635,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794783685"></script>
+<script src="config.js?v=1794783828"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
