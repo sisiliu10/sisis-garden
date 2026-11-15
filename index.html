@@ -226,7 +226,6 @@
     .chip .long{display:none}
     .hud .btn,.chip{font-size:13px;padding:5px 8px}
   }
-#swingBar{top:auto;bottom:64px;padding:6px;gap:6px}
 #actMenu{position:fixed;display:none;gap:6px;z-index:7}#actMenu.show{display:flex}#actMenu .btn{white-space:nowrap}
 #bMusic.off{opacity:.45;text-decoration:line-through}
 </style>
@@ -240,7 +239,6 @@
 <div class="banner" id="banner" hidden></div>
 <div class="toast" id="toast" hidden></div>
 <button class="btn dark prompt" id="prompt" hidden></button>
-<div class="movebar swingbar" id="swingBar" hidden><button class="btn" id="swPump" type="button">Schwung</button><button class="btn" id="swJump" type="button">Abspringen</button><button class="btn" id="swOff" type="button">Aufstehen</button></div>
 <div class="movebar" id="moveBar" hidden><span id="moveTxt"></span><button class="btn" id="moveCancel" type="button">Cancel</button></div>
 <form class="chatbar" id="chatbar" autocomplete="off"><button type="button" id="live" class="live" aria-label="Live status">○</button><input id="chatIn" maxlength="80" placeholder="Sag was …" aria-label="Chat message" enterkeyhint="send"><button type="submit" aria-label="Send">▶</button></form>
 <div id="bubbles"></div>
@@ -364,7 +362,7 @@
     <p><b>Size = progress.</b> Set each project's progress with the slider. Seed → Sprout → Sapling → Budding → In bloom, and past 65% the plant keeps getting bigger until it's giant at 100%.</p>
     <p><b>Skill beds</b> sit below the hedge. A bed fills up with flowers as the skill grows. Water it whenever you practise.</p>
     <p><b>Water = work.</b> Water a plant whenever you worked on that project. Every watering asks for one line on what you did, so each plant keeps its own log (you'll find it in the plant card and on the computer in the cottage). Plants dry out over a week. Ignore one for 5+ days and weeds sprout; after 9 days the flies arrive. Watering pulls the weeds.</p>
-    <p>Walk with <kbd>WASD</kbd> or the arrow keys, or tap the grass. Double-tap to run. The pool is next to the fountain: walk in, or tap the diving board for a big jump. The double swing sits top right: tap it to sit down, Schwung swings you higher, Abspringen jumps you off at full speed. Tap a friend on the swing to give them a push. To move a plant or bed, open it and tap Move, then tap the new spot. Tap a plant to walk to it, press <kbd>E</kbd> to water.</p>
+    <p>Walk with <kbd>WASD</kbd> or the arrow keys, or tap the grass. Double-tap to run. The pool is next to the fountain: walk in, or tap the diving board for a big jump. The double swing sits top right: tap it to sit down, tap it again to swing higher (or press space). Tap anywhere else to get off; if you are swinging high, you fly off. Tap a friend on the swing to give them a push. To move a plant or bed, open it and tap Move, then tap the new spot. Tap a plant to walk to it, press <kbd>E</kbd> to water.</p>
     <p><b>Atmosphere.</b> The garden follows your real clock, from sunrise to a starry night. When every plant is well watered, rain showers pass through, followed by a rainbow. Log something every day for 7 days in a row and a cat moves in.</p>
     <p><b>The cottage</b> top left: walk through the door to go inside. The computer on the desk opens a dashboard of everything you're growing, and the bookshelf keeps your reading list: reading now, want to read, and read, each with its English title and a two-line summary.</p>
     <p><b>Quiz show.</b> The arcade machine in the cottage opens a quiz show. Everyone in the same garden can join: 8 questions, 15 seconds each, faster answers score more. Pick a level (easy, medium, hard), add a topic if you like, and Claude writes the questions.</p>
@@ -1921,7 +1919,7 @@ addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
 let lastTap={t:0,x:0,y:0};
 cvs.addEventListener('pointerdown',e=>{
   pendAct=null;pendSit=null;
-  if(mySeat!==null&&scene==='garden'){const lx0=e.clientX/S-OX,ly0=e.clientY/S+camR-OY;const pp0=peerAt(lx0,ly0);if(!pp0){if(onSwing(lx0,ly0)){pump(.9);return;}standUp();}}
+  if(mySeat!==null&&scene==='garden'){const lx0=e.clientX/S-OX,ly0=e.clientY/S+camR-OY;const pp0=peerAt(lx0,ly0);if(!pp0){if(onSwing(lx0,ly0)){pump(.9);return;}leaveSwing({x:lx0,y:ly0});return;}}
   {const now=performance.now(),dbl=now-lastTap.t<350&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<40;lastTap={t:dbl?0:now,x:e.clientX,y:e.clientY};av.run=dbl;}
   if(document.activeElement&&document.activeElement.tagName==='INPUT')document.activeElement.blur();
   hideHint();
@@ -2189,7 +2187,6 @@ liveEl.addEventListener('click',()=>{const i=liveInfo();
 /* ================= double swing ================= */
 const SW={x:196,y:168,top:136,L:21,seats:[-13,13]};
 let mySeat=null,swA=0,swV=0,pendSit=null;
-const swingBar=document.getElementById('swingBar');
 function seatPivot(i){return [SW.x+SW.seats[i],SW.top+1];}
 function seatPos(i,a){const [px,py]=seatPivot(i);return [px+Math.sin(a)*SW.L,py+Math.cos(a)*SW.L];}
 function seatTaken(i){if(mySeat===i)return true;return livePeers().some(p=>p.sg&&p.sg.s===i&&p.scene==='garden');}
@@ -2199,12 +2196,12 @@ function goSwing(){
   if(best===null){toast('Both seats are taken. Tap a friend on the swing to give them a push.',4000);return;}
   const [sx]=seatPos(best,0);pendSit=best;av.target={x:sx,y:SW.y+4,onArrive:()=>{pendSit=null;sitDown(best);}};
 }
-function sitDown(i){if(seatTaken(i)&&mySeat!==i)return;mySeat=i;swA=0;swV=0;av.swim=false;av.back=false;av.target=null;swingBar.hidden=false;lastPres='';}
-function standUp(){if(mySeat===null)return;const [sx]=seatPos(mySeat,0);mySeat=null;swingBar.hidden=true;av.x=sx;av.y=SW.y+5;lastPres='';}
+function sitDown(i){if(seatTaken(i)&&mySeat!==i)return;mySeat=i;swA=0;swV=0;av.swim=false;av.back=false;av.target=null;lastPres='';}
+function standUp(){if(mySeat===null)return;const [sx]=seatPos(mySeat,0);mySeat=null;av.x=sx;av.y=SW.y+5;lastPres='';}
 function pump(k){if(mySeat===null)return;const dir=Math.abs(swV)>.15?Math.sign(swV):(swA>0?-1:1);swV+=dir*k;}
 function jumpOff(){
   if(mySeat===null)return;const i=mySeat,[sx,sy]=seatPos(i,swA),dir=Math.abs(swV)>.1?Math.sign(swV):(Math.random()<.5?-1:1),pw=Math.min(1,Math.abs(swV)/2.4);
-  mySeat=null;swingBar.hidden=true;lastPres='';
+  mySeat=null;lastPres='';
   let dist=18+pw*44,tx,ty;for(;dist>6;dist-=5){tx=clamp(sx+dir*dist,-OX+8,CW+OX-8);ty=SW.y+10+pw*14;if(isWater(tx,ty)||!blocked(tx,ty))break;}
   av.x=sx;av.y=sy+9;av.target=null;
   if(dist>6)knock={fx:av.x,fy:av.y,tx,ty,t:0,d:.45+pw*.35,spin:dir};else{av.y=SW.y+5;}
@@ -2232,10 +2229,14 @@ function drawSwing(t){
     R(Math.round(sx)-5,Math.round(sy),10,2,Wl);R(Math.round(sx)-5,Math.round(sy)+2,10,1,Wd);
   });
 }
-document.getElementById('swPump').addEventListener('click',e=>{e.stopPropagation();pump(.9);});
-document.getElementById('swJump').addEventListener('click',e=>{e.stopPropagation();jumpOff();});
-document.getElementById('swOff').addEventListener('click',e=>{e.stopPropagation();standUp();});
-addEventListener('keydown',e=>{if(mySeat===null||document.activeElement&&document.activeElement.tagName==='INPUT')return;if(e.key===' '){e.preventDefault();pump(.9);}else if(e.key==='j'||e.key==='J')jumpOff();});
+addEventListener('keydown',e=>{if(mySeat===null||document.activeElement&&document.activeElement.tagName==='INPUT')return;const k=e.key.toLowerCase();
+  if(k===' '){e.preventDefault();pump(.9);}else if(['arrowleft','arrowright','arrowup','arrowdown','a','d','w','s'].includes(k)){e.preventDefault();leaveSwing(null);}},true);
+// tap elsewhere while sitting: jump off when swinging fast, otherwise just get up and walk there
+function leaveSwing(tgt){
+  if(mySeat===null)return;
+  if(Math.abs(swV)>1.1){jumpOff();return;}
+  standUp(); if(tgt) av.target={x:clamp(tgt.x,-OX+6,CW+OX-6),y:clamp(tgt.y,145,WORLD_H-6)};
+}
 
 /* ================= hint ================= */
 function hideHint(){}
@@ -2478,7 +2479,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794780437"></script>
+<script src="config.js?v=1794780602"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
