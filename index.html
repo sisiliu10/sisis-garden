@@ -226,6 +226,7 @@
     .chip .long{display:none}
     .hud .btn,.chip{font-size:13px;padding:5px 8px}
   }
+#swingBar{top:auto;bottom:64px;padding:6px;gap:6px}
 #actMenu{position:fixed;display:none;gap:6px;z-index:7}#actMenu.show{display:flex}#actMenu .btn{white-space:nowrap}
 #bMusic.off{opacity:.45;text-decoration:line-through}
 </style>
@@ -239,6 +240,7 @@
 <div class="banner" id="banner" hidden></div>
 <div class="toast" id="toast" hidden></div>
 <button class="btn dark prompt" id="prompt" hidden></button>
+<div class="movebar swingbar" id="swingBar" hidden><button class="btn" id="swPump" type="button">Schwung</button><button class="btn" id="swJump" type="button">Abspringen</button><button class="btn" id="swOff" type="button">Aufstehen</button></div>
 <div class="movebar" id="moveBar" hidden><span id="moveTxt"></span><button class="btn" id="moveCancel" type="button">Cancel</button></div>
 <form class="chatbar" id="chatbar" autocomplete="off"><button type="button" id="live" class="live" aria-label="Live status">○</button><input id="chatIn" maxlength="80" placeholder="Sag was …" aria-label="Chat message" enterkeyhint="send"><button type="submit" aria-label="Send">▶</button></form>
 <div id="bubbles"></div>
@@ -362,7 +364,7 @@
     <p><b>Size = progress.</b> Set each project's progress with the slider. Seed → Sprout → Sapling → Budding → In bloom, and past 65% the plant keeps getting bigger until it's giant at 100%.</p>
     <p><b>Skill beds</b> sit below the hedge. A bed fills up with flowers as the skill grows. Water it whenever you practise.</p>
     <p><b>Water = work.</b> Water a plant whenever you worked on that project. Every watering asks for one line on what you did, so each plant keeps its own log (you'll find it in the plant card and on the computer in the cottage). Plants dry out over a week. Ignore one for 5+ days and weeds sprout; after 9 days the flies arrive. Watering pulls the weeds.</p>
-    <p>Walk with <kbd>WASD</kbd> or the arrow keys, or tap the grass. Double-tap to run. The pool is next to the fountain: walk in, or tap the diving board for a big jump. To move a plant or bed, open it and tap Move, then tap the new spot. Tap a plant to walk to it, press <kbd>E</kbd> to water.</p>
+    <p>Walk with <kbd>WASD</kbd> or the arrow keys, or tap the grass. Double-tap to run. The pool is next to the fountain: walk in, or tap the diving board for a big jump. The double swing sits top right: tap it to sit down, Schwung swings you higher, Abspringen jumps you off at full speed. Tap a friend on the swing to give them a push. To move a plant or bed, open it and tap Move, then tap the new spot. Tap a plant to walk to it, press <kbd>E</kbd> to water.</p>
     <p><b>Atmosphere.</b> The garden follows your real clock, from sunrise to a starry night. When every plant is well watered, rain showers pass through, followed by a rainbow. Log something every day for 7 days in a row and a cat moves in.</p>
     <p><b>The cottage</b> top left: walk through the door to go inside. The computer on the desk opens a dashboard of everything you're growing, and the bookshelf keeps your reading list: reading now, want to read, and read, each with its English title and a two-line summary.</p>
     <p><b>Quiz show.</b> The arcade machine in the cottage opens a quiz show. Everyone in the same garden can join: 8 questions, 15 seconds each, faster answers score more. Pick a level (easy, medium, hard), add a topic if you like, and Claude writes the questions.</p>
@@ -1513,7 +1515,7 @@ function roomPeers(){
 function isHostPeer(p){ return !p.isMe&&!!visiting&&((!!p.by&&p.by===visiting.id)||(!!p.presence&&p.presence.u===visiting.id)); }
 function sendPresence(now){
   if(!room||now-lastPresT<90) return;
-  const st={g:gardenKey(),u:myId||null,sw:av.swim||av.jump?1:0,say:(mySay&&mySay.until>performance.now())?{n:mySay.n,t:mySay.t}:null,x:Math.round(av.x*2)/2,y:Math.round((av.y-(av.kh||0))*2)/2,act:myAct,s:scene==='house'?'h':'g',b:av.back?1:0,m:av.moving?1:0,r:av.run&&av.moving?1:0,n:(me().name||'Friend').slice(0,14),l:me().look,w:av.water>0?1:0};
+  const st={g:gardenKey(),u:myId||null,sw:av.swim||av.jump?1:0,say:(mySay&&mySay.until>performance.now())?{n:mySay.n,t:mySay.t}:null,x:Math.round(av.x*2)/2,y:Math.round((av.y-(av.kh||0))*2)/2,act:myAct,sg:mySeat===null?null:{s:mySeat,a:Math.round(swA*100)/100},s:scene==='house'?'h':'g',b:av.back?1:0,m:av.moving?1:0,r:av.run&&av.moving?1:0,n:(me().name||'Friend').slice(0,14),l:me().look,w:av.water>0?1:0};
   const k=JSON.stringify(st); if(k===lastPres&&now-lastPresT<2500) return;
   lastPres=k; lastPresT=now; try{const pr=room.presence(st);if(pr&&pr.catch)pr.catch(()=>{});}catch(e){}
 }
@@ -1528,7 +1530,8 @@ function livePeers(){
     let gh=ghosts[p.peer]; if(!gh) gh=ghosts[p.peer]={x:tx,y:ty};
     gh.x+=(tx-gh.x)*.25; gh.y+=(ty-gh.y)*.25; gh.seen=now;
     if(q.say&&typeof q.say.t==='string'&&q.say.n!==gh.sayN){gh.sayN=q.say.n;gh.sayT=q.say.t.slice(0,80);gh.sayUntil=now+6000+q.say.t.length*60;}
-    out.push({say:gh.sayUntil>now?gh.sayT:'',id:p.peer,by:p.by,x:gh.x,y:gh.y,scene:q.s==='h'?'house':'garden',back:!!q.b,moving:!!q.m,run:!!q.r,swim:!!q.sw,water:!!q.w,name:str(q.n,14)||'Friend',look:cleanLook(q.l)});
+    const sgq=q.sg&&(q.sg.s===0||q.sg.s===1)?{s:q.sg.s,a:clamp(num(q.sg.a,0),-1.2,1.2)}:null;
+    out.push({sg:sgq,say:gh.sayUntil>now?gh.sayT:'',id:p.peer,by:p.by,x:gh.x,y:gh.y,scene:q.s==='h'?'house':'garden',back:!!q.b,moving:!!q.m,run:!!q.r,swim:!!q.sw,water:!!q.w,name:str(q.n,14)||'Friend',look:cleanLook(q.l)});
   }
   return out;
 }
@@ -1896,6 +1899,7 @@ function blocked(x,y){
   if(y>349&&y<362&&(x<105||x>135)) return true;
   for(const b of skills()){const [bx,by]=posOf(b);if(x>bx-BED_W/2-3&&x<bx+BED_W/2+3&&y>by-BED_H/2+3&&y<by+BED_H/2+3)return true;}
 
+  if(scene==='garden'&&y>SW.y-3&&y<SW.y+2&&(Math.abs(x-(SW.x-27))<7||Math.abs(x-(SW.x+27))<7)) return true;
   if(visiting&&Math.abs(x-host.x)<14&&Math.abs(y-host.y)<5) return true;
   for(const p of projects()){const s=Math.min(scaleOf(p),1.6),[px,py]=posOf(p),rx=(p.kind==='tree'?7:6)*s;const ex=(x-px)/rx,ey=(y-py)/(4*s);if(ex*ex+ey*ey<1)return true;}
   return false;
@@ -1916,7 +1920,8 @@ addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
 let lastTap={t:0,x:0,y:0};
 cvs.addEventListener('pointerdown',e=>{
-  pendAct=null;
+  pendAct=null;pendSit=null;
+  if(mySeat!==null&&scene==='garden'){const lx0=e.clientX/S-OX,ly0=e.clientY/S+camR-OY;const pp0=peerAt(lx0,ly0);if(!pp0){if(onSwing(lx0,ly0)){pump(.9);return;}standUp();}}
   {const now=performance.now(),dbl=now-lastTap.t<350&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<40;lastTap={t:dbl?0:now,x:e.clientX,y:e.clientY};av.run=dbl;}
   if(document.activeElement&&document.activeElement.tagName==='INPUT')document.activeElement.blur();
   hideHint();
@@ -1929,6 +1934,7 @@ cvs.addEventListener('pointerdown',e=>{
   for(const p of projects()){const [px,py]=posOf(p),s=scaleOf(p),top=plantTop(p);if(Math.abs(lx-px)<12*Math.min(s,1.6)+2&&ly>py-top-14&&ly<py+12){hit=p;break;}}
   if(!hit)for(const b of skills()){const [bx,by]=posOf(b);if(Math.abs(lx-bx)<BED_W/2+2&&ly>by-BED_H/2-12&&ly<by+BED_H/2+6){hit=b;break;}}
   {const pp=peerAt(lx,ly);if(pp&&!moving){av.run=false;openActMenu(pp,e.clientX,e.clientY);return;}}
+  if(!moving&&mySeat===null&&onSwing(lx,ly)){av.run=false;goSwing();return;}
   if(hit){av.target=besideTarget(hit);return;}
   if(Math.abs(lx-FOUNT.x)<28&&ly>FOUNT.y-28&&ly<FOUNT.y+12){av.target={x:FOUNT.x,y:FOUNT.y+14};return;}
   av.target={x:clamp(lx,-OX+6,CW+OX-6),y:clamp(ly,145,WORLD_H-6)};
@@ -2106,17 +2112,18 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){if(Lofi.on
 /* ================= actions: hug, kiss, push ================= */
 let myAct=null,actN=0,myHeartUntil=0,myWetUntil=0,knock=null;const actSeen={};
 const actMenu=document.createElement('div');actMenu.id='actMenu';document.body.appendChild(actMenu);
-[['hug','🤗 Hug'],['kiss','💋 Kiss'],['push','💨 Push'],['balloon','💦 Balloon']].forEach(([k,l])=>{const b=document.createElement('button');b.className='btn';b.type='button';b.textContent=l;b.dataset.k=k;
+[['swing','🎐 Anschubsen'],['hug','🤗 Hug'],['kiss','💋 Kiss'],['push','💨 Push'],['balloon','💦 Balloon']].forEach(([k,l])=>{const b=document.createElement('button');b.className='btn';b.type='button';b.textContent=l;b.dataset.k=k;
   b.addEventListener('click',e=>{e.stopPropagation();const id=actMenu.dataset.p;closeActMenu();goAct(k,id);});actMenu.appendChild(b);});
 function closeActMenu(){actMenu.classList.remove('show');}
-function openActMenu(p,cx,cy){actMenu.dataset.p=p.id;actMenu.classList.add('show');
+function openActMenu(p,cx,cy){actMenu.dataset.p=p.id;actMenu.querySelectorAll('button').forEach(b=>{const k=b.dataset.k;b.hidden=p.sg?!(k==='swing'||k==='balloon'||k==='kiss'):k==='swing';});actMenu.classList.add('show');
   const w=actMenu.offsetWidth||220,h=actMenu.offsetHeight||40;actMenu.style.left=clamp(cx-w/2,6,innerWidth-w-6)+'px';actMenu.style.top=clamp(cy-h-14,6,innerHeight-h-6)+'px';}
-function peerAt(lx,ly){const ps=livePeers().filter(p=>p.scene==='garden'&&!p.swim);let best=null,bd=1e9;ps.forEach(p=>{const d=Math.hypot(lx-p.x,(ly-(p.y-11))*.6);if(Math.abs(lx-p.x)<10&&ly>p.y-28&&ly<p.y+4&&d<bd){bd=d;best=p;}});return best;}
+function peerAt(lx,ly){const ps=livePeers().filter(p=>p.scene==='garden'&&(!p.swim||p.sg));let best=null,bd=1e9;ps.forEach(p=>{const d=Math.hypot(lx-p.x,(ly-(p.y-11))*.6);if(Math.abs(lx-p.x)<10&&ly>p.y-28&&ly<p.y+4&&d<bd){bd=d;best=p;}});return best;}
 function peerById(id){return livePeers().find(p=>p.id===id);}
 let pendAct=null;
 function fireAct(k,id){const q=peerById(id);if(!q)return;actN++;const nn=actN;myAct={k,to:id,n:nn,at:Date.now()};setTimeout(()=>{if(myAct&&myAct.n===nn)myAct=null;},2500);
   av.back=k==='balloon'?q.y<av.y-4:false;actFx(k,av.x,av.y,q.x,q.y,true,false,id);}
 function goAct(k,id){const p=peerById(id);if(!p)return;if(av.swim||av.jump||knock)return;
+  if(mySeat!==null&&k!=='balloon')standUp();
   if(k==='balloon'){fireAct(k,id);return;}
   pendAct={k,id,t0:performance.now(),aim:0};}
 function tickPendAct(){
@@ -2129,6 +2136,7 @@ function tickPendAct(){
 function heartBurst(x,y,n){for(let i=0;i<n;i++)spawn({kind:'heart',x:x+(Math.random()*14-7),y:y-20-Math.random()*6,vx:(Math.random()-.5)*14,vy:-14-Math.random()*10,life:1.1+Math.random()*.6});}
 function actFx(k,ax,ay,bx,by,fromMe,toMe,toId){
   const now=performance.now();
+  if(k==='swing'){for(let i=0;i<5;i++)spawn({kind:'spark',x:bx+(Math.random()*12-6),y:by-14-Math.random()*8,vy:-10,life:.5});if(toMe&&mySeat!==null){const d=Math.sign(bx-ax)||1;swV+=d*1.7;}return;}
   if(k==='balloon'){const d=Math.min(.9,.35+Math.hypot(bx-ax,by-ay)/260);spawn({kind:'balloon',sx:ax,sy:ay-18,tx:bx,ty:by-14,x:ax,y:ay-18,life:d,onHit:()=>{splash(bx,by-14,22);
     if(toMe)myWetUntil=performance.now()+4000;else if(toId&&ghosts[toId])ghosts[toId].wetUntil=performance.now()+4000;}});return;}
   if(k==='hug'){heartBurst((ax+bx)/2,(ay+by)/2,9);if(fromMe||toMe)myHeartUntil=now+1800;}
@@ -2150,7 +2158,7 @@ function processActs(){
   const mine=myPeer(),now=Date.now();
   for(const p of ps){if(p.isMe)continue;const a=(p.presence||{}).act;if(!a||typeof a.n!=='number'||actSeen[p.peer]===a.n)continue;
     const first=actSeen[p.peer]===undefined;actSeen[p.peer]=a.n;if(first&&!(a.at&&Math.abs(now-a.at)<8000))continue;
-    if(!['hug','kiss','push','balloon'].includes(a.k))continue;
+    if(!['hug','kiss','push','balloon','swing'].includes(a.k))continue;
     const from=ghosts[p.peer];if(!from)continue;
     let bx,by,toMe=a.to===mine;
     const love=a.k==='hug'||a.k==='kiss';
@@ -2177,6 +2185,57 @@ function liveDiag(){let all=0,mine=null;try{const ps=room?room.peers():[];all=ps
 liveEl.addEventListener('click',()=>{const i=liveInfo();
   toast((i.on?(i.n>1?'Live: '+i.n+' people are in this garden right now.':'Live: you are connected. Nobody else is in this garden right now.')
     :'Not live right now: reconnecting. Check your internet if it stays grey.')+liveDiag(),12000);});
+
+/* ================= double swing ================= */
+const SW={x:196,y:168,top:136,L:21,seats:[-13,13]};
+let mySeat=null,swA=0,swV=0,pendSit=null;
+const swingBar=document.getElementById('swingBar');
+function seatPivot(i){return [SW.x+SW.seats[i],SW.top+1];}
+function seatPos(i,a){const [px,py]=seatPivot(i);return [px+Math.sin(a)*SW.L,py+Math.cos(a)*SW.L];}
+function seatTaken(i){if(mySeat===i)return true;return livePeers().some(p=>p.sg&&p.sg.s===i&&p.scene==='garden');}
+function onSwing(lx,ly){return lx>SW.x-32&&lx<SW.x+32&&ly>SW.top-4&&ly<SW.y+6;}
+function goSwing(){
+  let best=null,bd=1e9;[0,1].forEach(i=>{if(seatTaken(i))return;const [sx]=seatPos(i,0),d=Math.abs(av.x-sx);if(d<bd){bd=d;best=i;}});
+  if(best===null){toast('Both seats are taken. Tap a friend on the swing to give them a push.',4000);return;}
+  const [sx]=seatPos(best,0);pendSit=best;av.target={x:sx,y:SW.y+4,onArrive:()=>{pendSit=null;sitDown(best);}};
+}
+function sitDown(i){if(seatTaken(i)&&mySeat!==i)return;mySeat=i;swA=0;swV=0;av.swim=false;av.back=false;av.target=null;swingBar.hidden=false;lastPres='';}
+function standUp(){if(mySeat===null)return;const [sx]=seatPos(mySeat,0);mySeat=null;swingBar.hidden=true;av.x=sx;av.y=SW.y+5;lastPres='';}
+function pump(k){if(mySeat===null)return;const dir=Math.abs(swV)>.15?Math.sign(swV):(swA>0?-1:1);swV+=dir*k;}
+function jumpOff(){
+  if(mySeat===null)return;const i=mySeat,[sx,sy]=seatPos(i,swA),dir=Math.abs(swV)>.1?Math.sign(swV):(Math.random()<.5?-1:1),pw=Math.min(1,Math.abs(swV)/2.4);
+  mySeat=null;swingBar.hidden=true;lastPres='';
+  let dist=18+pw*44,tx,ty;for(;dist>6;dist-=5){tx=clamp(sx+dir*dist,-OX+8,CW+OX-8);ty=SW.y+10+pw*14;if(isWater(tx,ty)||!blocked(tx,ty))break;}
+  av.x=sx;av.y=sy+9;av.target=null;
+  if(dist>6)knock={fx:av.x,fy:av.y,tx,ty,t:0,d:.45+pw*.35,spin:dir};else{av.y=SW.y+5;}
+}
+function updateSwing(dt){
+  if(mySeat===null&&pendSit!==null){const [sx]=seatPos(pendSit,0);if(Math.hypot(av.x-sx,av.y-(SW.y+4))<9){const i=pendSit;pendSit=null;sitDown(i);}else if(!av.target)pendSit=null;}
+  if(mySeat===null)return false;
+  swV+=(-9.8*Math.sin(swA)-.12*swV)*dt;swA+=swV*dt;
+  if(swA>1.05){swA=1.05;swV=-Math.abs(swV)*.5;}if(swA<-1.05){swA=-1.05;swV=Math.abs(swV)*.5;}
+  const [sx,sy]=seatPos(mySeat,swA);av.x=sx;av.y=sy+9;av.moving=false;
+  return true;
+}
+function drawRope(x0,y0,x1,y1,c){const n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0))|0;for(let k=0;k<=n;k++){const f=n?k/n:0;R(Math.round(x0+(x1-x0)*f),Math.round(y0+(y1-y0)*f),1,1,c);}}
+function drawSwing(t){
+  const x=SW.x,y=SW.y,top=SW.top,W='#7a4a2c',Wl='#a8714a',Wd='#5a3420';
+  ell(x,y+1,34,3,'rgba(40,80,40,.25)');
+  [-1,1].forEach(s=>{drawRope(x+s*27,top,x+s*33,y,W);drawRope(x+s*27,top,x+s*21,y,W);drawRope(x+s*28,top+1,x+s*34,y,Wd);});
+  R(x-30,top-2,60,3,W);R(x-30,top-2,60,1,Wl);R(x-30,top,60,1,Wd);
+  const occ={};livePeers().forEach(p=>{if(p.sg&&p.scene==='garden'&&occ[p.sg.s]===undefined){const gh=ghosts[p.id];if(gh){gh.ga=gh.ga===undefined?p.sg.a:gh.ga+(p.sg.a-gh.ga)*.3;occ[p.sg.s]={p,a:gh.ga};}}});
+  [0,1].forEach(i=>{
+    const mine=mySeat===i,o=occ[i],a=mine?swA:o?o.a:Math.sin(t*1.3+i*2)*.04,[px,py]=seatPivot(i),[sx,sy]=seatPos(i,a);
+    drawRope(px-3,py,Math.round(sx-3),Math.round(sy),'#8a8278');drawRope(px+3,py,Math.round(sx+3),Math.round(sy),'#8a8278');
+    if(mine)drawAvatar(g,sx,sy+9,me().look,{frame:0,back:false,blink:(t%4)<.12,t,shadow:false,heart:myHeartUntil>performance.now()?'#e8506c':null});
+    else if(o)drawAvatar(g,sx,sy+9,o.p.look,{frame:0,back:false,blink:((t+o.p.x)%4)<.12,t,shadow:false,heart:(ghosts[o.p.id]&&ghosts[o.p.id].heartUntil>performance.now())?'#e8506c':null});
+    R(Math.round(sx)-5,Math.round(sy),10,2,Wl);R(Math.round(sx)-5,Math.round(sy)+2,10,1,Wd);
+  });
+}
+document.getElementById('swPump').addEventListener('click',e=>{e.stopPropagation();pump(.9);});
+document.getElementById('swJump').addEventListener('click',e=>{e.stopPropagation();jumpOff();});
+document.getElementById('swOff').addEventListener('click',e=>{e.stopPropagation();standUp();});
+addEventListener('keydown',e=>{if(mySeat===null||document.activeElement&&document.activeElement.tagName==='INPUT')return;if(e.key===' '){e.preventDefault();pump(.9);}else if(e.key==='j'||e.key==='J')jumpOff();});
 
 /* ================= hint ================= */
 function hideHint(){}
@@ -2211,6 +2270,7 @@ function isWater(x,y){if(!av.swim&&x>BOARD.x0-2&&Math.abs(y-BOARD.y)<4)return fa
 function startJump(tx,ty,high){av.jump={t:0,fx:av.x,fy:av.y,tx:clamp(tx,POOL.x0+8,POOL.x1-8),ty:clamp(ty,POOL.y0+9,POOL.y1-5),h:high?22:10,d:high?.75:.45};av.target=null;av.run=false;}
 function splash(x,y,n){for(let i=0;i<n;i++)spawn({kind:'splash',x:x+(Math.random()*10-5),y:y-2,vx:(Math.random()-.5)*50,vy:-30-Math.random()*30,floor:y,life:.8});}
 function update(dt,t){
+  if(scene==='garden'&&updateSwing(dt)){updateCat(dt);return updateRest(dt,t);}
   if(knock&&scene==='garden'){updateKnock(dt);updateCat(dt);return updateRest(dt,t);}
   if(av.jump&&scene==='garden'){const J=av.jump;J.t+=dt/J.d;const k=Math.min(1,J.t);av.x=J.fx+(J.tx-J.fx)*k;av.y=J.fy+(J.ty-J.fy)*k;av.moving=false;
     if(k>=1){av.jump=null;av.swim=true;splash(av.x,av.y-6,J.h>15?22:12);}
@@ -2293,14 +2353,15 @@ function render(t){
   const list=projects().map(p=>({y:posOf(p)[1],d:()=>drawPlant(p,t)})).concat(skills().map(b=>({y:posOf(b)[1]+BED_H/2-2,d:()=>drawBed(b,t)})));
   drawPool(t);
   list.push({y:FOUNT.y,d:()=>drawFountain(t)});
+  list.push({y:SW.y,d:()=>drawSwing(t)});
   list.push({y:HB,d:()=>drawCottage(t)});
   const myLook=me().look, blink=(t%4)<.12;
   if(av.jump){const J=av.jump,k=Math.min(1,J.t);list.push({y:9999,d:()=>drawAvatar(g,av.x,av.y-Math.sin(Math.PI*k)*J.h,myLook,{frame:1,back:false,blink:false,t,shadow:false})});}
   else if(av.swim) list.push({y:av.y,d:()=>drawSwimmer(av.x,av.y,myLook,{t,moving:av.moving,back:av.back,blink})});
-  else list.push({y:av.y,d:()=>{const rn=av.run&&av.moving,fr=av.moving?(rn?[1,2][Math.floor(t*10)%2]:[1,0,2,0][Math.floor(t*8)%4]):0;
+  else if(mySeat===null) list.push({y:av.y,d:()=>{const rn=av.run&&av.moving,fr=av.moving?(rn?[1,2][Math.floor(t*10)%2]:[1,0,2,0][Math.floor(t*8)%4]):0;
     drawAvatar(g,av.x,av.y-(rn&&fr===1?1:0)-(av.kh||0),myLook,{run:rn||!!knock,frame:knock?1:fr,back:av.back,blink:blink||!!knock,can:!rn&&!knock&&!visiting&&(av.water>0||!!active),pour:av.water>0&&av.water<1.15,heart:myHeartUntil>performance.now()?'#e8506c':(visiting?null:moodColor(gardenAvg(home))),t,shadow:!knock});}});
   if(hasCat()) list.push({y:cat.y,d:()=>drawCat(t)});
-  livePeers().filter(p=>p.scene==='garden').forEach(p=>list.push({y:p.y,d:()=>p.swim?drawSwimmer(p.x,p.y,p.look,{t,moving:p.moving,back:p.back}):drawAvatar(g,p.x,p.y,p.look,{run:p.run&&p.moving,frame:p.moving?(p.run?[1,2][Math.floor(t*10)%2]:[1,0,2,0][Math.floor(t*8+p.x)%4]):0,back:p.back,blink:((t+p.x)%4)<.12,can:p.water,pour:p.water,heart:(ghosts[p.id]&&ghosts[p.id].heartUntil>performance.now())?'#e8506c':null,t})}));
+  livePeers().filter(p=>p.scene==='garden'&&!p.sg).forEach(p=>list.push({y:p.y,d:()=>p.swim?drawSwimmer(p.x,p.y,p.look,{t,moving:p.moving,back:p.back}):drawAvatar(g,p.x,p.y,p.look,{run:p.run&&p.moving,frame:p.moving?(p.run?[1,2][Math.floor(t*10)%2]:[1,0,2,0][Math.floor(t*8+p.x)%4]):0,back:p.back,blink:((t+p.x)%4)<.12,can:p.water,pour:p.water,heart:(ghosts[p.id]&&ghosts[p.id].heartUntil>performance.now())?'#e8506c':null,t})}));
   {const nowp=performance.now(),drip=(x,y)=>{if(Math.random()<.6)spawn({kind:'drop',x:x+Math.round(Math.random()*10-5),y:y-20+Math.random()*10,vy:10,floor:y,life:1});};
    if(myWetUntil>nowp&&!av.swim)drip(av.x,av.y);
    livePeers().forEach(p=>{const gh=ghosts[p.id];if(gh&&gh.wetUntil>nowp&&p.scene==='garden'&&!p.swim)drip(p.x,p.y);});}
@@ -2417,7 +2478,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794778801"></script>
+<script src="config.js?v=1794780437"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
