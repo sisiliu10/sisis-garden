@@ -1897,7 +1897,7 @@ function blocked(x,y){
   if(y>349&&y<362&&(x<105||x>135)) return true;
   for(const b of skills()){const [bx,by]=posOf(b);if(x>bx-BED_W/2-3&&x<bx+BED_W/2+3&&y>by-BED_H/2+3&&y<by+BED_H/2+3)return true;}
 
-  if(scene==='garden'&&y>SW.y-3&&y<SW.y+2&&(Math.abs(x-(SW.x-27))<7||Math.abs(x-(SW.x+27))<7)) return true;
+  if(scene==='garden'&&[[-36,-3],[-18,-13],[18,13],[36,3]].some(([a,b])=>Math.hypot(x-(SW.x+a),y-(SW.y+b))<3.5)) return true;
   if(visiting&&Math.abs(x-host.x)<14&&Math.abs(y-host.y)<5) return true;
   for(const p of projects()){const s=Math.min(scaleOf(p),1.6),[px,py]=posOf(p),rx=(p.kind==='tree'?7:6)*s;const ex=(x-px)/rx,ey=(y-py)/(4*s);if(ex*ex+ey*ey<1)return true;}
   return false;
@@ -2128,8 +2128,8 @@ function tickPendAct(){
   const P=pendAct;if(!P)return;const q=peerById(P.id),now=performance.now();
   if(!q||scene!=='garden'||av.swim||av.jump||knock){pendAct=null;return;}
   const d=Math.hypot(av.x-q.x,av.y-q.y);
-  if((P.k==='swing'&&q.sg?Math.hypot(av.x-q.x,av.y-(SW.y-6))<6:d<15)||now-P.t0>3500){pendAct=null;av.target=null;av.run=false;fireAct(P.k,P.id);return;}
-  if(now-P.aim>250){P.aim=now;av.run=d>50;if(P.k==='swing'&&q.sg){av.target={x:q.x,y:SW.y-6};}else{const side=av.x<=q.x?-1:1;av.target={x:q.x+side*9,y:q.y};}}
+  if((P.k==='swing'&&q.sg?(()=>{const [gx,gy]=seatGround(q.sg.s);return Math.hypot(av.x-(gx+11),av.y-(gy-5))<6;})():d<15)||now-P.t0>3500){pendAct=null;av.target=null;av.run=false;fireAct(P.k,P.id);return;}
+  if(now-P.aim>250){P.aim=now;av.run=d>50;if(P.k==='swing'&&q.sg){const [gx,gy]=seatGround(q.sg.s);av.target={x:gx+11,y:gy-5};}else{const side=av.x<=q.x?-1:1;av.target={x:q.x+side*9,y:q.y};}}
 }
 function heartBurst(x,y,n){for(let i=0;i<n;i++)spawn({kind:'heart',x:x+(Math.random()*14-7),y:y-20-Math.random()*6,vx:(Math.random()-.5)*14,vy:-14-Math.random()*10,life:1.1+Math.random()*.6});}
 function actFx(k,ax,ay,bx,by,fromMe,toMe,toId){
@@ -2184,32 +2184,33 @@ liveEl.addEventListener('click',()=>{const i=liveInfo();
   toast((i.on?(i.n>1?'Live: '+i.n+' people are in this garden right now.':'Live: you are connected. Nobody else is in this garden right now.')
     :'Not live right now: reconnecting. Check your internet if it stays grey.')+liveDiag(),12000);});
 
-/* ================= double swing ================= */
-const SW={x:196,y:168,top:136,L:21,seats:[-13,13]};
+/* ================= double swing (seen at an angle) ================= */
+const SW={x:194,y:170,top:138,L:21};
+const SWU=[-.8,.35]; // swing direction on screen: forward = towards front-left
 let mySeat=null,swA=0,swV=0,pendSit=null;
-function seatPivot(i){return [SW.x+SW.seats[i],SW.top+1];}
-// front-to-back swing: forward (a>0) comes towards the viewer (lower on screen), backward goes up and away
-function seatPos(i,a){const [px,py]=seatPivot(i);return [px,py+Math.cos(a)*SW.L*.6+Math.sin(a)*24];}
+function seatPivot(i){return [SW.x+(i?13:-13),SW.top+(i?4:-4)];}
+function seatGround(i){return [SW.x+(i?13:-13),SW.y+(i?5:-3)];}
+function seatPos(i,a){const [px,py]=seatPivot(i),s=Math.sin(a)*SW.L;return [px+s*SWU[0],py+Math.cos(a)*SW.L+s*SWU[1]];}
 function seatTaken(i){if(mySeat===i)return true;return livePeers().some(p=>p.sg&&p.sg.s===i&&p.scene==='garden');}
-function onSwing(lx,ly){return lx>SW.x-32&&lx<SW.x+32&&ly>SW.top-4&&ly<SW.y+6;}
+function onSwing(lx,ly){return lx>SW.x-36&&lx<SW.x+36&&ly>SW.top-12&&ly<SW.y+13;}
 function goSwing(){
-  let best=null,bd=1e9;[0,1].forEach(i=>{if(seatTaken(i))return;const [sx]=seatPos(i,0),d=Math.abs(av.x-sx);if(d<bd){bd=d;best=i;}});
+  let best=null,bd=1e9;[0,1].forEach(i=>{if(seatTaken(i))return;const [gx,gy]=seatGround(i),d=Math.hypot(av.x-gx,av.y-gy);if(d<bd){bd=d;best=i;}});
   if(best===null){toast('Both seats are taken. Tap a friend on the swing to give them a push.',4000);return;}
-  const [sx]=seatPos(best,0);pendSit=best;av.target={x:sx,y:SW.y+4,onArrive:()=>{pendSit=null;sitDown(best);}};
+  const [gx,gy]=seatGround(best);pendSit=best;av.target={x:gx-6,y:gy+4,onArrive:()=>{pendSit=null;sitDown(best);}};
 }
 function sitDown(i){if(seatTaken(i)&&mySeat!==i)return;mySeat=i;swA=0;swV=0;av.swim=false;av.back=false;av.target=null;lastPres='';}
-function standUp(){if(mySeat===null)return;const [sx]=seatPos(mySeat,0);mySeat=null;av.x=sx;av.y=SW.y+5;lastPres='';}
+function standUp(){if(mySeat===null)return;const [gx,gy]=seatGround(mySeat);mySeat=null;av.x=gx-6;av.y=gy+4;lastPres='';}
 function pump(k){if(mySeat===null)return;const dir=Math.abs(swV)>.15?Math.sign(swV):(swA>0?-1:1);swV+=dir*k;}
 function jumpOff(){
-  if(mySeat===null)return;const i=mySeat,[sx,sy]=seatPos(i,swA),fwd=swV>=0,pw=Math.min(1,Math.abs(swV)/2.4);
+  if(mySeat===null)return;const i=mySeat,[sx,sy]=seatPos(i,swA),[gx,gy]=seatGround(i),fwd=swV>=0,pw=Math.min(1,Math.abs(swV)/2.4);
   mySeat=null;lastPres='';
   av.x=sx;av.y=sy+9;av.target=null;av.back=false;
-  if(!fwd){av.y=SW.y-4;return;}
-  let dist=16+pw*58,tx,ty;for(;dist>6;dist-=5){tx=clamp(sx+(Math.random()*6-3),-OX+8,CW+OX-8);ty=clamp(SW.y+dist,146,WORLD_H-6);if(isWater(tx,ty)||!blocked(tx,ty))break;}
-  if(dist>6)knock={fx:av.x,fy:av.y,tx,ty,t:0,d:.45+pw*.35,spin:1};else{av.y=SW.y+5;}
+  if(!fwd){av.x=gx+9;av.y=gy-4;return;}
+  let dist=18+pw*56,tx,ty;for(;dist>6;dist-=5){tx=clamp(gx+SWU[0]*dist,-OX+8,CW+OX-8);ty=clamp(gy+SWU[1]*dist+4,146,WORLD_H-6);if(isWater(tx,ty)||!blocked(tx,ty))break;}
+  if(dist>6)knock={fx:av.x,fy:av.y,tx,ty,t:0,d:.45+pw*.35,spin:-1};else{av.x=gx-6;av.y=gy+4;}
 }
 function updateSwing(dt){
-  if(mySeat===null&&pendSit!==null){const [sx]=seatPos(pendSit,0);if(Math.hypot(av.x-sx,av.y-(SW.y+4))<9){const i=pendSit;pendSit=null;sitDown(i);}else if(!av.target)pendSit=null;}
+  if(mySeat===null&&pendSit!==null){const [gx,gy]=seatGround(pendSit);if(Math.hypot(av.x-(gx-6),av.y-(gy+4))<9){const i=pendSit;pendSit=null;sitDown(i);}else if(!av.target)pendSit=null;}
   if(mySeat===null)return false;
   swV+=(-9.8*Math.sin(swA)-.12*swV)*dt;swA+=swV*dt;
   if(swA>1.05){swA=1.05;swV=-Math.abs(swV)*.5;}if(swA<-1.05){swA=-1.05;swV=Math.abs(swV)*.5;}
@@ -2219,18 +2220,22 @@ function updateSwing(dt){
 function drawRope(x0,y0,x1,y1,c){const n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0))|0;for(let k=0;k<=n;k++){const f=n?k/n:0;R(Math.round(x0+(x1-x0)*f),Math.round(y0+(y1-y0)*f),1,1,c);}}
 function drawSwing(t){
   const x=SW.x,y=SW.y,top=SW.top,W='#7a4a2c',Wl='#a8714a',Wd='#5a3420';
-  ell(x,y+1,34,3,'rgba(40,80,40,.25)');
-  [-1,1].forEach(s=>{drawRope(x+s*27,top,x+s*33,y,W);drawRope(x+s*27,top,x+s*21,y,W);drawRope(x+s*28,top+1,x+s*34,y,Wd);});
-  R(x-30,top-2,60,3,W);R(x-30,top-2,60,1,Wl);R(x-30,top,60,1,Wd);
+  const ends=[[x-27,-8],[x+27,8]];
+  // ground shadow of the frame
+  g.globalAlpha=.22;drawRope(x-36,y-3,x+18,y+13,'#1e3a1e');drawRope(x-18,y-13,x+36,y+3,'#1e3a1e');g.globalAlpha=1;
+  // back legs, beam, front legs
+  ends.forEach(([ex,dy])=>{drawRope(ex,top+dy,ex+9,y+dy-5,Wd);drawRope(ex+1,top+dy,ex+10,y+dy-5,Wd);});
+  for(let k=0;k<3;k++)drawRope(x-28,top-9+k,x+28,top+7+k,k===0?Wl:k===1?W:Wd);
   const occ={};livePeers().forEach(p=>{if(p.sg&&p.scene==='garden'&&occ[p.sg.s]===undefined){const gh=ghosts[p.id];if(gh){gh.ga=gh.ga===undefined?p.sg.a:gh.ga+(p.sg.a-gh.ga)*.3;occ[p.sg.s]={p,a:gh.ga};}}});
   [0,1].forEach(i=>{
-    const mine=mySeat===i,o=occ[i],a=mine?swA:o?o.a:Math.sin(t*1.3+i*2)*.04,[px,py]=seatPivot(i),[sx,sy]=seatPos(i,a);
-    ell(Math.round(sx),SW.y+1+Math.round(Math.sin(a)*12),6,1,'rgba(40,80,40,.3)');
-    drawRope(px-3,py,Math.round(sx-3),Math.round(sy),'#8a8278');drawRope(px+3,py,Math.round(sx+3),Math.round(sy),'#8a8278');
+    const mine=mySeat===i,o=occ[i],a=mine?swA:o?o.a:Math.sin(t*1.3+i*2)*.04,[px,py]=seatPivot(i),[gx,gy]=seatGround(i),[sx,sy]=seatPos(i,a),rx=Math.round(sx),ry=Math.round(sy),s=Math.sin(a)*SW.L;
+    ell(Math.round(gx+s*SWU[0]),Math.round(gy+s*SWU[1])+1,6,2,'rgba(30,58,30,.3)');
+    drawRope(px-3,py-1,rx-4,ry,'#8a8278');drawRope(px+3,py+1,rx+4,ry+1,'#8a8278');
     if(mine)drawAvatar(g,sx,sy+9,me().look,{frame:0,back:false,blink:(t%4)<.12,t,shadow:false,heart:myHeartUntil>performance.now()?'#e8506c':null});
     else if(o)drawAvatar(g,sx,sy+9,o.p.look,{frame:0,back:false,blink:((t+o.p.x)%4)<.12,t,shadow:false,heart:(ghosts[o.p.id]&&ghosts[o.p.id].heartUntil>performance.now())?'#e8506c':null});
-    R(Math.round(sx)-5,Math.round(sy),10,2,Wl);R(Math.round(sx)-5,Math.round(sy)+2,10,1,Wd);
+    R(rx-5,ry,10,2,Wl);R(rx-5,ry+2,10,1,Wd);
   });
+  ends.forEach(([ex,dy])=>{drawRope(ex,top+dy,ex-9,y+dy+5,W);drawRope(ex+1,top+dy,ex-8,y+dy+5,Wl);});
 }
 addEventListener('keydown',e=>{if(mySeat===null||document.activeElement&&document.activeElement.tagName==='INPUT')return;const k=e.key.toLowerCase();
   if(k===' '){e.preventDefault();pump(.9);}else if(['arrowleft','arrowright','arrowup','arrowdown','a','d','w','s'].includes(k)){e.preventDefault();leaveSwing(null);}},true);
@@ -2482,7 +2487,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794780737"></script>
+<script src="config.js?v=1794780985"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
