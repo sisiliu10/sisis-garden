@@ -1657,6 +1657,7 @@ function livePeers(){
     }else{const dt=Math.min(250,now-(gh.lt||now));gh.lt=now;const f=1-Math.exp(-dt/85);if(Math.hypot(tx-gh.x,ty-gh.y)>90){gh.x=tx;gh.y=ty;}else{gh.x+=(tx-gh.x)*f;gh.y+=(ty-gh.y)*f;}}
     gh.seen=now;
     {const swn=!!q.sw&&q.s!=='h';if(gh.swp===false&&swn&&scene==='garden')setTimeout(()=>Sfx.splash(false,.45),380);gh.swp=swn;}
+    {const aln=q.al?1:0;if(gh.alp===0&&aln===1&&scene==='garden'&&q.s!=='h')Sfx.sit(.5);gh.alp=aln;}
     {const sln=q.sl===1||q.sl===2?q.sl:0;if(scene==='garden'&&q.s!=='h'){if(gh.slp===1&&sln===2)Sfx.whee(.5);if(gh.slp===2&&sln===0)Sfx.yay(.55);}gh.slp=sln;}
     if(q.say&&typeof q.say.t==='string'&&q.say.n!==gh.sayN){if(gh.sayN!==undefined||now-roomT0>4000)logChat({t:Date.now(),n:str(q.n,14)||'Friend',text:q.say.t.slice(0,80)});gh.sayN=q.say.n;gh.sayT=q.say.t.slice(0,80);gh.sayUntil=now+6000+q.say.t.length*60;}
     const sgq=q.sg&&(q.sg.s===0||q.sg.s===1)?{s:q.sg.s,a:clamp(num(q.sg.a,0),-1.2,1.2)}:null;
@@ -2540,7 +2541,7 @@ function drawRider(x,y,dir,look,moving,t,heart){
   R(Math.round(x-dir)-2,Math.round(y)-13-bob,4,2,'#e8506c');
 }
 function goRide(){if(av.swim||av.jump||knock||mySeat!==null)return;pendRide=true;av.run=false;av.target={x:alp.x,y:alp.y+3};}
-function mount(){pendRide=false;riding=true;av.target=null;av.x=alp.x;av.y=alp.y;av.dir=alp.dir;lastPres='';for(let i=0;i<5;i++)spawn({kind:'spark',x:av.x+(Math.random()*14-7),y:av.y-22-Math.random()*8,vy:-10,life:.5});}
+function mount(){pendRide=false;riding=true;Sfx.sit();av.target=null;av.x=alp.x;av.y=alp.y;av.dir=alp.dir;lastPres='';for(let i=0;i<5;i++)spawn({kind:'spark',x:av.x+(Math.random()*14-7),y:av.y-22-Math.random()*8,vy:-10,life:.5});}
 function dismount(){if(!riding)return;riding=false;alp.x=alp.hx=alp.tx=av.x;alp.y=alp.hy=alp.ty=av.y;alp.dir=av.dir||1;alp.next=performance.now()+4000;
   const nx=av.x-(av.dir||1)*11;if(!blocked(nx,av.y+2)&&!isWater(nx,av.y+2)){av.x=nx;av.y+=2;}lastPres='';}
 function updateAlpaca(dt){
@@ -2740,7 +2741,20 @@ const Sfx=(()=>{
     [[1047,0],[1319,.08],[1568,.16],[2093,.26]].forEach(([f,dt],i)=>{const t=t0+dt,dur=i===3?.9:.45;
       [[1,'sine',1],[2.01,'sine',.25],[1,'triangle',.3]].forEach(([mul,ty,m])=>{const o=c.createOscillator(),g=c.createGain();o.type=ty;o.frequency.value=f*mul;
         g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v*m,t+.006);g.gain.exponentialRampToValueAtTime(.0003,t+dur);o.connect(g);g.connect(out);o.start(t);o.stop(t+dur+.05);});});}
-  return {splash,whee,yay,pour,grow};
+  // sitting down on the alpaca: a soft cushioned "fwump" plus the little hum alpacas make
+  function sit(vol){const c=ready();if(!c)return;const t=c.currentTime+.01,v=(vol===undefined?1:vol);
+    const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(62,t+.16);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.28*v,t+.012);g.gain.exponentialRampToValueAtTime(.0005,t+.22);o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+.25);
+    const n=c.createBufferSource(),nb=c.createBuffer(1,Math.floor(c.sampleRate*.2),c.sampleRate),d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;n.buffer=nb;
+    const nf=c.createBiquadFilter();nf.type='lowpass';nf.frequency.value=900;const ng=c.createGain();ng.gain.setValueAtTime(.12*v,t);ng.gain.exponentialRampToValueAtTime(.0005,t+.16);n.connect(nf);nf.connect(ng);ng.connect(c.destination);n.start(t);
+    const h=c.createOscillator(),h2=c.createOscillator(),hg=c.createGain(),hf=c.createBiquadFilter(),lfo=c.createOscillator(),lg=c.createGain(),t2=t+.16;
+    h.type='triangle';h2.type='sine';h.frequency.setValueAtTime(330,t2);h.frequency.linearRampToValueAtTime(410,t2+.16);h.frequency.linearRampToValueAtTime(345,t2+.42);
+    h2.frequency.setValueAtTime(660,t2);h2.frequency.linearRampToValueAtTime(820,t2+.16);h2.frequency.linearRampToValueAtTime(690,t2+.42);
+    lfo.frequency.value=9;lg.gain.value=7;lfo.connect(lg);lg.connect(h.frequency);hf.type='lowpass';hf.frequency.value=1400;
+    hg.gain.setValueAtTime(0,t2);hg.gain.linearRampToValueAtTime(.075*v,t2+.06);hg.gain.setValueAtTime(.075*v,t2+.3);hg.gain.exponentialRampToValueAtTime(.0005,t2+.5);
+    const h2g=c.createGain();h2g.gain.value=.25;h.connect(hf);h2.connect(h2g);h2g.connect(hf);hf.connect(hg);hg.connect(c.destination);
+    [h,h2,lfo].forEach(x=>{x.start(t2);x.stop(t2+.55);});}
+  return {splash,whee,yay,pour,grow,sit};
 })();
 
 /* ================= compost heap: projects you let go ================= */
@@ -3132,7 +3146,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794859441"></script>
+<script src="config.js?v=1794862178"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3157,7 +3171,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 21:04';
+  const BUILD = '16.11. 21:49';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3352,7 +3366,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 21:04'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 21:49'; help.appendChild(ver);
   }
 
   function openImport() {
