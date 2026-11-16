@@ -61,13 +61,15 @@
   .toast{position:fixed;left:50%;top:58px;transform:translateX(-50%);z-index:8;font-size:14px;line-height:1.35;background:var(--ink);color:#fff;padding:8px 12px;width:max-content;max-width:calc(100vw - 24px);text-align:center;box-shadow:3px 3px 0 rgba(42,36,48,.25)}
   @media (max-width:560px){.bub{max-width:130px;font-size:13px}}
   .bub{position:fixed;transform:translate(-50%,-100%);max-width:180px;background:#fff;color:var(--ink);border:2px solid var(--ink);padding:4px 8px;font-size:14px;line-height:1.25;pointer-events:none;z-index:4;word-wrap:break-word;box-shadow:2px 2px 0 rgba(0,0,0,.2)}
-  .bub.bty{display:flex;align-items:center;gap:3px;padding:4px 7px 4px 6px;white-space:nowrap}
-  .bub.bty svg{width:11px;height:11px;shape-rendering:crispEdges;display:block;margin-right:2px;animation:typen 1.2s steps(2) infinite}
-  .bub.bty i{display:block;width:3px;height:3px;background:var(--ink);animation:tydot 1.2s infinite}
-  .bub.bty i:nth-of-type(2){animation-delay:.2s}.bub.bty i:nth-of-type(3){animation-delay:.4s}
+  /* typing: round badge with a little pencil that scribbles back and forth (like Panfu) */
+  .bub.bty{display:flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border-radius:50%;border:2px solid #8e6cc8;background:#fff;box-shadow:0 0 0 2px #fff,2px 3px 0 2px rgba(42,36,48,.25)}
+  .bub.bty svg{width:21px;height:8px;shape-rendering:crispEdges;display:block;transform-origin:10% 50%;animation:scrib .9s steps(6) infinite}
+  @keyframes scrib{0%{transform:translate(-1px,3px) rotate(-38deg)}25%{transform:translate(1px,2px) rotate(-26deg)}50%{transform:translate(-1px,3px) rotate(-44deg)}75%{transform:translate(2px,1px) rotate(-30deg)}100%{transform:translate(-1px,3px) rotate(-38deg)}}
+  .bub.bty i{display:none}
   @keyframes tydot{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-2px)}}
   @keyframes typen{0%{transform:translate(0,0)}50%{transform:translate(1px,-1px)}}
   .bub::after{content:"";position:absolute;left:50%;bottom:-8px;margin-left:-5px;border:5px solid transparent;border-top:6px solid var(--ink)}
+  .bub.bty::after{display:none}
   .prompt{position:fixed;left:50%;bottom:62px;transform:translateX(-50%);z-index:5;font-size:15px;padding:8px 14px}
   .prompt kbd{font-family:Silkscreen,monospace;font-size:10px;background:rgba(255,255,255,.2);padding:1px 4px;margin-left:6px}
   .drow{border:2px solid var(--ink);background:#fff;padding:8px 10px;margin-top:8px}
@@ -1996,7 +1998,7 @@ const dLogForm=document.getElementById('dLogForm'), dLogIn=document.getElementBy
 function shortAgo(ts){const m=Math.floor((Date.now()-ts)/60000);if(m<1)return'now';if(m<60)return m+' min';const h=Math.floor(m/60);if(h<24)return h+' h';const d=Math.floor(h/24);if(d<7)return d+'d ago';return new Date(ts).toLocaleDateString(undefined,{day:'numeric',month:'short'});}
 function logRows(entries,box){entries.forEach(e=>{const r=document.createElement('div');r.className='lrow';const w=document.createElement('span');w.className='when';w.textContent=shortAgo(e.t);const tx=document.createElement('span');tx.textContent=e.text;r.appendChild(w);r.appendChild(tx);box.appendChild(r);});}
 let logAll=false,logEdit=null,logSure=false;
-const PENCIL='<svg viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><rect x="7" y="0" width="2" height="1"/><rect x="6" y="1" width="4" height="1"/><rect x="5" y="2" width="4" height="1"/><rect x="4" y="3" width="4" height="1"/><rect x="3" y="4" width="4" height="1"/><rect x="2" y="5" width="4" height="1"/><rect x="1" y="6" width="4" height="1"/><rect x="1" y="7" width="3" height="1"/><rect x="0" y="8" width="3" height="1"/><rect x="0" y="9" width="2" height="1"/></svg>';
+const PENCIL='<svg viewBox="0 0 14 5" aria-hidden="true"><rect x="3" y="0" width="1" height="1" fill="#2a2430"/><rect x="4" y="0" width="1" height="1" fill="#2a2430"/><rect x="5" y="0" width="1" height="1" fill="#2a2430"/><rect x="6" y="0" width="1" height="1" fill="#2a2430"/><rect x="7" y="0" width="1" height="1" fill="#2a2430"/><rect x="8" y="0" width="1" height="1" fill="#2a2430"/><rect x="9" y="0" width="1" height="1" fill="#2a2430"/><rect x="10" y="0" width="1" height="1" fill="#2a2430"/><rect x="11" y="0" width="1" height="1" fill="#2a2430"/><rect x="12" y="0" width="1" height="1" fill="#2a2430"/><rect x="1" y="1" width="1" height="1" fill="#2a2430"/><rect x="2" y="1" width="1" height="1" fill="#f1d3a0"/><rect x="3" y="1" width="1" height="1" fill="#f6c533"/><rect x="4" y="1" width="1" height="1" fill="#f6c533"/><rect x="5" y="1" width="1" height="1" fill="#f6c533"/><rect x="6" y="1" width="1" height="1" fill="#f6c533"/><rect x="7" y="1" width="1" height="1" fill="#f6c533"/><rect x="8" y="1" width="1" height="1" fill="#f6c533"/><rect x="9" y="1" width="1" height="1" fill="#f6c533"/><rect x="10" y="1" width="1" height="1" fill="#b9bccb"/><rect x="11" y="1" width="1" height="1" fill="#f28aa3"/><rect x="12" y="1" width="1" height="1" fill="#f28aa3"/><rect x="13" y="1" width="1" height="1" fill="#2a2430"/><rect x="0" y="2" width="1" height="1" fill="#2a2430"/><rect x="1" y="2" width="1" height="1" fill="#2a2430"/><rect x="2" y="2" width="1" height="1" fill="#f1d3a0"/><rect x="3" y="2" width="1" height="1" fill="#f6c533"/><rect x="4" y="2" width="1" height="1" fill="#f6c533"/><rect x="5" y="2" width="1" height="1" fill="#f6c533"/><rect x="6" y="2" width="1" height="1" fill="#f6c533"/><rect x="7" y="2" width="1" height="1" fill="#f6c533"/><rect x="8" y="2" width="1" height="1" fill="#f6c533"/><rect x="9" y="2" width="1" height="1" fill="#f6c533"/><rect x="10" y="2" width="1" height="1" fill="#b9bccb"/><rect x="11" y="2" width="1" height="1" fill="#f28aa3"/><rect x="12" y="2" width="1" height="1" fill="#f28aa3"/><rect x="13" y="2" width="1" height="1" fill="#2a2430"/><rect x="1" y="3" width="1" height="1" fill="#2a2430"/><rect x="2" y="3" width="1" height="1" fill="#f1d3a0"/><rect x="3" y="3" width="1" height="1" fill="#d9952a"/><rect x="4" y="3" width="1" height="1" fill="#d9952a"/><rect x="5" y="3" width="1" height="1" fill="#d9952a"/><rect x="6" y="3" width="1" height="1" fill="#d9952a"/><rect x="7" y="3" width="1" height="1" fill="#d9952a"/><rect x="8" y="3" width="1" height="1" fill="#d9952a"/><rect x="9" y="3" width="1" height="1" fill="#d9952a"/><rect x="10" y="3" width="1" height="1" fill="#b9bccb"/><rect x="11" y="3" width="1" height="1" fill="#f28aa3"/><rect x="12" y="3" width="1" height="1" fill="#f28aa3"/><rect x="13" y="3" width="1" height="1" fill="#2a2430"/><rect x="3" y="4" width="1" height="1" fill="#2a2430"/><rect x="4" y="4" width="1" height="1" fill="#2a2430"/><rect x="5" y="4" width="1" height="1" fill="#2a2430"/><rect x="6" y="4" width="1" height="1" fill="#2a2430"/><rect x="7" y="4" width="1" height="1" fill="#2a2430"/><rect x="8" y="4" width="1" height="1" fill="#2a2430"/><rect x="9" y="4" width="1" height="1" fill="#2a2430"/><rect x="10" y="4" width="1" height="1" fill="#2a2430"/><rect x="11" y="4" width="1" height="1" fill="#2a2430"/><rect x="12" y="4" width="1" height="1" fill="#2a2430"/><rect x="4" y="1" width="6" height="1" fill="#fbe08a"/></svg>';
 function renderLog(p){
   const box=document.getElementById('dLog'); box.innerHTML='';
   const src=visiting?visiting.data:home; if(!src) return;
@@ -3112,7 +3114,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794857846"></script>
+<script src="config.js?v=1794858033"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3137,7 +3139,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 20:37';
+  const BUILD = '16.11. 20:40';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3332,7 +3334,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 20:37'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 20:40'; help.appendChild(ver);
   }
 
   function openImport() {
