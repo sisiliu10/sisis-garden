@@ -1018,7 +1018,7 @@ function houseBlocked(x,y){
 }
 function enterHouse(){
   av.swim=false;av.jump=null;
-  scene='house'; roomOrigin();
+  scene='house'; roomOrigin(); try{Sfx.door();}catch(e){}
   av.x=RW/2; av.y=RH-6; av.back=true; av.target=null; av.water=0;
   active=null; lastActive=undefined; dlg.classList.remove('show'); editing=false;
   worldEl.style.visibility='hidden'; bJump.hidden=true; setPrompt(null);
@@ -1657,6 +1657,7 @@ function livePeers(){
     }else{const dt=Math.min(250,now-(gh.lt||now));gh.lt=now;const f=1-Math.exp(-dt/85);if(Math.hypot(tx-gh.x,ty-gh.y)>90){gh.x=tx;gh.y=ty;}else{gh.x+=(tx-gh.x)*f;gh.y+=(ty-gh.y)*f;}}
     gh.seen=now;
     {const swn=!!q.sw&&q.s!=='h';if(gh.swp===false&&swn&&scene==='garden')setTimeout(()=>Sfx.splash(false,.45),380);gh.swp=swn;}
+    {const inh=q.s==='h'?1:0;if(gh.inh===0&&inh===1)Sfx.door(.4);gh.inh=inh;}
     {const aln=q.al?1:0;if(gh.alp===0&&aln===1&&scene==='garden'&&q.s!=='h')Sfx.sit(.5);gh.alp=aln;}
     {const sln=q.sl===1||q.sl===2?q.sl:0;if(scene==='garden'&&q.s!=='h'){if(gh.slp===1&&sln===2)Sfx.whee(.5);if(gh.slp===2&&sln===0)Sfx.yay(.55);}gh.slp=sln;}
     if(q.say&&typeof q.say.t==='string'&&q.say.n!==gh.sayN){if(gh.sayN!==undefined||now-roomT0>4000)logChat({t:Date.now(),n:str(q.n,14)||'Friend',text:q.say.t.slice(0,80)});gh.sayN=q.say.n;gh.sayT=q.say.t.slice(0,80);gh.sayUntil=now+6000+q.say.t.length*60;}
@@ -2754,7 +2755,21 @@ const Sfx=(()=>{
     hg.gain.setValueAtTime(0,t2);hg.gain.linearRampToValueAtTime(.075*v,t2+.06);hg.gain.setValueAtTime(.075*v,t2+.3);hg.gain.exponentialRampToValueAtTime(.0005,t2+.5);
     const h2g=c.createGain();h2g.gain.value=.25;h.connect(hf);h2.connect(h2g);h2g.connect(hf);hf.connect(hg);hg.connect(c.destination);
     [h,h2,lfo].forEach(x=>{x.start(t2);x.stop(t2+.55);});}
-  return {splash,whee,yay,pour,grow,sit};
+  // coming home: a soft wooden door (latch click + short creak) and the little shop bell above it
+  function door(vol){const c=ready();if(!c)return;const t=c.currentTime+.01,v=(vol===undefined?1:vol);
+    const nb=c.createBuffer(1,Math.floor(c.sampleRate*.5),c.sampleRate),d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+    // latch: tiny bright click
+    {const n=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();n.buffer=nb;f.type='bandpass';f.frequency.value=2600;f.Q.value=3;
+     g.gain.setValueAtTime(.35*v,t);g.gain.exponentialRampToValueAtTime(.0005,t+.035);n.connect(f);f.connect(g);g.connect(c.destination);n.start(t,0,.05);}
+    // wooden creak: a rough low tone that bends up a little
+    {const o=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain(),lfo=c.createOscillator(),lg=c.createGain(),t1=t+.05;
+     o.type='sawtooth';o.frequency.setValueAtTime(190,t1);o.frequency.linearRampToValueAtTime(260,t1+.28);lfo.type='square';lfo.frequency.value=34;lg.gain.value=18;lfo.connect(lg);lg.connect(o.frequency);
+     f.type='bandpass';f.frequency.value=700;f.Q.value=2.5;g.gain.setValueAtTime(0,t1);g.gain.linearRampToValueAtTime(.045*v,t1+.05);g.gain.exponentialRampToValueAtTime(.0005,t1+.32);
+     o.connect(f);f.connect(g);g.connect(c.destination);o.start(t1);lfo.start(t1);o.stop(t1+.35);lfo.stop(t1+.35);}
+    // bell: two little dings
+    [[1568,.16],[2093,.27]].forEach(([fq,dt])=>{const tb=t+dt;[[1,.07],[2.76,.022],[5.4,.008]].forEach(([m,a])=>{const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=fq*m;
+      g.gain.setValueAtTime(0,tb);g.gain.linearRampToValueAtTime(a*v,tb+.004);g.gain.exponentialRampToValueAtTime(.0003,tb+(m>1?.25:.7));o.connect(g);g.connect(c.destination);o.start(tb);o.stop(tb+.75);});});}
+  return {splash,whee,yay,pour,grow,sit,door};
 })();
 
 /* ================= compost heap: projects you let go ================= */
@@ -3146,7 +3161,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794862178"></script>
+<script src="config.js?v=1794863764"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3171,7 +3186,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 21:49';
+  const BUILD = '16.11. 22:16';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3366,7 +3381,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 21:49'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 22:16'; help.appendChild(ver);
   }
 
   function openImport() {
