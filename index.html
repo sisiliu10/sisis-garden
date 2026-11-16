@@ -1064,6 +1064,7 @@ function setPrompt(txt,key){
 }
 promptEl.onclick=()=>{
   if(scene==='house'){ if(houseNear) houseNear.act(); else av.target={x:RW/2,y:RH+4}; }
+  else if(scene==='city'){ if(cityNearHole())exitCity(); else av.target={x:CITY.sx,y:CITY.sy+4}; }
   else goToDoor();
 };
 function renderHouse(t){
@@ -1636,7 +1637,7 @@ function roomPeers(){
 function isHostPeer(p){ return !p.isMe&&!!visiting&&((!!p.by&&p.by===visiting.id)||(!!p.presence&&p.presence.u===visiting.id)); }
 function sendPresence(now){
   if(!room||now-lastPresT<60) return;
-  const st={g:gardenKey(),u:myId||null,sw:av.swim||av.jump?1:0,say:(mySay&&mySay.until>performance.now())?{n:mySay.n,t:mySay.t}:null,ty:(document.activeElement===chatIn&&chatIn.value.trim()&&now-typingAt<5000)?1:0,x:Math.round(av.x*2)/2,y:Math.round((av.y-(av.kh||0))*2)/2,act:myAct,al:riding?1:0,sl:slide?(slide.ph==='climb'?1:2):0,sg:mySeat===null?null:{s:mySeat,a:Math.round(swA*100)/100},s:scene==='house'?'h':'g',b:av.back?1:0,m:av.moving?1:0,r:av.run&&av.moving?1:0,n:(me().name||'Friend').slice(0,14),l:me().look,w:av.water>0?1:0};
+  const st={g:gardenKey(),u:myId||null,sw:av.swim||av.jump?1:0,say:(mySay&&mySay.until>performance.now())?{n:mySay.n,t:mySay.t}:null,ty:(document.activeElement===chatIn&&chatIn.value.trim()&&now-typingAt<5000)?1:0,x:Math.round(av.x*2)/2,y:Math.round((av.y-(av.kh||0))*2)/2,act:myAct,al:riding?1:0,sl:slide?(slide.ph==='climb'?1:2):0,sg:mySeat===null?null:{s:mySeat,a:Math.round(swA*100)/100},s:scene==='house'?'h':scene==='city'?'m':'g',b:av.back?1:0,m:av.moving?1:0,r:av.run&&av.moving?1:0,n:(me().name||'Friend').slice(0,14),l:me().look,w:av.water>0?1:0};
   const k=JSON.stringify(st); if(k===lastPres&&now-lastPresT<2500) return;
   lastPres=k; lastPresT=now; try{const pr=room.presence(st);if(pr&&pr.catch)pr.catch(()=>{});}catch(e){}
 }
@@ -1647,7 +1648,7 @@ function livePeers(){
   for(const p of ps){
     if(p.isMe||p.kind!=='viewer') continue;
     const q=p.presence||{}; if(typeof q.x!=='number'||typeof q.y!=='number') continue;
-    const tx=q.s==='h'?clamp(q.x,-200,400):clamp(q.x,-OX+14,CW+OX-14), ty=clamp(q.y,0,600);
+    const tx=q.s==='h'?clamp(q.x,-200,400):q.s==='m'?clamp(q.x,0,4000):clamp(q.x,-OX+14,CW+OX-14), ty=clamp(q.y,0,q.s==='m'?3000:600);
     let gh=ghosts[p.peer]; if(!gh) gh=ghosts[p.peer]={x:tx,y:ty};
     if(typeof q._t==='number'){
       // smooth playback: keep the last positions with the sender's timestamps and replay them ~140 ms behind, interpolating in between,
@@ -1671,7 +1672,7 @@ function livePeers(){
     if(q.say&&typeof q.say.t==='string'&&q.say.n!==gh.sayN){if(gh.sayN!==undefined||now-roomT0>4000)logChat({t:Date.now(),n:str(q.n,14)||'Friend',text:q.say.t.slice(0,80)});gh.sayN=q.say.n;gh.sayT=q.say.t.slice(0,80);gh.sayUntil=now+6000+q.say.t.length*60;}
     const sgq=q.sg&&(q.sg.s===0||q.sg.s===1)?{s:q.sg.s,a:clamp(num(q.sg.a,0),-1.2,1.2)}:null;
     if(gh.pxx!==undefined&&Math.abs(gh.x-gh.pxx)>.02)gh.dir=gh.x>gh.pxx?1:-1;else if(gh.pxx===undefined&&Math.abs(tx-gh.x)>.6)gh.dir=tx>gh.x?1:-1;gh.pxx=gh.x;
-    out.push({sl:q.sl===1||q.sl===2?q.sl:0,ride:!!q.al,sg:sgq,say:gh.sayUntil>now?gh.sayT:'',typing:!!q.ty&&!(gh.sayUntil>now),id:p.peer,by:p.by,x:gh.x,y:gh.y,scene:q.s==='h'?'house':'garden',back:!!q.b,moving:!!q.m||now-(gh.mvT||0)<150,run:!!q.r,swim:!!q.sw,water:!!q.w,name:str(q.n,14)||'Friend',look:cleanLook(q.l)});
+    out.push({sl:q.sl===1||q.sl===2?q.sl:0,ride:!!q.al,sg:sgq,say:gh.sayUntil>now?gh.sayT:'',typing:!!q.ty&&!(gh.sayUntil>now),id:p.peer,by:p.by,x:gh.x,y:gh.y,scene:q.s==='h'?'house':q.s==='m'?'city':'garden',back:!!q.b,moving:!!q.m||now-(gh.mvT||0)<150,run:!!q.r,swim:!!q.sw,water:!!q.w,name:str(q.n,14)||'Friend',look:cleanLook(q.l)});
   }
   return out;
 }
@@ -2162,6 +2163,7 @@ let hintHidden=false,t0=performance.now(),petalT=0,sprayT=0;
 
 function blocked(x,y){
   if(scene==='house') return houseBlocked(x,y);
+  if(scene==='city') return cityBlocked(x,y);
   {const fx=(x-FOUNT.x)/27,fy=(y-(FOUNT.y-1))/11; if(fx*fx+fy*fy<1) return true;}
   if(y<144||y>WORLD_H-5||x<-OX+6||x>CW+OX-6) return true;
   if(x>46&&x<86&&y<159&&!(x>55&&x<65)) return true;
@@ -2183,6 +2185,7 @@ addEventListener('keydown',e=>{
   if(['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d'].includes(k)){keys[k]=true;av.target=null;av.run=false;hideHint();e.preventDefault();}
   if(k==='e'||k===' '){
     if(scene==='house'){if(houseNear)houseNear.act();e.preventDefault();}
+    else if(scene==='city'){if(cityNearHole())exitCity();e.preventDefault();}
     else if(active&&!editing){openLog(active);e.preventDefault();}
     else if(promptEl.dataset.on){goToDoor();e.preventDefault();}
   }
@@ -2198,8 +2201,10 @@ cvs.addEventListener('pointerdown',e=>{
   if(document.activeElement&&document.activeElement.tagName==='INPUT')document.activeElement.blur();
   hideHint();
   if(scene==='house'){housePointer(e.clientX/S-RX,e.clientY/S-RY);return;}
+  if(scene==='city'){cityPointer(e.clientX/S,e.clientY/S);return;}
   const lx=e.clientX/S-OX,ly=e.clientY/S+camR-OY;
   if(moving){av.run=false;placeAt(lx,ly);return;}
+  if(Math.hypot(lx-HOLE.x,(ly-HOLE.y)*1.6)<13&&!av.swim&&mySeat===null){av.run=false;av.target={x:HOLE.x,y:HOLE.y-1,onArrive:enterCity};return;}
   if(lx>=BOARD.x0-4&&lx<=BOARD.x1+2&&Math.abs(ly-BOARD.y)<8&&!av.swim){av.run=false;av.target={x:BOARD.x1-3,y:BOARD.y,onArrive:()=>{av.target={x:BOARD.x0+2,y:BOARD.y,onArrive:()=>startJump(BOARD.x0-20,BOARD.y+4,true)};}};return;}
   if(lx>40&&lx<92&&ly>HB-46&&ly<HB+2){goToDoor();return;}
   let hit=null;
@@ -2307,6 +2312,7 @@ function enterGarden(){
   av.swim=false;av.jump=null;
   if(moving)endMove();
   if(scene==='house')exitHouse(true);
+  if(scene==='city')exitCity(true);
   syncRoom();
   camY=0;
   av.x=120;av.y=216;av.target=null;av.water=0;active=null;lastActive=undefined;dlg.classList.remove('show');
@@ -2936,6 +2942,165 @@ async function loadChat(){
     L.forEach(m=>{if(!chatMem.some(x=>sameMsg(x,m)))chatMem.push(m);});renderChat();}catch(e){}
 }
 function toggleChatLog(on){chatLogEl.classList.toggle('show',on);chatHistBtn.classList.toggle('on',on);if(on){chatList.dataset.seen='';renderChat();loadChat();}}
+/* ================= the hole to Munich: Maxvorstadt as a walkable pixel map (data: OpenStreetMap) ================= */
+const HOLE={x:222,y:226};
+const CITY={ready:false,loading:false,cx:0,cy:0,sx:0,sy:0,bg:null,mask:null,mw:0,mh:0,trees:[],named:[],pois:[]};
+function drawHole(x,y,t){
+  const ox=Math.round(x),oy=Math.round(y);
+  [[-9,-3,18],[-11,-2,22],[-12,-1,24],[-12,0,24],[-12,1,24],[-11,2,22],[-9,3,18]].forEach(([a,b,w])=>R(ox+a,oy+b,w,1,'#6c4229'));
+  [[-7,-2,14],[-9,-1,18],[-10,0,20],[-9,1,18],[-7,2,14]].forEach(([a,b,w])=>R(ox+a,oy+b,w,1,'#1d1420'));
+  [[-5,0,10],[-3,1,6]].forEach(([a,b,w])=>R(ox+a,oy+b,w,1,'#0c0810'));
+  R(ox-12,oy-1,1,2,'#8a5a3a');R(ox+11,oy-1,1,2,'#8a5a3a');R(ox-6,oy-4,5,1,'#8a5a3a');R(ox+3,oy+4,4,1,'#8a5a3a');
+  // little wooden sign
+  R(ox+14,oy-9,1,10,'#5e3a22');R(ox+9,oy-13,11,6,'#3b2416');R(ox+10,oy-12,9,4,'#b98252');
+  [[11,-11],[12,-10],[13,-11],[14,-10],[15,-11],[16,-10],[17,-11]].forEach(([a,b])=>R(ox+a,oy+b,1,1,'#3b2416'));
+  const k=(t*1.2)%1;g.globalAlpha=.5*(1-k);R(ox-1+Math.round(Math.sin(t*2)*3),oy-4-Math.round(k*7),1,1,'#fff6b0');g.globalAlpha=1;
+}
+const cityFade=document.createElement('div');cityFade.style.cssText='position:fixed;inset:0;background:#0c0810;opacity:0;pointer-events:none;transition:opacity .35s;z-index:8;display:flex;align-items:center;justify-content:center;color:#fff;font-family:Silkscreen,monospace;font-size:13px;letter-spacing:1px;text-align:center;padding:20px';document.body.appendChild(cityFade);
+const streetEl=document.createElement('div');streetEl.className='chip';streetEl.style.cssText='position:fixed;left:50%;top:'+(innerWidth<700?50:12)+'px;transform:translateX(-50%);z-index:5;font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.5px;background:#2b4c9b;color:#fff;border-color:#fff;box-shadow:0 0 0 2px #2b4c9b,3px 3px 0 2px rgba(42,36,48,.25);padding:4px 10px';streetEl.hidden=true;document.body.appendChild(streetEl);
+const cityTags=document.createElement('div');document.body.appendChild(cityTags);
+const osmEl=document.createElement('a');osmEl.href='https://www.openstreetmap.org/copyright';osmEl.target='_blank';osmEl.rel='noopener';osmEl.textContent='© OpenStreetMap';osmEl.style.cssText='position:fixed;right:8px;bottom:58px;z-index:3;font-family:Silkscreen,monospace;font-size:9px;color:#fff;background:rgba(42,36,48,.6);padding:2px 5px;text-decoration:none';osmEl.hidden=true;document.body.appendChild(osmEl);
+{const st=document.createElement('style');st.textContent='.ctag{position:fixed;transform:translate(-50%,-100%);font-family:Silkscreen,monospace;font-size:10px;line-height:1.2;color:#2a2430;background:#fffdf6;border:2px solid #2a2430;padding:1px 5px;white-space:nowrap;pointer-events:none;z-index:3;box-shadow:2px 2px 0 rgba(42,36,48,.25)}.ctag.big{background:#2a2430;color:#fff;font-size:11px;padding:2px 7px}.ctag i{display:inline-block;width:6px;height:6px;margin-right:4px;vertical-align:0}@media(max-width:560px){.ctag{font-size:9px}}';document.head.appendChild(st);}
+const POI_COL=['#c98a4e','#d2493f','#8e6cc8','#f28aa3','#3f8fd0','#2f7a62','#b23a6a','#d9952a','#6a5acd','#3fa55e'];
+function loadCity(){
+  return new Promise((res,rej)=>{if(window.MUNICH)return res();const sc=document.createElement('script');sc.src='munich.js?v=1';sc.onload=()=>window.MUNICH?res():rej();sc.onerror=rej;document.head.appendChild(sc);});
+}
+function pip(px,py,P){let c=false;for(let i=0,j=P.length-2;i<P.length;j=i,i+=2){const xi=P[i],yi=P[i+1],xj=P[j],yj=P[j+1];if((yi>py)!==(yj>py)&&px<(xj-xi)*(py-yi)/(yj-yi)+xi)c=!c;}return c;}
+function buildCity(){
+  const M=window.MUNICH,cw=M.w,ch=M.h,c=document.createElement('canvas');c.width=cw;c.height=ch;const x=c.getContext('2d');
+  let seed=7;const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};
+  const path=(P,dx,dy)=>{x.beginPath();for(let i=0;i<P.length;i+=2){if(i)x.lineTo(P[i]+(dx||0),P[i+1]+(dy||0));else x.moveTo(P[i]+(dx||0),P[i+1]+(dy||0));}};
+  const PAL=new Set(),C=cl=>{PAL.add(cl);return cl;};
+  // pavement
+  x.fillStyle=C('#d6cfbf');x.fillRect(0,0,cw,ch);
+  // green
+  const GC=[C('#86bb6a'),C('#9bc77a'),C('#5f9a56'),C('#5aa8dc')];
+  M.g.forEach(G=>{const P=G.slice(1);path(P);x.closePath();x.fillStyle=GC[G[0]];x.fill();});
+  // roads: curb, asphalt, markings
+  const big=M.r.filter(r=>r[0]>=14),small=M.r.filter(r=>r[0]<14&&r[0]>4),foot=M.r.filter(r=>r[0]<=4);
+  x.lineJoin='round';x.lineCap='round';
+  foot.forEach(r=>{path(r.slice(2));x.strokeStyle=C('#e9e1cd');x.lineWidth=3;x.stroke();});
+  [[small,2],[big,4]].forEach(([L,cb])=>{L.forEach(r=>{path(r.slice(2));x.strokeStyle=C('#aaa294');x.lineWidth=r[0]+cb;x.stroke();});});
+  small.forEach(r=>{path(r.slice(2));x.strokeStyle=C('#8f8d96');x.lineWidth=r[0];x.stroke();});
+  big.forEach(r=>{path(r.slice(2));x.strokeStyle=C('#77757f');x.lineWidth=r[0];x.stroke();});
+  x.lineCap='butt';x.setLineDash([6,8]);big.forEach(r=>{if(r[0]>=22){path(r.slice(2));x.strokeStyle=C('#efe7cc');x.lineWidth=1;x.stroke();}});x.setLineDash([]);
+  // collision mask from building footprints (half resolution)
+  const mc=document.createElement('canvas');mc.width=Math.ceil(cw/2);mc.height=Math.ceil(ch/2);const mx=mc.getContext('2d');mx.scale(.5,.5);mx.fillStyle='#000';
+  // buildings, far to near so nearer ones overlap the roofs behind them
+  const ROOF=[C('#c4683f'),C('#b55a36'),C('#d07a4a'),C('#8d8f9c'),C('#a3a5ae'),C('#b9643c'),C('#9c6a4a')],ROOFD=[C('#a8532f'),C('#98482a'),C('#b4643a'),C('#777986'),C('#8b8d97'),C('#9c5230'),C('#84583c')];
+  const WALL=[C('#f1e3c0'),C('#ecd3a0'),C('#e9c9b0'),C('#dfe3d2'),C('#f3ead8'),C('#d9c6a8'),C('#efd9c9')],OL=C('#3a2f38'),WIN=C('#5d7fa8'),WINL=C('#bcd6ec'),SH=C('#b9b2a2');
+  const Bs=M.b.map(b=>{const P=b.slice(4);let my=-1e9,cx=0,cy=0;for(let i=0;i<P.length;i+=2){my=Math.max(my,P[i+1]);cx+=P[i];cy+=P[i+1];}return {k:b[0],c:b[1],lv:b[2],n:b[3],P,my,cx:cx/(P.length/2),cy:cy/(P.length/2)};}).sort((a,b)=>a.my-b.my);
+  Bs.forEach(b=>{path(b.P,3,2);x.closePath();x.fillStyle=SH;x.fill();});
+  Bs.forEach(b=>{
+    const h=4+b.lv*2+(b.k?4:0),wall=b.k===1?C('#e8e0d0'):b.k===2?C('#e6d7b4'):WALL[b.c],roof=b.k===1?C('#7fa894'):b.k===2?C('#b0a898'):ROOF[b.c],roofd=b.k===1?C('#6a917e'):b.k===2?C('#978f80'):ROOFD[b.c];
+    path(b.P);mx.beginPath();for(let i=0;i<b.P.length;i+=2){if(i)mx.lineTo(b.P[i],b.P[i+1]);else mx.moveTo(b.P[i],b.P[i+1]);}mx.closePath();mx.fill();
+    x.fillStyle=wall;for(let k=0;k<=h;k++){path(b.P,0,-k);x.closePath();x.fill();}
+    path(b.P);x.closePath();x.strokeStyle=OL;x.lineWidth=1;x.stroke();
+    // windows and doors on walls that face the viewer
+    for(let i=0;i<b.P.length;i+=2){const x1=b.P[i],y1=b.P[i+1],x2=b.P[(i+2)%b.P.length],y2=b.P[(i+3)%b.P.length],L=Math.hypot(x2-x1,y2-y1);
+      if(L<9||Math.abs(x2-x1)<Math.abs(y2-y1)*.6)continue;const mxp=(x1+x2)/2,myp=(y1+y2)/2;if(pip(mxp,myp+2.5,b.P))continue;
+      const n=Math.floor(L/7);for(let k=0;k<n;k++){const f=(k+.5)/n,wx=Math.round(x1+(x2-x1)*f),wy=Math.round(y1+(y2-y1)*f);
+        for(let r=0;r<Math.min(3,Math.floor(h/5));r++){x.fillStyle=WIN;x.fillRect(wx-1,wy-4-r*5,2,3);x.fillStyle=WINL;x.fillRect(wx-1,wy-4-r*5,1,1);}}
+      x.strokeStyle=OL;x.beginPath();x.moveTo(x1+.5,y1);x.lineTo(x1+.5,y1-h);x.stroke();}
+    // roof with tile rows
+    x.save();path(b.P,0,-h);x.closePath();x.fillStyle=roof;x.fill();x.clip();x.fillStyle=roofd;
+    const y0=Math.floor(Math.min(...b.P.filter((_,i)=>i%2))-h);for(let yy=y0+(b.c%3);yy<b.my-h+1;yy+=3)x.fillRect(b.cx-400,yy,800,1);
+    x.restore();path(b.P,0,-h);x.closePath();x.strokeStyle=OL;x.lineWidth=1;x.stroke();
+    if(b.n)CITY.pois.push({x:Math.round(b.cx),y:Math.round(b.cy-h),k:12,n:b.n,big:true});
+  });
+  // snap every pixel to the palette: crisp pixel-art edges instead of blurry anti-aliasing
+  {const pal=[...PAL].map(h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]),cache=new Map();
+   for(let band=0;band<ch;band+=256){const hh=Math.min(256,ch-band),im=x.getImageData(0,band,cw,hh),d=im.data;
+    for(let i=0;i<d.length;i+=4){const key=(d[i]<<16)|(d[i+1]<<8)|d[i+2];let q=cache.get(key);
+      if(q===undefined){let bd=1e9;for(const pc of pal){const e=(pc[0]-d[i])**2+(pc[1]-d[i+1])**2+(pc[2]-d[i+2])**2;if(e<bd){bd=e;q=pc;}}cache.set(key,q);}
+      d[i]=q[0];d[i+1]=q[1];d[i+2]=q[2];d[i+3]=255;}
+    x.putImageData(im,0,band);}}
+  const md=mx.getImageData(0,0,mc.width,mc.height).data,mask=new Uint8Array(mc.width*mc.height);for(let i=0;i<mask.length;i++)mask[i]=md[i*4+3]>100?1:0;
+  // ground details: grass tufts, pavement speckles
+  const gd=x.getImageData(0,0,cw,ch).data;const at=(px,py)=>{const i=(py*cw+px)*4;return (gd[i]<<16)|(gd[i+1]<<8)|gd[i+2];};
+  for(let i=0;i<26000;i++){const px=Math.floor(rnd()*cw),py=Math.floor(rnd()*ch),v=at(px,py);
+    if(v===0x86bb6a){x.fillStyle=rnd()<.5?'#6fa758':'#9ccf7e';x.fillRect(px,py,rnd()<.4?2:1,1);if(rnd()<.03){x.fillStyle=['#fff3a8','#ffffff','#f5a0c0'][Math.floor(rnd()*3)];x.fillRect(px,py-1,1,1);}}
+    else if(v===0xd6cfbf&&rnd()<.5){x.fillStyle=rnd()<.5?'#c9c2b1':'#dfd8c9';x.fillRect(px,py,1,1);}
+    else if(v===0x9bc77a&&rnd()<.6){x.fillStyle=['#e8506c','#ffd24a','#ffffff','#b47ad8'][Math.floor(rnd()*4)];x.fillRect(px,py,1,1);}}
+  // benches, fountains, shop signs
+  M.p.forEach(p=>{const [px,py,k,n]=p;
+    if(k===11){x.fillStyle='#5e3a22';x.fillRect(px-3,py,7,1);x.fillRect(px-3,py+1,1,2);x.fillRect(px+3,py+1,1,2);x.fillStyle='#b98252';x.fillRect(px-3,py-1,7,1);}
+    else if(k===10){x.fillStyle='#a7a29a';x.fillRect(px-4,py-2,9,5);x.fillRect(px-3,py-3,7,7);x.fillStyle='#5aa8dc';x.fillRect(px-3,py-1,7,3);x.fillStyle='#bfe3fa';x.fillRect(px,py-3,1,3);if(n)CITY.pois.push({x:px,y:py-4,k:10,n});}
+    else{x.fillStyle='#3a2f38';x.fillRect(px-3,py-5,7,5);x.fillStyle=POI_COL[k]||'#3f8fd0';x.fillRect(px-2,py-4,5,3);x.fillStyle='#ffffff';x.fillRect(px-1,py-3,3,1);x.fillStyle='#3a2f38';x.fillRect(px,py,1,2);CITY.pois.push({x:px,y:py-6,k,n});}});
+  // tree sprites (three kinds), trees are drawn live so you can walk behind them
+  const TS=[["...GGGG...","..GLLGGG..",".GLLGGGGD.","GLLGGGGGDD","GLGGGGGGDD","GGGGGGGDDD",".GGGGGDDD.","..GGDDDD..","....TT....","....TT....","...TTTT..."],
+            ["....GG....","...GLGG...","..GLLGGD..","..GLGGGD..",".GLGGGGDD.",".GGGGGGDD.","GGGGGGDDDD",".GGGGDDDD.","....TT....","....TT....","...TTTT..."],
+            ["..GGGGGG..",".GLLLGGGG.","GLLGGGGGDD","GLGGGGGGDD","GGGGGGGDDD","GGGGGGDDDD",".GGGDDDDD.","..DDDDDD..","....TT....","...TTTT...",".........."]];
+  const TC=[{G:'#4f9e3f',L:'#78c65e',D:'#2f6f2c',T:'#6c4229'},{G:'#5aa64a',L:'#8fd070',D:'#35793a',T:'#5e3a22'},{G:'#3f8a45',L:'#6cba62',D:'#27602f',T:'#6c4229'}];
+  CITY.treeCv=TS.map((rows,i)=>{const tc=document.createElement('canvas');tc.width=10;tc.height=11;const tx=tc.getContext('2d');rows.forEach((r,yy)=>[...r].forEach((chh,xx)=>{if(TC[i][chh]){tx.fillStyle=TC[i][chh];tx.fillRect(xx,yy,1,1);}}));return tc;});
+  CITY.trees=[];for(let i=0;i<M.t.length;i+=2)CITY.trees.push({x:M.t[i],y:M.t[i+1],k:(M.t[i]*7+M.t[i+1]*3)%3});
+  CITY.named=M.r.filter(r=>r[1]).map(r=>({n:r[1],P:r.slice(2)}));
+  CITY.bg=c;CITY.mask=mask;CITY.mw=mc.width;CITY.mh=mc.height;CITY.w=cw;CITY.h=ch;
+  // arrival point: on Barer Straße between the Pinakotheken if it exists, else the named street closest to the middle
+  let best=null,bd=1e9;const want=CITY.named.filter(r=>r.n==='Barer Straße').length?'Barer Straße':null;
+  CITY.named.forEach(r=>{if(want&&r.n!==want)return;for(let i=0;i<r.P.length;i+=2){const d=Math.hypot(r.P[i]-cw*.42,r.P[i+1]-ch*.62);if(d<bd&&!cityBlocked(r.P[i],r.P[i+1])){bd=d;best=[r.P[i],r.P[i+1]];}}});
+  CITY.sx=best?best[0]:cw/2;CITY.sy=best?best[1]:ch/2;
+  // the way back: a hole with a ladder
+  {const hx=CITY.sx,hy=CITY.sy;[[-7,-2,14],[-9,-1,18],[-10,0,20],[-9,1,18],[-7,2,14]].forEach(([a,b,w])=>{x.fillStyle='#1d1420';x.fillRect(hx+a,hy+b,w,1);});x.fillStyle='#5b5560';x.fillRect(hx-11,hy-3,22,1);x.fillRect(hx-11,hy+3,22,1);x.fillRect(hx-12,hy-2,1,5);x.fillRect(hx+11,hy-2,1,5);
+   x.fillStyle='#b98252';x.fillRect(hx-3,hy-6,1,8);x.fillRect(hx+2,hy-6,1,8);x.fillRect(hx-3,hy-4,6,1);x.fillRect(hx-3,hy-1,6,1);}
+  CITY.ready=true;
+}
+function cityBlocked(x,y){if(!CITY.mask)return true;if(x<6||y<8||x>CITY.w-6||y>CITY.h-4)return true;const mxp=Math.floor(x/2),myp=Math.floor(y/2);
+  return !!(CITY.mask[myp*CITY.mw+mxp]||CITY.mask[myp*CITY.mw+Math.min(CITY.mw-1,mxp+2)]||CITY.mask[myp*CITY.mw+Math.max(0,mxp-2)]);}
+function cityNearHole(){return Math.hypot(av.x-CITY.sx,(av.y-CITY.sy)*1.4)<16;}
+function enterCity(){
+  if(scene!=='garden'||CITY.loading)return;CITY.loading=true;av.target=null;if(riding)dismount();
+  try{Sfx.whee(.8);}catch(e){}
+  cityFade.textContent='Falling to München…';cityFade.style.opacity='1';
+  const t0=performance.now();
+  loadCity().then(()=>new Promise(r=>setTimeout(r,60))).then(()=>{if(!CITY.ready)buildCity();return new Promise(r=>setTimeout(r,Math.max(0,500-(performance.now()-t0))));}).then(()=>{
+    scene='city';av.swim=false;av.jump=null;av.water=0;active=null;lastActive=undefined;dlg.classList.remove('show');editing=false;
+    worldEl.style.visibility='hidden';bJump.hidden=true;setPrompt(null);
+    av.x=CITY.sx;av.y=CITY.sy+9;av.back=false;av.target=null;cat.x=av.x+14;cat.y=av.y+4;streetEl.hidden=false;osmEl.hidden=false;lastPres='';
+    CITY.loading=false;cityFade.style.opacity='0';try{Sfx.yay(.6);}catch(e){}
+    toast('Maxvorstadt, München. Tap to walk, double-tap to run. The hole takes you back.',4200);
+  }).catch(()=>{CITY.loading=false;cityFade.style.opacity='0';toast('München could not be loaded. Try again in a moment.',3000);});
+}
+function exitCity(silent){
+  if(scene!=='city')return;scene='garden';worldEl.style.visibility='';streetEl.hidden=true;osmEl.hidden=true;cityTags.innerHTML='';
+  av.x=HOLE.x-2;av.y=HOLE.y+9;av.back=false;av.target=null;lastPres='';
+  camY=clamp(av.y+OY-H*.55,0,Math.max(0,TH-H));camR=-1;setPrompt(null);cat.x=av.x+12;cat.y=av.y+4;
+  if(!silent){try{Sfx.yay(.5);}catch(e){}}
+}
+function cityPointer(sx,sy){const lx=sx+CITY.cx,ly=sy+CITY.cy;
+  if(Math.hypot(lx-CITY.sx,(ly-CITY.sy)*1.4)<14){av.target={x:CITY.sx,y:CITY.sy+5,onArrive:()=>exitCity()};return;}
+  av.target={x:clamp(lx,8,CITY.w-8),y:clamp(ly,10,CITY.h-6)};}
+let cityTick=0;
+function cityUpdate(dt,t){
+  setPrompt(cityNearHole()?'Back to the garden':null,'E');
+  CITY.cx=Math.round(clamp(av.x-W/2,0,Math.max(0,CITY.w-W)));CITY.cy=Math.round(clamp(av.y-H*.55,0,Math.max(0,CITY.h-H)));
+  parts.forEach(q=>{q.age+=dt;if(q.kind==='puff'||q.kind==='spark')q.y+=q.vy*dt;});parts=parts.filter(q=>q.age<q.life);
+  cityTick+=dt;if(cityTick<.25)return;cityTick=0;
+  // which street am I on?
+  let bn='',bd=40;CITY.named.forEach(r=>{const P=r.P;for(let i=0;i<P.length-2;i+=2){const ax=P[i],ay=P[i+1],bx=P[i+2],by=P[i+3],l2=(bx-ax)**2+(by-ay)**2||1,k=clamp(((av.x-ax)*(bx-ax)+(av.y-ay)*(by-ay))/l2,0,1),d=Math.hypot(av.x-(ax+(bx-ax)*k),av.y-(ay+(by-ay)*k));if(d<bd){bd=d;bn=r.n;}}});
+  if(streetEl.textContent!==bn){streetEl.textContent=bn;streetEl.style.visibility=bn?'':'hidden';}
+  // names of the shops, cafés and buildings around me
+  const near=CITY.pois.filter(p=>Math.abs(p.x-av.x)<(p.big?150:64)&&Math.abs(p.y-av.y)<(p.big?110:52)).sort((a,b)=>Math.hypot(a.x-av.x,a.y-av.y)-Math.hypot(b.x-av.x,b.y-av.y)).slice(0,9);
+  const keep=new Set();near.forEach(p=>{const id=p.x+'_'+p.y;keep.add(id);let el=cityTags.querySelector('[data-c="'+id+'"]');
+    if(!el){el=document.createElement('div');el.className='ctag'+(p.big?' big':'');el.dataset.c=id;if(!p.big){const i=document.createElement('i');i.style.background=POI_COL[p.k]||'#3f8fd0';el.appendChild(i);}el.appendChild(document.createTextNode(p.n));el._p=p;cityTags.appendChild(el);}});
+  [...cityTags.children].forEach(el=>{if(!keep.has(el.dataset.c))el.remove();});
+}
+function renderCity(t){
+  const cx=CITY.cx,cy=CITY.cy;
+  g.fillStyle='#d6cfbf';g.fillRect(0,0,W,H);g.drawImage(CITY.bg,cx,cy,Math.min(W,CITY.w-cx),Math.min(H,CITY.h-cy),0,0,Math.min(W,CITY.w-cx),Math.min(H,CITY.h-cy));
+  const list=[],myLook=me().look,blink=(t%4)<.12;
+  CITY.trees.forEach(tr=>{if(tr.x<cx-8||tr.x>cx+W+8||tr.y<cy-2||tr.y>cy+H+14)return;list.push({y:tr.y,d:()=>{const sx=tr.x-cx,sy=tr.y-cy,sw=Math.round(Math.sin(t*1.3+tr.x)*.6);
+    g.globalAlpha=.25;R(sx-4,sy,9,2,'#1d2b18');g.globalAlpha=1;g.drawImage(CITY.treeCv[tr.k],sx-5+ (sw>0?1:0)*0,sy-10);}});});
+  list.push({y:av.y,d:()=>{const rn=av.run&&av.moving,fr=av.moving?(rn?[1,2][Math.floor(t*10)%2]:[1,0,2,0][Math.floor(t*8)%4]):0;
+    if(riding)drawRider(av.x-cx,av.y-cy,av.dir||1,myLook,av.moving,t,null);else drawAvatar(g,av.x-cx,av.y-cy-(rn&&fr===1?1:0),myLook,{run:rn,frame:fr,back:av.back,blink,t});}});
+  const peers=livePeers().filter(p=>p.scene==='city');
+  peers.forEach(p=>list.push({y:p.y,d:()=>drawAvatar(g,p.x-cx,p.y-cy,p.look,{run:p.run&&p.moving,frame:p.moving?[1,0,2,0][Math.floor(t*8+p.x)%4]:0,back:p.back,blink:((t+p.x)%4)<.12,t})}));
+    list.sort((a,b)=>a.y-b.y).forEach(o=>o.d());
+  parts.forEach(q=>{const px=Math.round(q.x-cx),py=Math.round(q.y-cy);if(q.kind==='puff'){g.globalAlpha=1-q.age/q.life;R(px,py,2,2,'#e9e2d4');g.globalAlpha=1;}});
+  const night=skyState().night;if(night>0){g.globalCompositeOperation='multiply';g.globalAlpha=night*.62;g.fillStyle='#4a55a0';g.fillRect(0,0,W,H);g.globalCompositeOperation='source-over';g.globalAlpha=1;
+    if(night>.4){g.globalAlpha=(night-.4)*.5;peers.concat([{x:av.x,y:av.y}]).forEach(p=>{g.fillStyle='#fff3c0';g.beginPath();g.ellipse(p.x-cx,p.y-cy-8,26,20,0,0,7);g.fill();});g.globalAlpha=1;}}
+  setTimeout(()=>{placeTags(peers,(x,y)=>[(x-cx)*S,(y-cy)*S]);[...cityTags.children].forEach(el=>{const p=el._p;el.style.left=((p.x-cx)*S)+'px';el.style.top=((p.y-cy-2)*S)+'px';});},0);
+}
 /* ================= hint ================= */
 function hideHint(){}
 
@@ -2950,8 +3115,8 @@ document.getElementById('chatbar').addEventListener('submit',e=>{e.preventDefaul
   try{if(window.__chatlog&&gardenKey())window.__chatlog.add({g:gardenKey(),n:(me().name||'Me').slice(0,14),text:t});}catch(e){}});
 function drawBubbles(){
   const now=performance.now(), items=[];
-  const sc=scene==='house'?'house':'garden';
-  const toS=(x,y)=>sc==='house'?[(RX+x)*S,(RY+y)*S]:[(OX+x)*S,(OY+y-camR)*S];
+  const sc=scene==='house'?'house':scene==='city'?'city':'garden';
+  const toS=(x,y)=>sc==='house'?[(RX+x)*S,(RY+y)*S]:sc==='city'?[(x-CITY.cx)*S,(y-CITY.cy)*S]:[(OX+x)*S,(OY+y-camR)*S];
   if(mySay&&mySay.until>now) items.push({id:'me',x:av.x,y:av.y,t:mySay.t});
   else if(document.activeElement===chatIn&&chatIn.value.trim()&&now-typingAt<5000) items.push({id:'me~ty',x:av.x,y:av.y,ty:true});
   livePeers().forEach(p=>{if(p.scene!==sc)return;if(p.say)items.push({id:p.id,x:p.x,y:p.y,t:p.say});else if(p.typing)items.push({id:p.id+'~ty',x:p.x,y:p.y,ty:true});});
@@ -3002,6 +3167,7 @@ function update(dt,t){
 }
 function updateRest(dt,t){
   if(scene==='house'){houseUpdate(dt,t);return;}
+  if(scene==='city'){cityUpdate(dt,t);return;}
   if(av.x>55&&av.x<65&&av.y<150.5){if(riding)dismount();enterHouse();return;}
   setPrompt(av.x>46&&av.x<74&&av.y<172&&!editing?'Go inside':null,'↑');
   smokeT+=dt;if(smokeT>.45){smokeT=0;spawn({kind:'smoke',x:HC+10+Math.random()*2,y:HB-42,vx:3+Math.random()*3,vy:-6-Math.random()*3,life:2.2});}
@@ -3056,6 +3222,7 @@ function updateRest(dt,t){
 function render(t){
   X=g;
   if(scene==='house'){renderHouse(t);return;}
+  if(scene==='city'){renderCity(t);return;}
   const cr=Math.round(camY); if(cr!==camR){camR=cr;worldEl.style.transform=`scale(${S}) translateY(${-camR}px)`;updateJump();}
   g.drawImage(bg,0,-camR);
   clouds.forEach(cl=>drawCloud(cl.x,cl.y-camR,cl.s));
@@ -3066,6 +3233,7 @@ function render(t){
   if(av.target&&!av.target.plant){const tx=Math.round(av.target.x),ty=Math.round(av.target.y);R(tx-2,ty,1,1,'#fff');R(tx+2,ty,1,1,'#fff');R(tx,ty-1,1,1,'#fff');R(tx,ty+1,1,1,'#fff');}
   const list=projects().map(p=>({y:posOf(p)[1],d:()=>withBounce(p,posOf(p)[1],()=>drawPlant(p,t))})).concat(skills().map(b=>({y:posOf(b)[1]+BED_H/2-2,d:()=>withBounce(b,posOf(b)[1]+BED_H/2,()=>drawBed(b,t))})));
   drawPool(t);
+  list.push({y:-999,d:()=>drawHole(HOLE.x,HOLE.y,t)});
   list.push({y:FOUNT.y,d:()=>drawFountain(t)});
   list.push({y:SL.y,d:()=>drawSlide(t)});
   for(let r0=0;r0<lineRows();r0++)list.push({y:CLN.rows[r0],d:()=>drawLineRow(r0,t)});
@@ -3202,7 +3370,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794870483"></script>
+<script src="config.js?v=1794871748"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3227,7 +3395,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '17.11. 00:08';
+  const BUILD = '17.11. 00:29';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3422,7 +3590,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 00:08'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 00:29'; help.appendChild(ver);
   }
 
   function openImport() {

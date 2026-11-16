@@ -10,3 +10,5 @@ Live: https://sisiliu10.github.io/sisis-garden/
 ## Sounds
 
 Door sound: doorOpen_1 from Kenney's RPG Audio pack (CC0, kenney.nl). All other sounds and the music are generated in the browser.
+
+Munich map data: © OpenStreetMap contributors (ODbL).
