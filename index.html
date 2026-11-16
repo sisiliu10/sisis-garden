@@ -316,8 +316,8 @@
   </div>
   <form id="dForm" hidden autocomplete="off">
     <h3 id="fTitle">Edit plant</h3>
-    <div class="fl">CODE NAME</div><input class="inp" id="fCode" maxlength="24" required>
-    <div class="fl">WHY THIS NAME</div><input class="inp" id="fWhy" maxlength="160">
+    <div class="fl">LABEL IN THE GARDEN</div><input class="inp" id="fCode" maxlength="24" required placeholder="One word, e.g. RECRUITING">
+    <input type="hidden" id="fWhy">
     <div class="fl">NAME</div><input class="inp" id="fName" maxlength="40">
     <div class="fl">SHORT DESCRIPTION</div><input class="inp" id="fSub" maxlength="60">
     <div class="fl">LINKS</div><div id="fLinks"></div><button class="btn" type="button" id="fAddLink" style="margin-top:6px;font-size:13px;padding:4px 10px">+ Add link</button>
@@ -1743,7 +1743,7 @@ function updateDialog(full){
     const dn=document.getElementById('dName'); dn.innerHTML='';
     const b=document.createElement('b'); b.textContent=p.name||'Untitled'; dn.appendChild(b);
     if(p.sub){const s=document.createElement('span'); s.textContent=p.sub; dn.appendChild(s);}
-    document.getElementById('dWhy').textContent=p.why||'';
+    document.getElementById('dWhy').textContent='';
     dNote.hidden=!own; dNote.value=own?(home.notes[p.id]||''):'';
     {const nt=!own&&V().notes&&V().notes[p.id];document.getElementById('dNoteRO').textContent=nt?'Next step: '+nt:'';}
     dNote.placeholder=p.bed?'Next practice step…':'Next step for this project…';
@@ -3112,7 +3112,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794855632"></script>
+<script src="config.js?v=1794857001"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3137,7 +3137,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 21:15';
+  const BUILD = '16.11. 20:23';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3332,7 +3332,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 20:00'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 20:23'; help.appendChild(ver);
   }
 
   function openImport() {
