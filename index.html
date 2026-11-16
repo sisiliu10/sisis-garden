@@ -47,12 +47,12 @@
   .chatbar .live{border-left:0;border-right:2px solid var(--ink);background:#fff;font-family:Silkscreen,monospace;font-size:11px;padding:0 9px;color:#9a938a;white-space:nowrap}
   .chatbar .live.on{color:#2f9e52}
   /* who is here: a small pill under the garden chip (top left), tap for names */
-  #live{position:fixed;left:12px;top:52px;z-index:5;display:inline-flex;align-items:center;gap:6px;font-family:"Pixelify Sans",sans-serif;font-size:13px;font-weight:600;
+  #live{align-self:center;display:inline-flex;align-items:center;gap:6px;font-family:"Pixelify Sans",sans-serif;font-size:13px;font-weight:600;
     color:var(--ink);background:var(--paper);border:2px solid var(--ink);box-shadow:2px 2px 0 rgba(42,36,48,.25);padding:3px 9px 3px 7px;cursor:pointer;white-space:nowrap}
   #live::before{content:"";width:8px;height:8px;background:#b9b2a6;box-shadow:inset -2px -2px 0 rgba(0,0,0,.15)}
   #live.on::before{background:#3fb45e;animation:livep 2.4s steps(2) infinite}
   @keyframes livep{50%{background:#7fd890}}
-  @media (max-width:560px){#live{top:46px;font-size:12px;padding:2px 8px 2px 6px}}
+  @media (max-width:560px){#live{font-size:12px;padding:3px 8px 3px 6px}}
   .chatbar .hist{border-left:0;border-right:2px solid var(--ink);background:#fff;padding:0 9px;color:var(--ink);display:flex;align-items:center}
   .chatbar .hist svg{width:15px;height:14px;shape-rendering:crispEdges;display:block}.chatbar .hist.on{background:#eae3d2}
   #chatLog{position:fixed;left:50%;transform:translateX(-50%);bottom:58px;width:min(440px,calc(100vw - 24px));max-height:min(46vh,340px);display:none;flex-direction:column;
@@ -292,8 +292,7 @@
 <canvas id="c"></canvas>
 <div id="world"><div class="title" id="title"><div class="t1" id="tName">Sisi's</div><div class="t2">Garden</div><div class="sub" id="tSub">keep your projects watered</div></div></div>
 
-<div class="hud l"><div class="chip" id="mood"><span class="h">♥</span> <span id="moodTxt"></span></div><button class="btn dark" id="bHome" hidden>← Home</button></div>
-<button type="button" id="live" class="live" aria-label="Who is here">···</button>
+<div class="hud l"><div class="chip" id="mood" hidden><span class="h">♥</span> <span id="moodTxt"></span></div><button class="btn dark" id="bHome" hidden>← Home</button><button type="button" id="live" class="live" aria-label="Who is here">···</button></div>
 <div class="hud r"><button class="btn" id="bGardens">Gardens</button><button class="btn" id="bAdd" title="Add a project or skill">+ Add</button><button class="btn" id="bJump" hidden>Skills ↓</button><button class="btn" id="bAv">Avatar</button><button class="btn" id="bMusic" type="button">♪</button><button class="btn" id="bHelp">?</button></div>
 <div class="banner" id="banner" hidden></div>
 <div class="toast" id="toast" hidden></div>
@@ -3126,7 +3125,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794858656"></script>
+<script src="config.js?v=1794858803"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3151,7 +3150,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 20:50';
+  const BUILD = '16.11. 20:53';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3346,7 +3345,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 20:50'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 20:53'; help.appendChild(ver);
   }
 
   function openImport() {
