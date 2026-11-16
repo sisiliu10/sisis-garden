@@ -2863,6 +2863,7 @@ function drawBubbles(){
   const sc=scene==='house'?'house':'garden';
   const toS=(x,y)=>sc==='house'?[(RX+x)*S,(RY+y)*S]:[(OX+x)*S,(OY+y-camR)*S];
   if(mySay&&mySay.until>now) items.push({id:'me',x:av.x,y:av.y,t:mySay.t});
+  else if(document.activeElement===chatIn&&chatIn.value.trim()&&now-typingAt<5000) items.push({id:'me~ty',x:av.x,y:av.y,ty:true});
   livePeers().forEach(p=>{if(p.scene!==sc)return;if(p.say)items.push({id:p.id,x:p.x,y:p.y,t:p.say});else if(p.typing)items.push({id:p.id+'~ty',x:p.x,y:p.y,ty:true});});
   const keep=new Set();
   items.forEach(it=>{keep.add(it.id);let el=bubBox.querySelector(`[data-b="${it.id}"]`);
@@ -3111,7 +3112,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794857691"></script>
+<script src="config.js?v=1794857846"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3136,7 +3137,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 20:34';
+  const BUILD = '16.11. 20:37';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3331,7 +3332,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 20:34'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 20:37'; help.appendChild(ver);
   }
 
   function openImport() {
