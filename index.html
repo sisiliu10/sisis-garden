@@ -2255,7 +2255,7 @@ function peerAt(lx,ly){const ps=livePeers().filter(p=>p.scene==='garden'&&(!p.sw
 function peerById(id){return livePeers().find(p=>p.id===id);}
 let pendAct=null;
 function fireAct(k,id){const q=peerById(id);if(!q)return;actN++;const nn=actN;myAct={k,to:id,n:nn,at:Date.now()};setTimeout(()=>{if(myAct&&myAct.n===nn)myAct=null;},2500);
-  av.back=k==='balloon'?q.y<av.y-4:false;actFx(k,av.x,av.y,q.x,q.y,true,false,id);}
+  av.back=k==='balloon'?q.y<av.y-4:false;if(av.back)av.backHold=performance.now()+700;actFx(k,av.x,av.y,q.x,q.y,true,false,id);}
 function goAct(k,id){const p=peerById(id);if(!p)return;if(av.swim||av.jump||knock)return;
   if(mySeat!==null&&k!=='balloon')standUp();
   if(k==='balloon'){fireAct(k,id);return;}
@@ -2725,6 +2725,8 @@ function update(dt,t){
   if(av.water>0){dx=dy=0;}
   else if(!dx&&!dy&&av.target){const tx=av.target.x-av.x,ty=av.target.y-av.y,dd=Math.hypot(tx,ty);if(dd<1.2){const cb=av.target.onArrive;av.target=null;av.run=false;if(cb)cb();}else{dx=tx/dd;dy=ty/dd;}}
   const len=Math.hypot(dx,dy); av.moving=false;
+  // standing still: face the viewer (the back view is only for walking away, watering or throwing upwards)
+  if(len===0&&av.water<=0&&performance.now()>(av.backHold||0)&&!slide)av.back=false;
   if(len>0){
     dx/=len;dy/=len;if(Math.abs(dx)>.2)av.dir=dx>0?1:-1;const sp=(av.swim?38:riding?(av.run?185:112):av.run?150:70)*dt,nx=av.x+dx*sp,ny=av.y+dy*sp;let mx=false,my=false;
     if(scene==='garden'&&!av.swim&&isWater(nx,ny)){startJump(nx+dx*10,ny+dy*10,false);return updateRest(dt,t);}
@@ -2931,7 +2933,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794853035"></script>
+<script src="config.js?v=1794853172"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -2956,7 +2958,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 19:17';
+  const BUILD = '16.11. 19:19';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3151,7 +3153,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 19:17'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 19:19'; help.appendChild(ver);
   }
 
   function openImport() {
