@@ -2755,20 +2755,26 @@ const Sfx=(()=>{
     hg.gain.setValueAtTime(0,t2);hg.gain.linearRampToValueAtTime(.075*v,t2+.06);hg.gain.setValueAtTime(.075*v,t2+.3);hg.gain.exponentialRampToValueAtTime(.0005,t2+.5);
     const h2g=c.createGain();h2g.gain.value=.25;h.connect(hf);h2.connect(h2g);h2g.connect(hf);hf.connect(hg);hg.connect(c.destination);
     [h,h2,lfo].forEach(x=>{x.start(t2);x.stop(t2+.55);});}
-  // coming home: a soft wooden door (latch click + short creak) and the little shop bell above it
+  // opening the front door: handle + latch click, then the hinge creaks as the door swings open (no bell)
   function door(vol){const c=ready();if(!c)return;const t=c.currentTime+.01,v=(vol===undefined?1:vol);
-    const nb=c.createBuffer(1,Math.floor(c.sampleRate*.5),c.sampleRate),d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
-    // latch: tiny bright click
-    {const n=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();n.buffer=nb;f.type='bandpass';f.frequency.value=2600;f.Q.value=3;
-     g.gain.setValueAtTime(.35*v,t);g.gain.exponentialRampToValueAtTime(.0005,t+.035);n.connect(f);f.connect(g);g.connect(c.destination);n.start(t,0,.05);}
-    // wooden creak: a rough low tone that bends up a little
-    {const o=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain(),lfo=c.createOscillator(),lg=c.createGain(),t1=t+.05;
-     o.type='sawtooth';o.frequency.setValueAtTime(190,t1);o.frequency.linearRampToValueAtTime(260,t1+.28);lfo.type='square';lfo.frequency.value=34;lg.gain.value=18;lfo.connect(lg);lg.connect(o.frequency);
-     f.type='bandpass';f.frequency.value=700;f.Q.value=2.5;g.gain.setValueAtTime(0,t1);g.gain.linearRampToValueAtTime(.045*v,t1+.05);g.gain.exponentialRampToValueAtTime(.0005,t1+.32);
-     o.connect(f);f.connect(g);g.connect(c.destination);o.start(t1);lfo.start(t1);o.stop(t1+.35);lfo.stop(t1+.35);}
-    // bell: two little dings
-    [[1568,.16],[2093,.27]].forEach(([fq,dt])=>{const tb=t+dt;[[1,.07],[2.76,.022],[5.4,.008]].forEach(([m,a])=>{const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=fq*m;
-      g.gain.setValueAtTime(0,tb);g.gain.linearRampToValueAtTime(a*v,tb+.004);g.gain.exponentialRampToValueAtTime(.0003,tb+(m>1?.25:.7));o.connect(g);g.connect(c.destination);o.start(tb);o.stop(tb+.75);});});}
+    const nb=c.createBuffer(1,Math.floor(c.sampleRate*.6),c.sampleRate),d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+    const click=(at,fq,a,len)=>{const n=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();n.buffer=nb;f.type='bandpass';f.frequency.value=fq;f.Q.value=4;
+      g.gain.setValueAtTime(a*v,at);g.gain.exponentialRampToValueAtTime(.0005,at+len);n.connect(f);f.connect(g);g.connect(c.destination);n.start(at,Math.random()*.3,len+.02);};
+    // handle goes down, latch clicks open (two small metal clicks and a wooden knock)
+    click(t,3200,.22,.025);click(t+.07,1900,.3,.04);
+    {const o=c.createOscillator(),g=c.createGain(),tk=t+.075;o.type='sine';o.frequency.setValueAtTime(210,tk);o.frequency.exponentialRampToValueAtTime(120,tk+.06);
+     g.gain.setValueAtTime(.16*v,tk);g.gain.exponentialRampToValueAtTime(.0005,tk+.09);o.connect(g);g.connect(c.destination);o.start(tk);o.stop(tk+.1);}
+    // hinge creak: stick-slip pulses through a woody resonance, the rate wobbles as the door swings
+    {const t1=t+.16,dur=.62,o=c.createOscillator(),f1=c.createBiquadFilter(),f2=c.createBiquadFilter(),g=c.createGain();
+     o.type='sawtooth';o.frequency.setValueAtTime(38,t1);o.frequency.linearRampToValueAtTime(70,t1+.18);o.frequency.linearRampToValueAtTime(52,t1+.34);o.frequency.linearRampToValueAtTime(84,t1+.5);o.frequency.linearRampToValueAtTime(60,t1+dur);
+     f1.type='bandpass';f1.Q.value=6;f1.frequency.setValueAtTime(1150,t1);f1.frequency.linearRampToValueAtTime(1500,t1+.3);f1.frequency.linearRampToValueAtTime(1250,t1+dur);
+     f2.type='lowpass';f2.frequency.value=2600;
+     g.gain.setValueAtTime(0,t1);g.gain.linearRampToValueAtTime(.16*v,t1+.06);g.gain.setValueAtTime(.16*v,t1+.38);g.gain.linearRampToValueAtTime(.12*v,t1+.5);g.gain.exponentialRampToValueAtTime(.0005,t1+dur);
+     o.connect(f1);f1.connect(f2);f2.connect(g);g.connect(c.destination);o.start(t1);o.stop(t1+dur+.02);}
+    // a little air as it opens
+    {const n=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain(),t2=t+.2;n.buffer=nb;f.type='lowpass';f.frequency.value=500;
+     g.gain.setValueAtTime(0,t2);g.gain.linearRampToValueAtTime(.05*v,t2+.2);g.gain.exponentialRampToValueAtTime(.0005,t2+.55);n.connect(f);f.connect(g);g.connect(c.destination);n.start(t2,0,.58);}
+  }
   return {splash,whee,yay,pour,grow,sit,door};
 })();
 
@@ -3161,7 +3167,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794863764"></script>
+<script src="config.js?v=1794864830"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3186,7 +3192,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 22:16';
+  const BUILD = '16.11. 22:33';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3381,7 +3387,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 22:16'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 22:33'; help.appendChild(ver);
   }
 
   function openImport() {
