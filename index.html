@@ -46,6 +46,18 @@
   .chatbar button{border:0;border-left:2px solid var(--ink);background:#eae3d2;font-size:15px;padding:0 14px;cursor:pointer;color:var(--ink)}
   .chatbar .live{border-left:0;border-right:2px solid var(--ink);background:#fff;font-family:Silkscreen,monospace;font-size:11px;padding:0 9px;color:#9a938a;white-space:nowrap}
   .chatbar .live.on{color:#2f9e52}
+  .chatbar .hist{border-left:0;border-right:2px solid var(--ink);background:#fff;padding:0 9px;color:var(--ink);display:flex;align-items:center}
+  .chatbar .hist svg{width:15px;height:14px;shape-rendering:crispEdges;display:block}.chatbar .hist.on{background:#eae3d2}
+  #chatLog{position:fixed;left:50%;transform:translateX(-50%);bottom:58px;width:min(440px,calc(100vw - 24px));max-height:min(46vh,340px);display:none;flex-direction:column;
+    background:var(--paper);border:2px solid var(--ink);box-shadow:3px 3px 0 rgba(42,36,48,.25);z-index:6}
+  #chatLog.show{display:flex}
+  #chatLog .ch{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-bottom:2px solid var(--ink);font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.5px}
+  #chatLog .ch button{border:0;background:none;font:inherit;font-size:13px;cursor:pointer;color:var(--ink);padding:0 2px}
+  #chatLog .cl{overflow:auto;padding:6px 10px 8px;display:flex;flex-direction:column;gap:5px;font-size:15px;line-height:1.3}
+  #chatLog .cm{overflow-wrap:anywhere}#chatLog .cm b{font-weight:700;margin-right:5px}#chatLog .cm.me b{color:#2f7fd0}
+  #chatLog .cm i{font-style:normal;color:var(--muted);font-size:12px;margin-left:6px;white-space:nowrap}
+  #chatLog .cd{align-self:center;font-family:Silkscreen,monospace;font-size:10px;color:var(--muted);margin:4px 0 0}
+  #chatLog .ce{color:var(--muted);font-size:14px;padding:6px 0}
   .toast{position:fixed;left:50%;top:58px;transform:translateX(-50%);z-index:8;font-size:14px;line-height:1.35;background:var(--ink);color:#fff;padding:8px 12px;width:max-content;max-width:calc(100vw - 24px);text-align:center;box-shadow:3px 3px 0 rgba(42,36,48,.25)}
   @media (max-width:560px){.bub{max-width:130px;font-size:13px}}
   .bub{position:fixed;transform:translate(-50%,-100%);max-width:180px;background:#fff;color:var(--ink);border:2px solid var(--ink);padding:4px 8px;font-size:14px;line-height:1.25;pointer-events:none;z-index:4;word-wrap:break-word;box-shadow:2px 2px 0 rgba(0,0,0,.2)}
@@ -256,7 +268,7 @@
 <div class="toast" id="toast" hidden></div>
 <button class="btn dark prompt" id="prompt" hidden></button>
 <div class="movebar" id="moveBar" hidden><span id="moveTxt"></span><button class="btn" id="moveCancel" type="button">Cancel</button></div>
-<form class="chatbar" id="chatbar" autocomplete="off"><button type="button" id="live" class="live" aria-label="Live status">○</button><input id="chatIn" maxlength="80" placeholder="Sag was …" aria-label="Chat message" enterkeyhint="send"><button type="submit" aria-label="Send">▶</button></form>
+<form class="chatbar" id="chatbar" autocomplete="off"><button type="button" id="live" class="live" aria-label="Live status">○</button><button type="button" id="chatHist" class="hist" aria-label="Chat history" title="Chat history"><svg viewBox="0 0 9 8" fill="currentColor" aria-hidden="true"><rect x="1" y="0" width="7" height="1"/><rect x="0" y="1" width="9" height="4"/><rect x="1" y="5" width="7" height="1"/><rect x="2" y="6" width="2" height="1"/><rect x="2" y="7" width="1" height="1"/><rect x="2" y="2" width="5" height="1" fill="#fff"/><rect x="2" y="3" width="3" height="1" fill="#fff"/></svg></button><input id="chatIn" maxlength="80" placeholder="Sag was …" aria-label="Chat message" enterkeyhint="send"><button type="submit" aria-label="Send">▶</button></form>
 <div id="bubbles"></div>
 <div id="loading">Growing the garden…</div>
 
@@ -1555,10 +1567,10 @@ function livePeers(){
     const q=p.presence||{}; if(typeof q.x!=='number'||typeof q.y!=='number') continue;
     const tx=q.s==='h'?clamp(q.x,-200,400):clamp(q.x,-OX+14,CW+OX-14), ty=clamp(q.y,0,600);
     let gh=ghosts[p.peer]; if(!gh) gh=ghosts[p.peer]={x:tx,y:ty};
-    gh.x+=(tx-gh.x)*.25; gh.y+=(ty-gh.y)*.25; gh.seen=now;
+    {const dt=Math.min(250,now-(gh.lt||now));gh.lt=now;const f=1-Math.exp(-dt/85);if(Math.hypot(tx-gh.x,ty-gh.y)>90){gh.x=tx;gh.y=ty;}else{gh.x+=(tx-gh.x)*f;gh.y+=(ty-gh.y)*f;}} gh.seen=now;
     {const swn=!!q.sw&&q.s!=='h';if(gh.swp===false&&swn&&scene==='garden')setTimeout(()=>Sfx.splash(false,.45),380);gh.swp=swn;}
     {const sln=q.sl===1||q.sl===2?q.sl:0;if(scene==='garden'&&q.s!=='h'){if(gh.slp===1&&sln===2)Sfx.whee(.5);if(gh.slp===2&&sln===0)Sfx.yay(.55);}gh.slp=sln;}
-    if(q.say&&typeof q.say.t==='string'&&q.say.n!==gh.sayN){gh.sayN=q.say.n;gh.sayT=q.say.t.slice(0,80);gh.sayUntil=now+6000+q.say.t.length*60;}
+    if(q.say&&typeof q.say.t==='string'&&q.say.n!==gh.sayN){if(gh.sayN!==undefined||now-roomT0>4000)logChat({t:Date.now(),n:str(q.n,14)||'Friend',text:q.say.t.slice(0,80)});gh.sayN=q.say.n;gh.sayT=q.say.t.slice(0,80);gh.sayUntil=now+6000+q.say.t.length*60;}
     const sgq=q.sg&&(q.sg.s===0||q.sg.s===1)?{s:q.sg.s,a:clamp(num(q.sg.a,0),-1.2,1.2)}:null;
     if(Math.abs(tx-gh.x)>.6)gh.dir=tx>gh.x?1:-1;
     out.push({sl:q.sl===1||q.sl===2?q.sl:0,ride:!!q.al,sg:sgq,say:gh.sayUntil>now?gh.sayT:'',id:p.peer,by:p.by,x:gh.x,y:gh.y,scene:q.s==='h'?'house':'garden',back:!!q.b,moving:!!q.m,run:!!q.r,swim:!!q.sw,water:!!q.w,name:str(q.n,14)||'Friend',look:cleanLook(q.l)});
@@ -2629,6 +2641,31 @@ function replant(id){
   const [px,py]=posOf(p);for(let i=0;i<10;i++)spawn({kind:'spark',x:px+(Math.random()*14-7),y:py-6-Math.random()*10,vy:-10,life:.7});
   toast(p.code+' is growing again.',2200);
 }
+/* ================= chat history ================= */
+let chatMem=[],chatG=null;
+const chatLogEl=document.createElement('div');chatLogEl.id='chatLog';
+chatLogEl.innerHTML='<div class="ch"><span>Chat</span><button type="button" aria-label="Close">✕</button></div><div class="cl"></div>';document.body.appendChild(chatLogEl);
+const chatHistBtn=document.getElementById('chatHist'),chatList=chatLogEl.querySelector('.cl');
+chatLogEl.querySelector('.ch button').onclick=()=>toggleChatLog(false);
+chatHistBtn.addEventListener('click',e=>{e.stopPropagation();toggleChatLog(!chatLogEl.classList.contains('show'));});
+function sameMsg(a,b){return a.n===b.n&&a.text===b.text&&Math.abs(a.t-b.t)<20000;}
+function logChat(m){const g=gardenKey();if(g!==chatG){chatG=g;chatMem=[];}if(chatMem.some(x=>sameMsg(x,m)))return;chatMem.push(m);if(chatMem.length>200)chatMem.shift();if(chatLogEl.classList.contains('show'))renderChat();}
+function fmtT(t){const d=new Date(t),n=new Date(),hm=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  if(d.toDateString()===n.toDateString())return hm;const y=new Date(n-864e5);if(d.toDateString()===y.toDateString())return 'yesterday '+hm;return d.toLocaleDateString([],{day:'numeric',month:'short'})+' '+hm;}
+function renderChat(){
+  const g=gardenKey();if(g!==chatG){chatG=g;chatMem=[];}
+  const L=chatMem.slice().sort((a,b)=>a.t-b.t).slice(-80),stick=chatList.scrollHeight-chatList.scrollTop-chatList.clientHeight<30;chatList.innerHTML='';
+  if(!L.length){const e=document.createElement('div');e.className='ce';e.textContent='No messages yet. Say hi below.';chatList.appendChild(e);}
+  L.forEach(m=>{const r=document.createElement('div');r.className='cm'+(m.me?' me':'');const b=document.createElement('b');b.textContent=m.n;r.appendChild(b);
+    r.appendChild(document.createTextNode(m.text));const ti=document.createElement('i');ti.textContent=fmtT(m.t);r.appendChild(ti);chatList.appendChild(r);});
+  if(stick||!chatList.dataset.seen){chatList.scrollTop=chatList.scrollHeight;chatList.dataset.seen=1;}
+}
+async function loadChat(){
+  if(!window.__chatlog||!gardenKey())return;
+  try{const L=await window.__chatlog.load(gardenKey(),myId);const g=gardenKey();if(g!==chatG){chatG=g;chatMem=[];}
+    L.forEach(m=>{if(!chatMem.some(x=>sameMsg(x,m)))chatMem.push(m);});renderChat();}catch(e){}
+}
+function toggleChatLog(on){chatLogEl.classList.toggle('show',on);chatHistBtn.classList.toggle('on',on);if(on){chatList.dataset.seen='';renderChat();loadChat();}}
 /* ================= hint ================= */
 function hideHint(){}
 
@@ -2637,7 +2674,9 @@ let last=performance.now(),uiTick=0;
 let mySay=null, sayN=0;
 const chatIn=document.getElementById('chatIn'), bubBox=document.getElementById('bubbles');
 document.getElementById('chatbar').addEventListener('submit',e=>{e.preventDefault();const t=chatIn.value.trim().slice(0,80);if(!t)return;
-  sayN++;mySay={n:sayN,t,until:performance.now()+6000+t.length*60};chatIn.value='';chatIn.blur();});
+  sayN++;mySay={n:sayN,t,until:performance.now()+6000+t.length*60};chatIn.value='';chatIn.blur();
+  logChat({t:Date.now(),n:me().name||'Me',text:t,me:true});
+  try{if(window.__chatlog&&gardenKey())window.__chatlog.add({g:gardenKey(),n:(me().name||'Me').slice(0,14),text:t});}catch(e){}});
 function drawBubbles(){
   const now=performance.now(), items=[];
   const sc=scene==='house'?'house':'garden';
@@ -2880,7 +2919,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794851223"></script>
+<script src="config.js?v=1794852173"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -2905,7 +2944,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 18:47';
+  const BUILD = '16.11. 19:02';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -2929,7 +2968,7 @@ function maybeAutoVisit(){
   }
   const sb = window.supabase.createClient(CFG.url, CFG.key, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit' },
-    realtime: { params: { eventsPerSecond: 20 } },
+    realtime: { params: { eventsPerSecond: 40 } },
   });
   window.__gardenSb = sb;
   window.__sb = sb;
@@ -2977,7 +3016,8 @@ function maybeAutoVisit(){
 
   /* ---------- live room (Supabase Realtime presence) ---------- */
   const peerKey = Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
-  let ch = null, connected = false, mine = {}, snap = [], connFns = [], lastTrack = 0, tTimer = null, retry = null;
+  let ch = null, connected = false, mine = {}, snap = [], connFns = [], lastTrack = 0, tTimer = null, retry = null, lastCast = 0, cTimer = null;
+  const live = {}; // fast position updates (broadcast), newer than the slow presence state
   const sessT = Date.now();
   // One avatar per person: my own other tabs or an old session of mine are never shown,
   // and of somebody else's sessions only the newest counts (a reload leaves a stale one behind for a moment).
@@ -2991,7 +3031,9 @@ function maybeAutoVisit(){
     }
     const out = [Object.freeze({ peer: peerKey, by: uid, isMe: true, sameTab: true, kind: 'viewer', guest: false, presence: Object.freeze(Object.assign({}, mine)), updatedAt: Date.now() })];
     for (const u in best) { const { k, m } = best[u];
-      out.push(Object.freeze({ peer: k, by: m.u || null, isMe: false, sameTab: false, kind: 'viewer', guest: false, presence: Object.freeze(m.p || {}), updatedAt: Date.now() })); }
+      const lv = live[k], p = lv && lv.at > (m.at || 0) ? lv.p : (m.p || {});
+      out.push(Object.freeze({ peer: k, by: m.u || null, isMe: false, sameTab: false, kind: 'viewer', guest: false, presence: Object.freeze(p), updatedAt: Date.now() })); }
+    for (const k in live) if (!st[k]) delete live[k];
     snap = Object.freeze(out);
   }
   function setConn(c) { if (c === connected) return; connected = c; connFns.forEach(f => { try { f(c); } catch (e) {} }); }
@@ -2999,21 +3041,32 @@ function maybeAutoVisit(){
     clearTimeout(tTimer); tTimer = null;
     if (!ch || !connected) return;
     lastTrack = performance.now();
-    ch.track({ u: uid, s: sessT, p: mine }).catch(() => {});
+    ch.track({ u: uid, s: sessT, at: Date.now(), p: mine }).catch(() => {});
+  }
+  // movement goes out ~15 times a second as a light broadcast; the presence state (who is here) only every 1.5 s
+  function cast() {
+    clearTimeout(cTimer); cTimer = null;
+    if (!ch || !connected) return;
+    lastCast = performance.now();
+    try { ch.send({ type: 'broadcast', event: 'p', payload: { k: peerKey, u: uid, at: Date.now(), p: mine } }); } catch (e) {}
   }
   function schedule() {
     rebuild();
-    if (tTimer) return;
-    const wait = Math.max(0, 110 - (performance.now() - lastTrack));
-    tTimer = setTimeout(flush, wait);
+    if (!cTimer) cTimer = setTimeout(cast, Math.max(0, 66 - (performance.now() - lastCast)));
+    if (!tTimer) tTimer = setTimeout(flush, Math.max(0, 1500 - (performance.now() - lastTrack)));
   }
   function connect() {
     clearTimeout(retry);
     if (ch) { try { sb.removeChannel(ch); } catch (e) {} ch = null; }
     setConn(false);
-    const c = sb.channel('garden-live', { config: { presence: { key: peerKey } } });
+    const c = sb.channel('garden-live', { config: { presence: { key: peerKey }, broadcast: { self: false, ack: false } } });
     ch = c;
     c.on('presence', { event: 'sync' }, () => { if (ch === c) rebuild(); })
+     .on('broadcast', { event: 'p' }, ({ payload: q }) => {
+        if (ch !== c || !q || !q.k || q.k === peerKey || q.u === uid || !q.p) return;
+        if (live[q.k] && live[q.k].at >= q.at) return;
+        live[q.k] = { at: q.at || Date.now(), p: q.p }; rebuild();
+      })
      .subscribe(status => {
         if (ch !== c) return;
         if (status === 'SUBSCRIBED') { setConn(true); flush(); rebuild(); }
@@ -3034,6 +3087,26 @@ function maybeAutoVisit(){
     onPeers: () => () => {},
     emit: async () => {},
     on: () => () => {},
+  };
+
+  /* ---------- chat history: everyone keeps their own messages, a garden's history is all of them merged ---------- */
+  let myChat = null;
+  window.__chatlog = {
+    async add(m) {
+      if (!uid) return;
+      if (!myChat) { try { const d = await getDoc('gardens/' + uid + '/x/chat'); myChat = (d.exists && d.data() && Array.isArray(d.data().list)) ? d.data().list : []; } catch (e) { myChat = []; } }
+      myChat.push({ g: String(m.g).slice(0, 20), t: Date.now(), n: String(m.n || '').slice(0, 14), text: String(m.text || '').slice(0, 80) });
+      if (myChat.length > 300) myChat = myChat.slice(-300);
+      try { await setDoc('gardens/' + uid + '/x/chat', { list: myChat }); } catch (e) {}
+    },
+    async load(g) {
+      const { data, error } = await sb.from('docs').select('path,data').like('path', 'gardens/%/x/chat');
+      if (error || !Array.isArray(data)) return [];
+      const out = [];
+      data.forEach(r => { const mineRow = r.path === 'gardens/' + uid + '/x/chat';
+        ((r.data && r.data.list) || []).forEach(x => { if (x && x.g === g && typeof x.text === 'string') out.push({ t: +x.t || 0, n: String(x.n || 'Friend').slice(0, 14), text: x.text.slice(0, 80), me: mineRow }); }); });
+      return out.sort((a, b) => a.t - b.t).slice(-120);
+    },
   };
 
   /* ---------- user ---------- */
@@ -3064,7 +3137,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 18:47'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 19:02'; help.appendChild(ver);
   }
 
   function openImport() {
