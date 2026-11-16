@@ -1789,9 +1789,25 @@ function addItem(bed){
 /* ================= atmosphere ================= */
 const sstep=(a,b,x)=>{const k=clamp((x-a)/(b-a),0,1);return k*k*(3-2*k);};
 function hourNow(){let h=NaN;try{const o=localStorage.getItem('garden-hour');if(o)h=+o;}catch(e){}if(isNaN(h)){const d=new Date();h=d.getHours()+d.getMinutes()/60;}return h;}
-function skyState(){const h=hourNow();
-  const night=h<12?1-sstep(5.5,7.5,h):sstep(19.5,21.5,h);
-  const warm=h<12?sstep(5,6.5,h)*(1-sstep(7,9,h)):sstep(17,18.5,h)*(1-sstep(20,21.5,h));
+// real sunrise and sunset for the viewer's place and season (dark at 17:00 in a German November)
+let sunCache=null;
+function sunTimes(){
+  const d=new Date(),key=d.toDateString();if(sunCache&&sunCache.k===key)return sunCache;
+  let tz='';try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'';}catch(e){}
+  const y=d.getFullYear(),std=Math.max(new Date(y,0,1).getTimezoneOffset(),new Date(y,6,1).getTimezoneOffset());
+  const PL={'Europe/Berlin':[52.5,13.4],'Europe/Vienna':[48.2,16.4],'Europe/Zurich':[47.4,8.5],'Asia/Shanghai':[31.2,121.5],'Asia/Hong_Kong':[22.3,114.2],'Asia/Tokyo':[35.7,139.7],'Europe/London':[51.5,-.1],'America/New_York':[40.7,-74],'America/Los_Angeles':[34,-118.2]};
+  const lat=(PL[tz]||[])[0]??(/^Europe\//.test(tz)?50:/^(Asia|America)\//.test(tz)?38:45);
+  const lon=(PL[tz]||[])[1]??(/^Europe\/(Berlin|Munich|Vienna)/.test(tz)?10:-std/4);
+  const N=Math.floor((d-new Date(y,0,0))/864e5),rad=Math.PI/180;
+  const dec=-23.44*Math.cos(2*Math.PI/365*(N+10))*rad,B=2*Math.PI*(N-81)/364;
+  const eot=(9.87*Math.sin(2*B)-7.53*Math.cos(B)-1.5*Math.sin(B))/60;
+  const c=(Math.sin(-.833*rad)-Math.sin(lat*rad)*Math.sin(dec))/(Math.cos(lat*rad)*Math.cos(dec));
+  const w=Math.acos(clamp(c,-1,1))/rad/15, noon=12+(-d.getTimezoneOffset()/4-lon)/15-eot;
+  return sunCache={k:key,rise:noon-w,set:noon+w};
+}
+function skyState(){const h=hourNow(),{rise,set}=sunTimes();
+  const night=h<12?1-sstep(rise-1.1,rise+.2,h):sstep(set-.1,set+1.1,h);
+  const warm=h<12?sstep(rise-.9,rise,h)*(1-sstep(rise+.4,rise+1.4,h)):sstep(set-1.4,set-.4,h)*(1-sstep(set+.1,set+.8,h));
   return {night,warm};}
 function gardenHealthy(gd){const it=gd?gd.projects.concat(gd.skills||[]):[];return it.length>0&&it.every(p=>waterOf(p)>=60);}
 function weather(t){
@@ -1811,7 +1827,7 @@ function drawAtmosphere(t){
   if(wx.rain>0){g.globalCompositeOperation='multiply';g.globalAlpha=wx.rain*.32;g.fillStyle='#8f9cbc';g.fillRect(0,0,W,H);}
   if(night>0){g.globalCompositeOperation='multiply';g.globalAlpha=night*.78;g.fillStyle='#3a4590';g.fillRect(0,0,W,H);}
   g.globalCompositeOperation='source-over';
-  if(warm>0){g.globalAlpha=warm*.15;g.fillStyle='#ff8a3a';g.fillRect(0,0,W,H);}
+  if(warm>0){g.globalAlpha=warm*.06;g.fillStyle='#ff9466';g.fillRect(0,0,W,H);}
   g.globalAlpha=1;
   if(night>.15){
     const skyB=OY+86-camR;
@@ -2827,7 +2843,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794850614"></script>
+<script src="config.js?v=1794850783"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -2852,7 +2868,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 18:36';
+  const BUILD = '16.11. 18:39';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3011,7 +3027,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 18:36'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 18:39'; help.appendChild(ver);
   }
 
   function openImport() {
