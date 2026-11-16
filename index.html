@@ -1553,7 +1553,7 @@ function roomPeers(){
 }
 function isHostPeer(p){ return !p.isMe&&!!visiting&&((!!p.by&&p.by===visiting.id)||(!!p.presence&&p.presence.u===visiting.id)); }
 function sendPresence(now){
-  if(!room||now-lastPresT<90) return;
+  if(!room||now-lastPresT<60) return;
   const st={g:gardenKey(),u:myId||null,sw:av.swim||av.jump?1:0,say:(mySay&&mySay.until>performance.now())?{n:mySay.n,t:mySay.t}:null,x:Math.round(av.x*2)/2,y:Math.round((av.y-(av.kh||0))*2)/2,act:myAct,al:riding?1:0,sl:slide?(slide.ph==='climb'?1:2):0,sg:mySeat===null?null:{s:mySeat,a:Math.round(swA*100)/100},s:scene==='house'?'h':'g',b:av.back?1:0,m:av.moving?1:0,r:av.run&&av.moving?1:0,n:(me().name||'Friend').slice(0,14),l:me().look,w:av.water>0?1:0};
   const k=JSON.stringify(st); if(k===lastPres&&now-lastPresT<2500) return;
   lastPres=k; lastPresT=now; try{const pr=room.presence(st);if(pr&&pr.catch)pr.catch(()=>{});}catch(e){}
@@ -1567,13 +1567,27 @@ function livePeers(){
     const q=p.presence||{}; if(typeof q.x!=='number'||typeof q.y!=='number') continue;
     const tx=q.s==='h'?clamp(q.x,-200,400):clamp(q.x,-OX+14,CW+OX-14), ty=clamp(q.y,0,600);
     let gh=ghosts[p.peer]; if(!gh) gh=ghosts[p.peer]={x:tx,y:ty};
-    {const dt=Math.min(250,now-(gh.lt||now));gh.lt=now;const f=1-Math.exp(-dt/85);if(Math.hypot(tx-gh.x,ty-gh.y)>90){gh.x=tx;gh.y=ty;}else{gh.x+=(tx-gh.x)*f;gh.y+=(ty-gh.y)*f;}} gh.seen=now;
+    if(typeof q._t==='number'){
+      // smooth playback: keep the last positions with the sender's timestamps and replay them ~140 ms behind, interpolating in between,
+      // so a friend's walk looks continuous even when network packets arrive in bursts
+      const B=gh.buf||(gh.buf=[]),wall=Date.now();
+      const add=(t,x,y)=>{if(B.length&&t<=B[B.length-1].t)return;x=q.s==='h'?clamp(x,-200,400):clamp(x,-OX+14,CW+OX-14);y=clamp(y,0,600);
+        B.push({t,x,y});if(B.length>60)B.shift();const d=wall-t;gh.off=gh.off===undefined||d<gh.off?d:gh.off+(d-gh.off)*.03;const late=d-gh.off;gh.jit=Math.max(late,(gh.jit||0)*.985);};
+      if(Array.isArray(q._h))q._h.forEach(e=>{if(Array.isArray(e)&&typeof e[0]==='number'&&typeof e[1]==='number'&&typeof e[2]==='number')add(e[0],e[1],e[2]);});
+      add(q._t,tx,ty);
+      // the playback delay grows with how bursty this friend's connection is (120 to 500 ms)
+      const T=wall-gh.off-clamp(90+(gh.jit||0)*1.15,120,500);let px=B[B.length-1].x,py=B[B.length-1].y;
+      if(T<=B[0].t){px=B[0].x;py=B[0].y;}
+      else for(let i=B.length-1;i>0;i--){const a=B[i-1],b=B[i];if(T>=a.t&&T<=b.t){if(Math.hypot(b.x-a.x,b.y-a.y)>90){px=b.x;py=b.y;}else{const k=(T-a.t)/Math.max(1,b.t-a.t);px=a.x+(b.x-a.x)*k;py=a.y+(b.y-a.y)*k;}break;}}
+      if(Math.hypot(px-gh.x,py-gh.y)>.05)gh.mvT=now;gh.x=px;gh.y=py;
+    }else{const dt=Math.min(250,now-(gh.lt||now));gh.lt=now;const f=1-Math.exp(-dt/85);if(Math.hypot(tx-gh.x,ty-gh.y)>90){gh.x=tx;gh.y=ty;}else{gh.x+=(tx-gh.x)*f;gh.y+=(ty-gh.y)*f;}}
+    gh.seen=now;
     {const swn=!!q.sw&&q.s!=='h';if(gh.swp===false&&swn&&scene==='garden')setTimeout(()=>Sfx.splash(false,.45),380);gh.swp=swn;}
     {const sln=q.sl===1||q.sl===2?q.sl:0;if(scene==='garden'&&q.s!=='h'){if(gh.slp===1&&sln===2)Sfx.whee(.5);if(gh.slp===2&&sln===0)Sfx.yay(.55);}gh.slp=sln;}
     if(q.say&&typeof q.say.t==='string'&&q.say.n!==gh.sayN){if(gh.sayN!==undefined||now-roomT0>4000)logChat({t:Date.now(),n:str(q.n,14)||'Friend',text:q.say.t.slice(0,80)});gh.sayN=q.say.n;gh.sayT=q.say.t.slice(0,80);gh.sayUntil=now+6000+q.say.t.length*60;}
     const sgq=q.sg&&(q.sg.s===0||q.sg.s===1)?{s:q.sg.s,a:clamp(num(q.sg.a,0),-1.2,1.2)}:null;
-    if(Math.abs(tx-gh.x)>.6)gh.dir=tx>gh.x?1:-1;
-    out.push({sl:q.sl===1||q.sl===2?q.sl:0,ride:!!q.al,sg:sgq,say:gh.sayUntil>now?gh.sayT:'',id:p.peer,by:p.by,x:gh.x,y:gh.y,scene:q.s==='h'?'house':'garden',back:!!q.b,moving:!!q.m,run:!!q.r,swim:!!q.sw,water:!!q.w,name:str(q.n,14)||'Friend',look:cleanLook(q.l)});
+    if(gh.pxx!==undefined&&Math.abs(gh.x-gh.pxx)>.02)gh.dir=gh.x>gh.pxx?1:-1;else if(gh.pxx===undefined&&Math.abs(tx-gh.x)>.6)gh.dir=tx>gh.x?1:-1;gh.pxx=gh.x;
+    out.push({sl:q.sl===1||q.sl===2?q.sl:0,ride:!!q.al,sg:sgq,say:gh.sayUntil>now?gh.sayT:'',id:p.peer,by:p.by,x:gh.x,y:gh.y,scene:q.s==='h'?'house':'garden',back:!!q.b,moving:!!q.m||now-(gh.mvT||0)<150,run:!!q.r,swim:!!q.sw,water:!!q.w,name:str(q.n,14)||'Friend',look:cleanLook(q.l)});
   }
   return out;
 }
@@ -2917,7 +2931,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794852350"></script>
+<script src="config.js?v=1794853035"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -2942,7 +2956,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 19:05';
+  const BUILD = '16.11. 19:17';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3029,7 +3043,7 @@ function maybeAutoVisit(){
     }
     const out = [Object.freeze({ peer: peerKey, by: uid, isMe: true, sameTab: true, kind: 'viewer', guest: false, presence: Object.freeze(Object.assign({}, mine)), updatedAt: Date.now() })];
     for (const u in best) { const { k, m } = best[u];
-      const lv = live[k], p = lv && lv.at > (m.at || 0) ? lv.p : (m.p || {});
+      const lv = live[k], p = lv && lv.at > (m.at || 0) ? Object.assign({}, lv.p, { _t: lv.at, _h: lv.h }) : Object.assign({}, m.p || {}, m.at ? { _t: m.at } : {});
       out.push(Object.freeze({ peer: k, by: m.u || null, isMe: false, sameTab: false, kind: 'viewer', guest: false, presence: Object.freeze(p), updatedAt: Date.now() })); }
     for (const k in live) if (!st[k]) delete live[k];
     snap = Object.freeze(out);
@@ -3039,14 +3053,14 @@ function maybeAutoVisit(){
     clearTimeout(tTimer); tTimer = null;
     if (!ch || !connected) return;
     lastTrack = performance.now();
-    ch.track({ u: uid, s: sessT, at: Date.now(), p: mine }).catch(() => {});
+    ch.track({ u: uid, s: sessT, at: Date.now(), p: JSON.parse(JSON.stringify(mine)) }).catch(() => {});
   }
   // movement goes out ~15 times a second as a light broadcast; the presence state (who is here) only every 1.5 s
   function cast() {
     clearTimeout(cTimer); cTimer = null;
     if (!ch || !connected) return;
     lastCast = performance.now();
-    try { ch.send({ type: 'broadcast', event: 'p', payload: { k: peerKey, u: uid, at: Date.now(), p: mine } }); } catch (e) {}
+    try { ch.send({ type: 'broadcast', event: 'p', payload: { k: peerKey, u: uid, at: Date.now(), p: JSON.parse(JSON.stringify(mine)) } }); } catch (e) {}
   }
   function schedule() {
     rebuild();
@@ -3063,7 +3077,9 @@ function maybeAutoVisit(){
      .on('broadcast', { event: 'p' }, ({ payload: q }) => {
         if (ch !== c || !q || !q.k || q.k === peerKey || q.u === uid || !q.p) return;
         if (live[q.k] && live[q.k].at >= q.at) return;
-        live[q.k] = { at: q.at || Date.now(), p: q.p }; rebuild();
+        const h = (live[q.k] && live[q.k].h) || [];
+        if (typeof q.p.x === 'number' && typeof q.p.y === 'number') { h.push([q.at, q.p.x, q.p.y]); if (h.length > 30) h.shift(); }
+        live[q.k] = { at: q.at || Date.now(), p: q.p, h }; rebuild();
       })
      .subscribe(status => {
         if (ch !== c) return;
@@ -3135,7 +3151,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 19:05'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 19:17'; help.appendChild(ver);
   }
 
   function openImport() {
