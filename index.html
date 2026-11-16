@@ -3066,7 +3066,7 @@ function enterCity(){
   loadCity().then(()=>new Promise(r=>setTimeout(r,60))).then(()=>{if(!CITY.ready)buildCity();return new Promise(r=>setTimeout(r,Math.max(0,500-(performance.now()-t0))));}).then(()=>{
     scene='city';av.swim=false;av.jump=null;av.water=0;active=null;lastActive=undefined;dlg.classList.remove('show');editing=false;
     worldEl.style.visibility='hidden';bJump.hidden=true;setPrompt(null);
-    av.x=CITY.sx;av.y=CITY.sy+9;av.back=false;av.target=null;cat.x=av.x+14;cat.y=av.y+4;streetEl.hidden=false;viewBtn.hidden=false;photoBtn.hidden=false;loadPhotoToken();CITY.pov=true;CITY.ang=-Math.PI/2;CITY.touch=null;viewBtn.textContent='Map';osmEl.hidden=false;lastPres='';
+    av.x=CITY.sx;av.y=CITY.sy+9;av.back=false;av.target=null;cat.x=av.x+14;cat.y=av.y+4;streetEl.hidden=false;viewBtn.hidden=false;photoBtn.hidden=false;loadPhotoToken().then(()=>{let pref='';try{pref=localStorage.getItem('garden-city-view')||'';}catch(e){}if(mlyToken&&scene==='city'&&pref!=='pixel'&&!CITY.photo)openPhotos();});CITY.pov=true;CITY.ang=-Math.PI/2;CITY.touch=null;viewBtn.textContent='Map';osmEl.hidden=false;lastPres='';
     CITY.loading=false;cityFade.style.opacity='0';try{Sfx.yay(.6);}catch(e){}
     toast(('ontouchstart' in window)?'Maxvorstadt, München. Hold to walk, slide left or right to turn. Find the Brezn!':'Maxvorstadt, München. W or ↑ walks, A/D or ←/→ turn, Shift runs. Find the Brezn!',5200);
   }).catch(()=>{CITY.loading=false;cityFade.style.opacity='0';toast('München could not be loaded. Try again in a moment.',3000);});
@@ -3121,7 +3121,7 @@ function renderCity(t){
 }
 /* ================= München street view: first-person pixel 3D (raycast over the real building footprints) ================= */
 const viewBtn=document.createElement('button');viewBtn.type='button';viewBtn.id='viewBtn';viewBtn.className='btn';viewBtn.style.cssText='position:fixed;right:12px;top:'+(innerWidth<700?50:56)+'px;z-index:5';viewBtn.hidden=true;document.body.appendChild(viewBtn);
-viewBtn.addEventListener('click',e=>{e.stopPropagation();if(CITY.photo){closePhotos();CITY.pov=true;viewBtn.textContent='Map';return;}CITY.pov=!CITY.pov;CITY.touch=null;av.target=null;viewBtn.textContent=CITY.pov?'Map':'Street view';viewBtn.blur();});
+viewBtn.addEventListener('click',e=>{e.stopPropagation();if(CITY.photo){try{localStorage.setItem('garden-city-view','pixel');}catch(_){}closePhotos();CITY.pov=true;viewBtn.textContent='Map';return;}CITY.pov=!CITY.pov;CITY.touch=null;av.target=null;viewBtn.textContent=CITY.pov?'Map':'Street view';viewBtn.blur();});
 ['pointermove','pointerup','pointercancel','pointerleave'].forEach(ev=>cvs.addEventListener(ev,e=>{if(scene!=='city'||!CITY.pov||!CITY.touch)return;
   if(ev==='pointermove'){if(CITY.touch.on){CITY.touch.x=clamp((e.clientX/S/W)*2-1,-1,1);CITY.touch.y=e.clientY/S/H;}}else CITY.touch.on=false;}));
 function povMove(dt){
@@ -3244,7 +3244,7 @@ async function openPhotos(){
     else{mlyViewer.resize();await mlyViewer.moveTo(id);}
   }catch(e){closePhotos();mlyToken=/token|OAuth|access/i.test(String(e&&e.message))?'':mlyToken;toast('The street photos could not be loaded'+(mlyToken?'.':': the token was not accepted.')+' Try again.',4000);}
 }
-photoBtn.addEventListener('click',e=>{e.stopPropagation();photoBtn.blur();if(CITY.photo){closePhotos();}else openPhotos();});
+photoBtn.addEventListener('click',e=>{e.stopPropagation();photoBtn.blur();const toPhoto=!CITY.photo;try{localStorage.setItem('garden-city-view',toPhoto?'photo':'pixel');}catch(_){}if(toPhoto)openPhotos();else closePhotos();});
 // character controller for the photo world: hold to walk from photo to photo, turn the camera smoothly, on-screen D-pad for touch
 const PH={id:'',pano:false,c:[.5,.5],ll:null,busy:false,pad:'',cache:null,miss:0,hint:false};
 const padEl=document.createElement('div');padEl.style.cssText='position:fixed;left:12px;bottom:70px;z-index:5;display:none;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(2,46px);gap:4px;touch-action:none;user-select:none;-webkit-user-select:none';
@@ -3555,7 +3555,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794873102"></script>
+<script src="config.js?v=1794873257"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3580,7 +3580,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '17.11. 00:51';
+  const BUILD = '17.11. 00:54';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3775,7 +3775,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 00:51'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 00:54'; help.appendChild(ver);
   }
 
   function openImport() {
