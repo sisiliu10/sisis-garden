@@ -2069,22 +2069,33 @@ function logEditor(p,L,e){
   setTimeout(()=>{inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);},30);
   return f;
 }
+// watering with a note: remember WHICH plant the form belongs to, so nothing else (walking, a re-render, a slow pour) can swallow the entry
+let logPlant=null;
 function openLog(p){
-  if(!p||visiting||!home||av.water>0) return;
-  editing=true; dBtns.hidden=true; dNote.hidden=true; dDidForm.hidden=false; msgEl.textContent='';
+  if(!p||visiting||!home) return;
+  logPlant=p; editing=true; dBtns.hidden=true; dNote.hidden=true; dDidForm.hidden=false; msgEl.textContent='';
   document.getElementById('dDidQ').textContent=p.bed?'WHAT DID YOU PRACTISE?':'WHAT DID YOU DO?';
   dDidIn.placeholder=p.bed?'One line, e.g. 20 min of reading a news article':'One line, e.g. sent the pitch deck to 3 founders';
-  dDidIn.value=''; setTimeout(()=>dDidIn.focus(),30);
+  dDidIn.value=''; try{dDidIn.focus();}catch(e){} setTimeout(()=>{if(!dDidForm.hidden&&document.activeElement!==dDidIn)dDidIn.focus();},30);
 }
 function closeLog(){ dDidForm.hidden=true; dBtns.hidden=false; if(!visiting) dNote.hidden=false; editing=false; }
-dDidForm.addEventListener('submit',e=>{
-  e.preventDefault(); if(!active) return;
+let lastSubmit=0;
+function submitLog(){
+  const p=logPlant||active; if(!p) return;
   const text=dDidIn.value.trim();
-  if(text.length<3){dDidIn.classList.remove('shake');void dDidIn.offsetWidth;dDidIn.classList.add('shake');dDidIn.focus();return;}
-  const p=active; dDidIn.blur(); closeLog(); doWater(p,text);
+  if(text.length<2){dDidIn.classList.remove('shake');void dDidIn.offsetWidth;dDidIn.classList.add('shake');dDidIn.focus();msgEl.textContent='Write a few words about what you did.';return;}
+  const now=performance.now(); if(now-lastSubmit<400) return; lastSubmit=now;
+  dDidIn.value=''; dDidIn.blur(); closeLog(); logPlant=null;
+  if(av.water>0){av.water=0;waterFx=null;dlg.classList.remove('pouring');}   // a pour still running never blocks the next one
+  doWater(p,text);
+}
+dDidForm.addEventListener('submit',e=>{e.preventDefault();submitLog();});
+document.getElementById('dDidOk').addEventListener('click',e=>{e.preventDefault();submitLog();});
+document.getElementById('dDidCancel').onclick=()=>{dDidIn.blur();closeLog();logPlant=null;};
+dDidIn.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){ if(e.isComposing) return; e.preventDefault(); e.stopPropagation(); submitLog(); return; }
+  if(e.key==='Escape'){e.stopPropagation();dDidIn.blur();closeLog();logPlant=null;}
 });
-document.getElementById('dDidCancel').onclick=()=>{dDidIn.blur();closeLog();};
-dDidIn.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.isComposing||e.keyCode===229))return;if(e.key==='Escape'){e.stopPropagation();dDidIn.blur();closeLog();}});
 
 /* ================= watering ================= */
 function doWater(p,text){
@@ -2997,8 +3008,8 @@ function updateRest(dt,t){
   if(active!==lastActive){
     lastActive=active; if(active)placeDialog(); dlg.classList.toggle('show',!!active);
     document.getElementById('title').style.opacity=active?0:1;
-    if(active){updateDialog(true); if(pendingEdit===active.id){pendingEdit=null;openEdit(active);}}
-    else editing=false;
+    if(active){ if(logPlant===active&&!dDidForm.hidden){/* same plant came back while you are typing: keep your text */} else {logPlant=null;updateDialog(true);} if(pendingEdit===active.id){pendingEdit=null;openEdit(active);}}
+    else if(!(logPlant&&!dDidForm.hidden)) editing=false;
     refreshLabels();
   }
   if(av.water>0){
@@ -3185,7 +3196,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794869647"></script>
+<script src="config.js?v=1794870001"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3210,7 +3221,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 23:54';
+  const BUILD = '17.11. 00:00';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3405,7 +3416,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 23:54'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 00:00'; help.appendChild(ver);
   }
 
   function openImport() {
