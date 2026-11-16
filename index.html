@@ -3211,8 +3211,8 @@ function renderPov(t){
 const GEO={w:11.5650,n:48.1525,mx:111320*Math.cos(48.149*Math.PI/180)*2,my:111200*2};
 const toLL=(x,y)=>[GEO.w+x/GEO.mx,GEO.n-y/GEO.my], fromLL=(lon,lat)=>[(lon-GEO.w)*GEO.mx,(GEO.n-lat)*GEO.my];
 const photoBtn=document.createElement('button');photoBtn.type='button';photoBtn.id='photoBtn';photoBtn.className='btn';photoBtn.textContent='Photos';photoBtn.style.cssText='position:fixed;right:12px;top:'+(innerWidth<700?88:96)+'px;z-index:5';photoBtn.hidden=true;document.body.appendChild(photoBtn);
-const photoBox=document.createElement('div');photoBox.style.cssText='position:fixed;inset:0;z-index:2;display:none;background:#111';document.body.appendChild(photoBox);
-const photoAv=document.createElement('canvas');photoAv.width=16;photoAv.height=30;photoAv.style.cssText='position:fixed;left:50%;bottom:64px;width:96px;height:180px;margin-left:-48px;image-rendering:pixelated;z-index:3;pointer-events:none;display:none;filter:drop-shadow(0 4px 0 rgba(0,0,0,.35))';document.body.appendChild(photoAv);
+const photoBox=document.createElement('div');photoBox.style.cssText='position:fixed;inset:0 0 56px 0;z-index:2;display:none;background:#111';document.body.appendChild(photoBox);
+const photoAv=document.createElement('canvas');photoAv.width=16;photoAv.height=30;photoAv.style.cssText='position:fixed;left:50%;bottom:'+(innerWidth<700?150:190)+'px;width:'+(innerWidth<700?64:96)+'px;height:'+(innerWidth<700?120:180)+'px;margin-left:'+(innerWidth<700?-32:-48)+'px;image-rendering:pixelated;z-index:3;pointer-events:none;display:none;filter:drop-shadow(0 4px 0 rgba(0,0,0,.35))';document.body.appendChild(photoAv);
 let mlyToken='',mlyViewer=null,photoStep=0;
 const cfgRef=()=>{const id=visiting?visiting.id:myId;return (db&&id)?db.doc('gardens/'+id+'/x/cfg'):null;};
 async function loadPhotoToken(){try{const r=cfgRef();if(!r)return;const sn=await r.get();if(sn&&sn.exists&&sn.data()&&typeof sn.data().mly==='string')mlyToken=sn.data().mly;}catch(e){}}
@@ -3520,7 +3520,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794872497"></script>
+<script src="config.js?v=1794873001"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3545,7 +3545,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '17.11. 00:41';
+  const BUILD = '17.11. 00:50';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3740,7 +3740,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 00:41'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 00:50'; help.appendChild(ver);
   }
 
   function openImport() {
