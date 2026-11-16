@@ -63,8 +63,8 @@
   .bub{position:fixed;transform:translate(-50%,-100%);max-width:180px;background:#fff;color:var(--ink);border:2px solid var(--ink);padding:4px 8px;font-size:14px;line-height:1.25;pointer-events:none;z-index:4;word-wrap:break-word;box-shadow:2px 2px 0 rgba(0,0,0,.2)}
   /* typing: round badge with a little pencil that scribbles back and forth (like Panfu) */
   .bub.bty{display:flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border-radius:50%;border:2px solid #8e6cc8;background:#fff;box-shadow:0 0 0 2px #fff,2px 3px 0 2px rgba(42,36,48,.25)}
-  .bub.bty svg{width:21px;height:8px;shape-rendering:crispEdges;display:block;transform-origin:10% 50%;animation:scrib .9s steps(6) infinite}
-  @keyframes scrib{0%{transform:translate(-1px,3px) rotate(-38deg)}25%{transform:translate(1px,2px) rotate(-26deg)}50%{transform:translate(-1px,3px) rotate(-44deg)}75%{transform:translate(2px,1px) rotate(-30deg)}100%{transform:translate(-1px,3px) rotate(-38deg)}}
+  .bub.bty svg{width:21px;height:8px;shape-rendering:crispEdges;display:block;transform-origin:50% 50%;animation:scrib 1.3s steps(14) infinite}
+  @keyframes scrib{0%{transform:translate(-6px,1px) rotate(-58deg)}14%{transform:translate(-4px,-1px) rotate(-58deg)}28%{transform:translate(-2px,1px) rotate(-58deg)}42%{transform:translate(0,-1px) rotate(-58deg)}56%{transform:translate(2px,1px) rotate(-58deg)}70%{transform:translate(4px,-1px) rotate(-58deg)}80%,88%{transform:translate(5px,0) rotate(-58deg)}100%{transform:translate(-6px,1px) rotate(-58deg)}}
   .bub.bty i{display:none}
   @keyframes tydot{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-2px)}}
   @keyframes typen{0%{transform:translate(0,0)}50%{transform:translate(1px,-1px)}}
@@ -3114,7 +3114,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794858033"></script>
+<script src="config.js?v=1794858236"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3139,7 +3139,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 20:40';
+  const BUILD = '16.11. 20:43';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3334,7 +3334,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 20:40'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 20:43'; help.appendChild(ver);
   }
 
   function openImport() {
