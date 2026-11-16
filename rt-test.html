@@ -1,0 +1,17 @@
+<!doctype html><meta charset=utf-8><title>rt test</title><body style="font:14px monospace;padding:12px"><pre id=o>running…</pre>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><script src="config.js"></script>
+<script>
+(async()=>{const C=window.GARDEN_CONFIG,o=document.getElementById('o');const mk=()=>supabase.createClient(C.url,C.key,{auth:{persistSession:false},realtime:{params:{eventsPerSecond:40}}});
+const A=mk(),B=mk();const ch='rt-test-'+Math.random().toString(36).slice(2,8);
+const sub=c=>new Promise(r=>c.subscribe(s=>{if(s==='SUBSCRIBED')r(s);}));
+const rx=[];const cb=B.channel(ch,{config:{broadcast:{self:false}}});cb.on('broadcast',{event:'p'},({payload})=>rx.push([performance.now(),payload.i,payload.at,payload.x]));
+const ca=A.channel(ch,{config:{broadcast:{self:false,ack:false}}});
+const t0=performance.now();await Promise.all([sub(cb),sub(ca)]);const tj=performance.now()-t0;
+const N=90,mine={x:0};const sentAt=[];
+for(let i=0;i<N;i++){mine.x=i;sentAt.push(performance.now());ca.send({type:'broadcast',event:'p',payload:{i,at:Date.now(),x:JSON.parse(JSON.stringify(mine)).x}});await new Promise(r=>setTimeout(r,66));}
+await new Promise(r=>setTimeout(r,2500));
+const got=rx.length,lat=rx.map(r=>r[0]-sentAt[r[1]]),gaps=[];for(let i=1;i<rx.length;i++)gaps.push(rx[i][0]-rx[i-1][0]);
+const ok=rx.every(r=>r[3]===r[1]),order=rx.every((r,i)=>!i||r[1]>rx[i-1][1]);const q=(a,p)=>{const s=a.slice().sort((x,y)=>x-y);return Math.round(s[Math.min(s.length-1,Math.floor(p*s.length))]);};
+o.textContent=`RESULT join ${Math.round(tj)}ms | received ${got}/${N} | in order ${order} | payload intact ${ok}\nlatency ms p50 ${q(lat,.5)} p90 ${q(lat,.9)} max ${q(lat,1)}\narrival gaps ms p10 ${q(gaps,.1)} p50 ${q(gaps,.5)} p90 ${q(gaps,.9)} max ${q(gaps,1)}`;
+})().catch(e=>{document.getElementById('o').textContent='ERROR '+e;});
+</script>
