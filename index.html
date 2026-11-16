@@ -464,6 +464,8 @@ function cleanGarden(g){
     if(used2.has(c.slot)){for(let s=0;s<BED_SLOTS.length;s++)if(!used2.has(s)){c.slot=s;break;}}
     used2.add(c.slot);skills.push(c);});
   return {v:2,name:str(g.name,14)||'Someone',look:cleanLook(g.look),projects,skills,saved:num(g.saved,0),owner:!!g.owner,cat:!!g.cat,sb:g.sb!==false,nb:Array.isArray(g.nb)?g.nb.filter(x=>x&&/^https:\/\//.test(x.u||'')).slice(0,10).map(x=>({n:str(x.n,30)||'Friend',u:str(x.u,300)})):[],created:g.created!==false,
+    compost:Array.isArray(g.compost)?g.compost.filter(x=>x&&typeof x==='object').slice(0,30).map((x,i)=>{const c=cleanProject(x,0,!!x.bed);if(!c)return null;c.ct=num(x.ct,0);c.note=str(x.note,90);
+      c.lg=Array.isArray(x.lg)?x.lg.slice(-LOG_MAX).filter(e=>e&&typeof e.text==='string').map(e=>({t:num(e.t,0),text:str(e.text,140)})):[];return c;}).filter(Boolean):[],
     todos:Array.isArray(g.todos)?g.todos.filter(x=>x&&typeof x.text==='string'&&x.text.trim()).slice(0,10).map((x,i)=>Object.assign({id:str(x.id,24)||('t'+i),text:str(x.text,60),t:num(x.t,0)},x.lk?{lk:true}:{},Number.isInteger(x.k)?{k:x.k%10}:{},Number.isInteger(x.c)?{c:x.c%8}:{})):[],
     notes:(g.notes&&typeof g.notes==='object')?Object.fromEntries(Object.entries(g.notes).slice(0,20).map(([k,v])=>[k,str(v,90)])):{},
     logs:(g.logs&&typeof g.logs==='object')?Object.fromEntries(Object.entries(g.logs).slice(0,20).filter(([k,v])=>Array.isArray(v)).map(([k,v])=>[k,v.slice(-LOG_MAX).filter(e=>e&&typeof e.text==='string').map(e=>({t:num(e.t,0),text:str(e.text,140)}))])):{}};
@@ -539,7 +541,7 @@ const pubRef=()=>(db&&myId&&canWrite!==false)?db.doc('gardens/'+myId):null;
 const writePriv=makeWriter(privRef,()=>JSON.parse(JSON.stringify(home)));
 const open_=a=>(a||[]).filter(x=>!x.lk);
 function sharedPart(obj){const out={};home.projects.concat(home.skills||[]).forEach(p=>{if(p.vis!==false&&!p.lk&&obj&&obj[p.id])out[p.id]=obj[p.id];});return out;}
-const writePub=makeWriter(pubRef,()=>({v:2,name:home.name,look:home.look,owner:isOwner,saved:home.saved,projects:open_(home.projects),skills:open_(home.skills),notes:sharedPart(home.notes),logs:sharedPart(home.logs),todos:open_(home.todos),sb:home.sb!==false}));
+const writePub=makeWriter(pubRef,()=>({v:2,name:home.name,look:home.look,owner:isOwner,saved:home.saved,projects:open_(home.projects),skills:open_(home.skills),notes:sharedPart(home.notes),logs:sharedPart(home.logs),todos:open_(home.todos),compost:open_(home.compost).map(c=>({id:c.id,code:c.code,name:c.name,sub:c.sub,bed:c.bed,kind:c.kind,ct:c.ct})),sb:home.sb!==false}));
 const pubBooksRef=()=>(db&&myId&&canWrite!==false)?db.doc('gardens/'+myId+'/x/books'):null;
 const writePubBooks=makeWriter(pubBooksRef,()=>({saved:Date.now(),list:(home&&home.sb!==false&&books)?books.list.slice(0,400):[]}));
 let pTimer=null;
@@ -1693,7 +1695,7 @@ function openEdit(p){
   fKindVal=p.kind; [...fKind.children].forEach(x=>{x.classList.toggle('on',x.dataset.k===p.kind);x.hidden=!!x.dataset.bed!==!!p.bed;});
   document.getElementById('fKindL').textContent=p.bed?'FLOWERS':'PLANT';
   document.getElementById('fTitle').textContent=p.bed?'Edit skill bed':'Edit plant';
-  document.getElementById('fDel').textContent=p.bed?'Remove bed':'Remove plant';
+  document.getElementById('fDel').textContent=p.bed?'Compost bed':'Compost plant';
   setTimeout(()=>document.getElementById('fCode').focus(),50);
 }
 document.getElementById('dEdit').onclick=()=>{if(active&&!visiting)openEdit(active);};
@@ -1746,8 +1748,10 @@ function renderLinkRows(L){document.getElementById('fLinks').innerHTML='';L.forE
 document.getElementById('fAddLink').onclick=()=>addLinkRow({});
 document.getElementById('fDel').onclick=()=>{
   if(!active||visiting) return;
-  if(!delArmed){delArmed=true;document.getElementById('fDel').textContent='Click again to remove';return;}
-  home.projects=home.projects.filter(x=>x!==active); home.skills=home.skills.filter(x=>x!==active); delete home.notes[active.id];
+  if(!delArmed){delArmed=true;document.getElementById('fDel').textContent='Tap again to compost';return;}
+  {const c=JSON.parse(JSON.stringify(active));c.ct=Date.now();c.note=home.notes[active.id]||'';c.lg=(home.logs&&home.logs[active.id])||[];delete c.pos;
+   home.compost=[c].concat(home.compost||[]).slice(0,30);compostFx(active.code);}
+  home.projects=home.projects.filter(x=>x!==active); home.skills=home.skills.filter(x=>x!==active); delete home.notes[active.id]; if(home.logs)delete home.logs[active.id];
   active=null; lastActive=undefined; dlg.classList.remove('show');
   persist(); rebuildLabels(); refreshChrome();
 };
@@ -1933,6 +1937,7 @@ function blocked(x,y){
 
   if(scene==='garden'&&Math.hypot(x-(SL.x+15),(y-(SL.y-1))*1.5)<7) return true;
   if(scene==='garden'&&lineBlocked(x,y)) return true;
+  if(scene==='garden'&&Math.abs(x-COMP.x)<14&&y>COMP.y-6&&y<COMP.y+2) return true;
   if(visiting&&Math.abs(x-host.x)<14&&Math.abs(y-host.y)<5) return true;
   for(const p of projects()){const s=Math.min(scaleOf(p),1.6),[px,py]=posOf(p),rx=(p.kind==='tree'?7:6)*s;const ex=(x-px)/rx,ey=(y-py)/(4*s);if(ex*ex+ey*ey<1)return true;}
   return false;
@@ -1971,6 +1976,7 @@ cvs.addEventListener('pointerdown',e=>{
   if(!moving&&riding&&Math.abs(lx-av.x)<12&&ly>av.y-36&&ly<av.y+4){dismount();return;}
   if(!moving&&!riding&&mySeat===null&&alpIdle()&&Math.abs(lx-alp.x)<14&&ly>alp.y-33&&ly<alp.y+4){goRide();return;}
   if(!moving&&onSlide(lx,ly)){goSlide();return;}
+  if(!moving&&Math.abs(lx-COMP.x)<15&&ly>COMP.y-24&&ly<COMP.y+4){av.run=false;av.target={x:COMP.x+17,y:COMP.y+3};openCompost();return;}
   if(!moving&&onLine(lx,ly)){av.target=null;const gi=garmentAt(lx,ly);if(gi>=0)openTip(gi,e.clientX,e.clientY);else openLine();return;}
   if(hit){av.target=besideTarget(hit);return;}
   if(Math.abs(lx-FOUNT.x)<28&&ly>FOUNT.y-28&&ly<FOUNT.y+12){av.target={x:FOUNT.x,y:FOUNT.y+14};return;}
@@ -2018,7 +2024,7 @@ const gardensM=document.getElementById('gardens');
 document.getElementById('bGardens').onclick=()=>{renderGardens();gardensM.classList.add('show');};
 document.getElementById('gClose').onclick=()=>gardensM.classList.remove('show');
 document.getElementById('bHome').onclick=()=>goHome();
-function closeModals(){lineM.classList.remove('show');askM.classList.remove('show');if(quizM.classList.contains('show'))closeQuiz();dashM.classList.remove('show');booksM.classList.remove('show');if(creator.classList.contains('show'))closeCreator();help.classList.remove('show');gardensM.classList.remove('show');addM.classList.remove('show');}
+function closeModals(){compM.classList.remove('show');lineM.classList.remove('show');askM.classList.remove('show');if(quizM.classList.contains('show'))closeQuiz();dashM.classList.remove('show');booksM.classList.remove('show');if(creator.classList.contains('show'))closeCreator();help.classList.remove('show');gardensM.classList.remove('show');addM.classList.remove('show');}
 
 /* ================= gardens (visiting) ================= */
 function renderNeighbours(){
@@ -2494,6 +2500,73 @@ const Sfx=(()=>{
   return {splash};
 })();
 
+/* ================= compost heap: projects you let go ================= */
+const COMP={x:18,y:166};
+function compostOf(){const d=V();return (d&&d.compost)||[];}
+function drawCompost(t){
+  const x0=COMP.x-12,y=COMP.y,n=compostOf().length,lv=n?Math.min(4,1+Math.floor(n/2)):0;
+  const WL='#b98252',WM='#946039',WD='#5e3a22',OL='#3b2416',S0='#3a2416',S1='#5b3a24',S2='#7a5233';
+  // shadow
+  g.globalAlpha=.22;R(x0-1,y,26,2,'#1d2b18');R(x0+1,y+2,22,1,'#1d2b18');g.globalAlpha=1;
+  // back wall: three planks
+  for(let k=0;k<2;k++){const py=y-11+k*4;R(x0+1,py,22,3,WM);R(x0+1,py,22,1,WL);R(x0+1,py+2,22,1,WD);
+    for(let i=0;i<4;i++)R(x0+3+i*6+(k%2)*2,py+1,1,1,WD);}
+  // the heap
+  if(lv){const hh=[0,8,10,12,13][lv],rows=[];
+    for(let r=0;r<hh;r++){const w=Math.max(3,Math.round(21-(r*r)*15/(hh*hh)-r*.5));rows.push(w);const xs=COMP.x-Math.floor(w/2);R(xs,y-2-r,w,1,r===hh-1?S2:(r%3===0?S0:S1));R(xs,y-2-r,1,1,S0);R(xs+w-1,y-2-r,1,1,S0);if(r>hh-3)R(xs+1,y-2-r,Math.max(1,w-4),1,S2);}
+    // texture + bits (peel, leaf, banana, apple, eggshell)
+    const bits=[['#e8903a',-6,1],['#6fae3c',3,2],['#e8d04a',-1,3],['#c8463c',6,1],['#efe6d2',-4,4],['#6fae3c',-8,0],['#e8903a',2,5],['#a8c95a',5,3],['#efe6d2',0,6],['#c8463c',-3,7]];
+    bits.forEach(([c,dx,dy],i)=>{const yy=3+dy;if(yy<hh-1&&i<4+lv*2&&Math.abs(dx)<rows[yy]/2-1){R(COMP.x+dx,y-2-yy,dy%2?2:1,1,c);}});
+    for(let r=4;r<hh-1;r+=2){R(Math.round(COMP.x-rows[r]/2+2+(r*5)%Math.max(2,rows[r]-4)),y-2-r,1,1,S2);}
+    // warm compost steams a little
+    for(let k=0;k<2;k++){const ph=(t*.35+k*.5)%1,sx=COMP.x-3+k*6+Math.round(Math.sin(t*1.7+k*2)*1.2),sy=y-3-hh-Math.round(ph*9);
+      g.globalAlpha=.55*(1-ph);R(sx,sy,1,2,'#efe9df');R(sx+1,sy-1,1,1,'#efe9df');g.globalAlpha=1;}
+    // a tiny fly doing loops
+    const fa=t*3.1,fx=Math.round(COMP.x+4+Math.cos(fa)*5),fy=Math.round(y-6-hh+Math.sin(fa*2)*2);R(fx,fy,1,1,'#2a2430');if(Math.floor(t*12)%2)R(fx-1,fy-1,1,1,'rgba(255,255,255,.7)');}
+  // corner posts
+  [x0,x0+22].forEach(px=>{R(px,y-13,2,13,WM);R(px,y-13,1,13,WL);R(px,y-13,2,1,OL);R(px+1,y-12,1,12,WD);});
+  // low front plank
+  R(x0+1,y-4,22,4,WM);R(x0+1,y-4,22,1,WL);R(x0+1,y-1,22,1,WD);R(x0+5,y-3,1,1,WD);R(x0+16,y-2,1,1,WD);R(x0,y,24,1,OL);
+}
+function compostFx(code){for(let i=0;i<10;i++)spawn({kind:'puff',x:COMP.x+(Math.random()*16-8),y:COMP.y-8-Math.random()*6,vy:-8,life:.6+Math.random()*.4});
+  for(let i=0;i<6;i++)spawn({kind:'spark',x:COMP.x+(Math.random()*16-8),y:COMP.y-12,vy:-12,life:.6});
+  if(code)toast(code+' went to the compost. You can replant it any time.',2600);}
+const compM=document.createElement('div');compM.className='modal';compM.id='compM';
+compM.innerHTML='<div class="panel"><h2>Compost</h2><div class="lead" id="cpLead"></div><div id="cpList" style="margin-top:12px"></div><div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn" type="button" id="cpClose">Close</button></div></div>';
+document.body.appendChild(compM);
+compM.addEventListener('pointerdown',e=>{if(e.target===compM)compM.classList.remove('show');});
+document.getElementById('cpClose').onclick=()=>compM.classList.remove('show');
+function agoDays(ts){if(!ts)return '';const d=Math.floor((Date.now()-ts)/DAY);return d<1?'today':d===1?'yesterday':d+' days ago';}
+function renderCompost(){
+  const L=compostOf(),own=!visiting&&!!home,box=document.getElementById('cpList');box.innerHTML='';
+  document.getElementById('cpLead').textContent=own?(L.length?'Projects you let go. Nothing is lost, they turn into soil for what comes next.':'Nothing here yet. When you compost a plant or bed, it lands here.')
+    :(L.length?V().name+' let these go.':V().name+' has not composted anything yet.');
+  L.forEach(c=>{const r=document.createElement('div');r.style.cssText='display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #eee6d6';
+    const tx=document.createElement('div');tx.style.cssText='flex:1;min-width:0';
+    const b=document.createElement('b');b.textContent=c.code;b.style.cssText='font-family:Silkscreen,monospace;font-weight:400;letter-spacing:.5px';tx.appendChild(b);
+    const sub=document.createElement('div');sub.style.cssText='font-size:13px;color:var(--muted)';sub.textContent=(c.name?c.name+', ':'')+'composted '+agoDays(c.ct);tx.appendChild(sub);
+    r.appendChild(tx);
+    if(own){
+      const lb=document.createElement('button');lb.type='button';lb.className='lockb';paintLock(lb,c.lk,'entry');lb.onclick=()=>{toggleLock(c,'entry');paintLock(lb,c.lk,'entry');};r.appendChild(lb);
+      const full=(c.bed?home.skills.length>=BED_SLOTS.length:home.projects.length>=SLOTS.length);
+      const rp=document.createElement('button');rp.type='button';rp.className='btn dark';rp.textContent='Replant';rp.disabled=full;if(full)rp.title=c.bed?'All skill beds are taken':'No free spot for a plant';
+      rp.onclick=()=>replant(c.id);r.appendChild(rp);
+      const del=document.createElement('button');del.type='button';del.className='btn';del.textContent='✕';del.title='Delete for good';del.setAttribute('aria-label','Delete for good');
+      del.onclick=()=>{if(!del.dataset.armed){del.dataset.armed=1;del.textContent='Delete?';return;}home.compost=home.compost.filter(x=>x.id!==c.id);persist();renderCompost();};r.appendChild(del);}
+    box.appendChild(r);});
+}
+function openCompost(){renderCompost();compM.classList.add('show');}
+function replant(id){
+  const c=(home.compost||[]).find(x=>x.id===id);if(!c)return;
+  const arr=c.bed?home.skills:home.projects,max=(c.bed?BED_SLOTS:SLOTS).length;if(arr.length>=max)return;
+  const used=new Set(arr.map(p=>p.slot));let slot=0;while(used.has(slot))slot++;
+  const p=cleanProject(Object.assign({},c,{slot,pos:null,w:Math.max(40,c.w||0),t:Date.now()}),slot,c.bed);
+  arr.push(p);if(c.note)home.notes[p.id]=c.note;if(c.lg&&c.lg.length){home.logs=home.logs||{};home.logs[p.id]=c.lg;}
+  home.compost=home.compost.filter(x=>x.id!==id);
+  compM.classList.remove('show');persist();rebuildLabels();refreshChrome();
+  const [px,py]=posOf(p);for(let i=0;i<10;i++)spawn({kind:'spark',x:px+(Math.random()*14-7),y:py-6-Math.random()*10,vy:-10,life:.7});
+  toast(p.code+' is growing again.',2200);
+}
 /* ================= hint ================= */
 function hideHint(){}
 
@@ -2616,6 +2689,7 @@ function render(t){
   list.push({y:SL.y,d:()=>drawSlide(t)});
   for(let r0=0;r0<lineRows();r0++)list.push({y:CLN.rows[r0],d:()=>drawLineRow(r0,t)});
   list.push({y:CLN.by,d:()=>drawBasket()});
+  list.push({y:COMP.y,d:()=>drawCompost(t)});
   if(alpIdle())list.push({y:alp.y,d:()=>drawAlpaca(alp.x,alp.y,alp.dir,alp.moving?Math.floor(t*5)%2+1:0,t)});
   list.push({y:HB,d:()=>drawCottage(t)});
   const myLook=me().look, blink=(t%4)<.12;
@@ -2744,7 +2818,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794843880"></script>
+<script src="config.js?v=1794848220"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -2769,7 +2843,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 16:44';
+  const BUILD = '16.11. 17:57';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -2928,7 +3002,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 16:44'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 17:57'; help.appendChild(ver);
   }
 
   function openImport() {
