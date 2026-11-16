@@ -262,7 +262,7 @@
     <div id="dNoteRO" class="ro"></div>
     <input id="dNote" class="inp" maxlength="90" placeholder="Next step for this project…" autocomplete="off">
     <div class="dlinks" id="dLinks"></div>
-    <div class="dbtns" id="dBtns"><button class="btn" id="dWater">Water <kbd>E</kbd></button><button class="btn" id="dEdit">Edit</button><button class="btn" id="dMove">Move</button></div>
+    <div class="dbtns" id="dBtns"><button class="btn" id="dWater">Water <kbd>E</kbd></button><button class="btn" id="dEdit">Edit</button><button class="btn" id="dMove">Move</button><button class="btn" type="button" id="fKill" style="margin-left:auto">Delete</button></div>
     <form id="dLogForm" hidden autocomplete="off">
       <div class="fl" id="dLogQ">WHAT DID YOU DO?</div>
       <input class="inp" id="dLogIn" maxlength="140" placeholder="One line, e.g. sent the pitch deck to 3 founders">
@@ -280,7 +280,7 @@
     <div class="fl">LINKS</div><div id="fLinks"></div><button class="btn" type="button" id="fAddLink" style="margin-top:6px;font-size:13px;padding:4px 10px">+ Add link</button>
     <label class="chk"><input type="checkbox" id="fVis"> Visitors can see the next step and work log</label>
     <div class="fl" id="fKindL">PLANT</div><div class="sw tx" id="fKind"></div>
-    <div class="dbtns"><button class="btn dark" type="submit">Save</button><button class="btn" type="button" id="fCancel">Cancel</button><button class="btn danger" type="button" id="fDel">Compost plant</button><button class="btn" type="button" id="fKill" style="margin-left:auto">Delete</button></div>
+    <div class="dbtns"><button class="btn dark" type="submit">Save</button><button class="btn" type="button" id="fCancel">Cancel</button><button class="btn danger" type="button" id="fDel">Compost plant</button></div>
   </form>
 </div>
 
@@ -1654,7 +1654,7 @@ function updateDialog(full){
     dNote.placeholder=p.bed?'Next practice step…':'Next step for this project…';
     const dl=document.getElementById('dLinks'); dl.innerHTML='';
     (p.links||[]).forEach(l=>{const a=document.createElement('a');a.className='lnk';a.href=l.u;a.target='_blank';a.rel='noopener';a.textContent=l.t+' ↗';dl.appendChild(a);});
-    document.getElementById('dWater').hidden=!own; document.getElementById('dEdit').hidden=!own; document.getElementById('dMove').hidden=!own;
+    document.getElementById('dWater').hidden=!own; document.getElementById('dEdit').hidden=!own; document.getElementById('dMove').hidden=!own; document.getElementById('fKill').hidden=!own; killArmed=false; document.getElementById('fKill').textContent='Delete';
     closeLog(); renderLog(p);
     dProg.disabled=!own; dProg.value=p.progress;
     msgEl.textContent='';
@@ -1695,7 +1695,7 @@ function openEdit(p){
   fKindVal=p.kind; [...fKind.children].forEach(x=>{x.classList.toggle('on',x.dataset.k===p.kind);x.hidden=!!x.dataset.bed!==!!p.bed;});
   document.getElementById('fKindL').textContent=p.bed?'FLOWERS':'PLANT';
   document.getElementById('fTitle').textContent=p.bed?'Edit skill bed':'Edit plant';
-  document.getElementById('fDel').textContent=p.bed?'Compost bed':'Compost plant';killArmed=false;document.getElementById('fKill').textContent='Delete';
+  document.getElementById('fDel').textContent=p.bed?'Compost bed':'Compost plant';
   setTimeout(()=>document.getElementById('fCode').focus(),50);
 }
 document.getElementById('dEdit').onclick=()=>{if(active&&!visiting)openEdit(active);};
@@ -2843,7 +2843,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794850783"></script>
+<script src="config.js?v=1794850924"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -2868,7 +2868,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 18:39';
+  const BUILD = '16.11. 18:42';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3027,7 +3027,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 18:39'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 18:42'; help.appendChild(ver);
   }
 
   function openImport() {
