@@ -2223,7 +2223,7 @@ function paintMusic(){bMusic.classList.toggle('off',!musicWanted);bMusic.title=m
 paintMusic();
 bMusic.addEventListener('click',e=>{e.stopPropagation();Snd.unlock();musicWanted=!musicWanted;try{localStorage.setItem('garden-music',musicWanted?'on':'off');}catch(_){}
   paintMusic();musicWanted?Lofi.start():Lofi.stop();
-  setTimeout(()=>{const st=Snd.state();toast(!musicWanted?'Music off. Splashes and other sounds stay on.':st==='running'?'Music on.':'Music on, but the browser is still holding the sound back ('+st+'). Tap anywhere once more.',3500);},350);});
+  setTimeout(()=>{const st=Snd.state();toast(!musicWanted?'Music off. Splashes and other sounds stay on.':st==='running'?'Music on.':'Music on. If you hear nothing, tap the garden once more.',3500);},350);});
 // every tap or key press wakes the sound up again (after a tab switch, a call, a locked phone ...)
 function onGesture(e){Snd.unlock();if(e.target&&e.target.id==='bMusic')return;if(musicWanted&&!Lofi.on&&!document.hidden)Lofi.start();}
 ['pointerdown','mousedown','touchend','click','keydown'].forEach(ev=>addEventListener(ev,onGesture,{capture:true,passive:true}));
@@ -2298,15 +2298,13 @@ function liveInfo(){const on=roomLive();return {on,n:on?1+roomPeers().filter(p=>
 function tickLive(now){
   if(now-liveT<500) return; liveT=now;
   const i=liveInfo(),k=i.on+':'+i.n;
-  if(k!==liveKey){liveKey=k;liveEl.classList.toggle('on',i.on);liveEl.textContent=i.on?'● '+i.n:'○';liveEl.title=i.on?i.n+' here now':'Not live';}
-  if(!liveHinted&&!i.on&&visiting&&!isOwner&&roomInit&&now-roomT0>7000&&!document.querySelector('.modal.show')){liveHinted=true;
-    toast('Connecting… If this stays grey, check your internet. It reconnects by itself.',7000);}
+  if(k!==liveKey){liveKey=k;liveEl.classList.toggle('on',i.on);liveEl.textContent=i.on?'● '+i.n:'···';liveEl.title=i.on?i.n+' here now':'Connecting';}
+  if(!i.on&&roomInit&&now-roomT0>7000&&!liveHinted){liveHinted=true;try{console.info('[garden] live status'+liveDiag());}catch(e){}}
 }
 function liveDiag(){let all=0,mine=null;try{const ps=room?room.peers():[];all=ps.length;mine=ps.find(p=>p.isMe&&p.sameTab)||null;}catch(e){}
   return ' ['+(room?'room':'no room')+(roomErr?' '+roomErr:'')+', all '+all+', here '+roomPeers().length+', '+(gardenKey()||'no key')+(mine?(mine.guest?', guest':', member')+(mine.by?', id':', no id'):'')+(visiting?', visit':', home')+(myId?'':', signed out')+']';}
-liveEl.addEventListener('click',()=>{const i=liveInfo();
-  toast((i.on?(i.n>1?'Live: '+i.n+' people are in this garden right now.':'Live: you are connected. Nobody else is in this garden right now.')
-    :'Not live right now: reconnecting. Check your internet if it stays grey.')+liveDiag(),12000);});
+liveEl.addEventListener('click',()=>{const i=liveInfo();try{console.info('[garden] live status'+liveDiag());}catch(e){}
+  toast(i.on?(i.n>1?'🌱 '+i.n+' gardeners here right now.':'🌱 You are live. Nobody else is here yet.'):'🌙 Connecting… this usually takes a few seconds.',3500);});
 
 /* ================= double swing (seen at an angle) ================= */
 const SW={x:194,y:170,top:138,L:21};
@@ -2919,7 +2917,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794852173"></script>
+<script src="config.js?v=1794852350"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -2944,7 +2942,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 19:02';
+  const BUILD = '16.11. 19:05';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3137,7 +3135,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 19:02'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 19:05'; help.appendChild(ver);
   }
 
   function openImport() {
@@ -3166,7 +3164,7 @@ function maybeAutoVisit(){
     gBtn.disabled = true; gMsg.textContent = 'Sending…';
     const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
     gBtn.disabled = false;
-    if (error) { gMsg.textContent = 'That did not work: ' + error.message; return; }
+    if (error) { console.warn('[garden] login link', error); gMsg.textContent = /rate|limit|too many|seconds/i.test(error.message || '') ? 'Too many login emails just now. Wait a minute and try again.' : 'Hmm, the login email did not go out. Check the address and try again.'; return; }
     gMsg.textContent = 'Check your inbox and tap the link in the email from Supabase. Open it on this device.';
     gForm.hidden = true;
   });
