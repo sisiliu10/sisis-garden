@@ -95,7 +95,13 @@
   #dlg.show{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
   .dh{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
   #dCode{font-size:22px;font-weight:700;letter-spacing:1px}
-  #dLv{font-family:Silkscreen,monospace;font-size:10px;color:var(--muted);white-space:nowrap}
+  #dLv{font-family:Silkscreen,monospace;font-size:10px;color:var(--muted);white-space:nowrap;margin-left:auto}
+  .dh{flex-wrap:nowrap}
+  .lockb{flex:none;align-self:center;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:2px solid transparent;background:none;color:var(--muted);cursor:pointer;border-radius:0}
+  .lockb:hover{border-color:#e4dccb}.lockb.on{color:var(--ink);background:#f1ead9;border-color:var(--ink)}
+  .lockb svg{width:14px;height:16px;shape-rendering:crispEdges;display:block}
+  .label .lki{display:inline-block;width:4px;height:5px;margin-right:2px;vertical-align:0;shape-rendering:crispEdges}
+  .label.lk>div:first-child{opacity:.8}
   #dName{font-size:15px;margin-top:1px}
   #dName b{font-weight:600}
   #dName span{color:var(--muted);display:block}
@@ -247,7 +253,7 @@
 
 <div id="dlg" role="dialog" aria-live="polite">
   <div id="dView">
-    <div class="dh"><div id="dCode"></div><div id="dLv"></div></div>
+    <div class="dh"><div id="dCode"></div><div id="dLv"></div><button type="button" class="lockb" id="dLock"></button></div>
     <div id="dName"></div>
     <div id="dWhy" class="why"></div>
     <div class="wrow"><span class="lb">PROGRESS</span><input type="range" id="dProg" min="0" max="100" step="1" aria-label="Project progress"><span class="v" id="dProgV"></span></div>
@@ -349,9 +355,8 @@
       <div id="nbList"></div>
       <form class="nbadd" id="nbAdd" autocomplete="off"><input class="inp" id="nbN" maxlength="30" placeholder="Name, e.g. André"><input class="inp" id="nbU" maxlength="300" placeholder="https://claude.ai/artifact/…"><button class="btn dark" type="submit">Add</button></form>
       <div class="dsec">WHAT VISITORS SEE</div>
-      <label class="chk"><input type="checkbox" id="gAll"> Next steps and work logs of all plants</label>
       <label class="chk"><input type="checkbox" id="gSB"> My bookshelf</label>
-      <div class="lead" style="margin-top:6px">You can still hide single plants under Edit. Visitors can never change anything in your garden.</div>
+      <div class="lead" style="margin-top:6px">Want to keep a plant, bed or to-do to yourself? Tap it and use the little lock. Visitors can never change anything in your garden.</div>
     </div>
     <div class="pfoot"><span></span><button class="btn" id="gClose">Close</button></div>
   </div>
@@ -443,7 +448,7 @@ function cleanProject(p,i,bed){
   const now=Date.now();
   return {id:(str(p.id,40)||('p'+i)).replace(/[^\w-]/g,''),slot:clamp(Math.round(num(p.slot,i)),0,SLOTS.length-1),
     code:str(p.code,24)||'PROJECT',why:nodot(str(p.why,160)),name:nodot(str(p.name,40)),sub:nodot(str(p.sub,60)),
-    kind:(bed?FLOWERS:KINDS).includes(p.kind)?p.kind:(bed?'tulip':'sunflower'),bed:!!bed,url:/^https:\/\//.test(p.url||'')?str(p.url,300):'',links:cleanLinks(p),vis:p.vis!==false,pos:(p.pos&&Number.isFinite(p.pos.x)&&Number.isFinite(p.pos.y))?{x:Math.round(clamp(p.pos.x,-60,300)),y:Math.round(clamp(p.pos.y,140,480))}:null,
+    kind:(bed?FLOWERS:KINDS).includes(p.kind)?p.kind:(bed?'tulip':'sunflower'),bed:!!bed,url:/^https:\/\//.test(p.url||'')?str(p.url,300):'',links:cleanLinks(p),vis:p.vis!==false,lk:!!p.lk,pos:(p.pos&&Number.isFinite(p.pos.x)&&Number.isFinite(p.pos.y))?{x:Math.round(clamp(p.pos.x,-60,300)),y:Math.round(clamp(p.pos.y,140,480))}:null,
     progress:clamp(Math.round(num(p.progress,0)),0,100),w:clamp(num(p.w,60),0,100),t:Math.min(num(p.t,now),now),last:num(p.last,0)};
 }
 function cleanGarden(g){
@@ -459,7 +464,7 @@ function cleanGarden(g){
     if(used2.has(c.slot)){for(let s=0;s<BED_SLOTS.length;s++)if(!used2.has(s)){c.slot=s;break;}}
     used2.add(c.slot);skills.push(c);});
   return {v:2,name:str(g.name,14)||'Someone',look:cleanLook(g.look),projects,skills,saved:num(g.saved,0),owner:!!g.owner,cat:!!g.cat,sb:g.sb!==false,nb:Array.isArray(g.nb)?g.nb.filter(x=>x&&/^https:\/\//.test(x.u||'')).slice(0,10).map(x=>({n:str(x.n,30)||'Friend',u:str(x.u,300)})):[],created:g.created!==false,
-    todos:Array.isArray(g.todos)?g.todos.filter(x=>x&&typeof x.text==='string'&&x.text.trim()).slice(0,10).map((x,i)=>Object.assign({id:str(x.id,24)||('t'+i),text:str(x.text,60),t:num(x.t,0)},Number.isInteger(x.k)?{k:x.k%10}:{},Number.isInteger(x.c)?{c:x.c%8}:{})):[],
+    todos:Array.isArray(g.todos)?g.todos.filter(x=>x&&typeof x.text==='string'&&x.text.trim()).slice(0,10).map((x,i)=>Object.assign({id:str(x.id,24)||('t'+i),text:str(x.text,60),t:num(x.t,0)},x.lk?{lk:true}:{},Number.isInteger(x.k)?{k:x.k%10}:{},Number.isInteger(x.c)?{c:x.c%8}:{})):[],
     notes:(g.notes&&typeof g.notes==='object')?Object.fromEntries(Object.entries(g.notes).slice(0,20).map(([k,v])=>[k,str(v,90)])):{},
     logs:(g.logs&&typeof g.logs==='object')?Object.fromEntries(Object.entries(g.logs).slice(0,20).filter(([k,v])=>Array.isArray(v)).map(([k,v])=>[k,v.slice(-LOG_MAX).filter(e=>e&&typeof e.text==='string').map(e=>({t:num(e.t,0),text:str(e.text,140)}))])):{}};
 }
@@ -532,8 +537,9 @@ const privRef=()=>(db&&myId)?db.doc('data/users/'+myId+'/garden'):null;
 const booksRef=()=>(db&&myId)?db.doc('data/users/'+myId+'/books'):null;
 const pubRef=()=>(db&&myId&&canWrite!==false)?db.doc('gardens/'+myId):null;
 const writePriv=makeWriter(privRef,()=>JSON.parse(JSON.stringify(home)));
-function sharedPart(obj){const out={};home.projects.concat(home.skills||[]).forEach(p=>{if(p.vis!==false&&obj&&obj[p.id])out[p.id]=obj[p.id];});return out;}
-const writePub=makeWriter(pubRef,()=>({v:2,name:home.name,look:home.look,owner:isOwner,saved:home.saved,projects:home.projects,skills:home.skills,notes:sharedPart(home.notes),logs:sharedPart(home.logs),todos:home.todos||[],sb:home.sb!==false}));
+const open_=a=>(a||[]).filter(x=>!x.lk);
+function sharedPart(obj){const out={};home.projects.concat(home.skills||[]).forEach(p=>{if(p.vis!==false&&!p.lk&&obj&&obj[p.id])out[p.id]=obj[p.id];});return out;}
+const writePub=makeWriter(pubRef,()=>({v:2,name:home.name,look:home.look,owner:isOwner,saved:home.saved,projects:open_(home.projects),skills:open_(home.skills),notes:sharedPart(home.notes),logs:sharedPart(home.logs),todos:open_(home.todos),sb:home.sb!==false}));
 const pubBooksRef=()=>(db&&myId&&canWrite!==false)?db.doc('gardens/'+myId+'/x/books'):null;
 const writePubBooks=makeWriter(pubBooksRef,()=>({saved:Date.now(),list:(home&&home.sb!==false&&books)?books.list.slice(0,400):[]}));
 let pTimer=null;
@@ -1572,7 +1578,7 @@ function rebuildLabels(){
   labelsEl.innerHTML=''; labels={};
   items().forEach(p=>{
     const el=document.createElement('div'); el.className='label';
-    const n=document.createElement('div'); n.textContent=p.code; el.appendChild(n);
+    const n=document.createElement('div'); if(p.lk&&!visiting){el.classList.add('lk');n.innerHTML='<svg class="lki" viewBox="0 0 5 7" fill="currentColor"><rect x="1" y="0" width="3" height="1"/><rect x="0" y="1" width="1" height="2"/><rect x="4" y="1" width="1" height="2"/><rect x="0" y="3" width="5" height="4"/></svg>';n.appendChild(document.createTextNode(p.code));}else n.textContent=p.code; el.appendChild(n);
     const wb=document.createElement('div'); wb.className='wb'; wb.appendChild(document.createElement('i')); el.appendChild(wb);
     const [x,y]=posOf(p); el.style.left=(OX+x)+'px'; el.style.top=(OY+y+(p.bed?BED_H/2+2:3))+'px';
     labelsEl.appendChild(el); labels[p.id]=el;
@@ -1607,8 +1613,19 @@ function refreshChrome(){
   else ban.hidden=true;
 }
 
+/* ================= locks: things only I can see ================= */
+function lockSvg(open){
+  const px=open?[[1,0,3],[0,1,1],[0,2,1],[4,1,1]]:[[1,0,3],[0,1,1],[4,1,1],[0,2,1],[4,2,1]];
+  let r='';px.forEach(([x,y,w])=>r+=`<rect x="${x}" y="${y}" width="${w}" height="1"/>`);
+  r+='<rect x="0" y="3" width="5" height="4"/><rect x="2" y="4" width="1" height="2" fill="var(--paper,#fbf8f0)"/>';
+  return `<svg viewBox="0 0 5 7" fill="currentColor" aria-hidden="true">${r}</svg>`;
+}
+function paintLock(btn,lk,what){btn.classList.toggle('on',!!lk);btn.innerHTML=lockSvg(!lk);
+  btn.title=lk?'Only you can see this '+what+'. Tap to show it to visitors.':'Visitors can see this '+what+'. Tap to keep it to yourself.';btn.setAttribute('aria-label',btn.title);}
+function toggleLock(o,what){if(!o||visiting||!home)return;o.lk=!o.lk;persist();toast(o.lk?'🔒 Only you can see this '+what+' now.':'Visitors can see this '+what+' again.',2200);}
 /* ================= dialog ================= */
 const dlg=document.getElementById('dlg'),dView=document.getElementById('dView'),dForm=document.getElementById('dForm');
+document.getElementById('dLock').addEventListener('click',e=>{e.stopPropagation();if(!active)return;toggleLock(active,active.bed?'bed':'plant');paintLock(e.currentTarget,active.lk,active.bed?'bed':'plant');rebuildLabels();});
 const dNote=document.getElementById('dNote'),dProg=document.getElementById('dProg'),msgEl=document.getElementById('dMsg');
 let active=null,lastActive=undefined,editing=false,pendingEdit=null,banShown=false;
 function placeDialog(){const titleTop=(OY*.42+10)*S;dlg.style.top=Math.max(56,Math.min(titleTop-6,(OY+114)*S-280))+'px';}
@@ -1625,6 +1642,7 @@ function updateDialog(full){
   if(full){
     editing=false; dForm.hidden=true; dView.hidden=false;
     document.getElementById('dCode').textContent=p.code;
+    {const lb=document.getElementById('dLock');lb.hidden=!own;if(own)paintLock(lb,p.lk,p.bed?'bed':'plant');}
     const dn=document.getElementById('dName'); dn.innerHTML='';
     const b=document.createElement('b'); b.textContent=p.name||'Untitled'; dn.appendChild(b);
     if(p.sub){const s=document.createElement('span'); s.textContent=p.sub; dn.appendChild(s);}
@@ -2006,7 +2024,6 @@ function closeModals(){lineM.classList.remove('show');askM.classList.remove('sho
 function renderNeighbours(){
   const mine=document.getElementById('gMine'); mine.hidden=!home||!!visiting; if(mine.hidden) return;
   document.getElementById('gSB').checked=home.sb!==false;
-  const allP=home.projects.concat(home.skills);document.getElementById('gAll').checked=allP.length>0&&allP.every(p=>p.vis!==false);
   const box=document.getElementById('nbList'); box.innerHTML='';
   (home.nb||[]).forEach((n,i)=>{const r=document.createElement('div');r.className='nbrow';const a=document.createElement('a');a.href=n.u;a.target='_blank';a.rel='noopener';a.textContent=n.n+'’s garden ↗';
     const x=document.createElement('button');x.className='btn';x.type='button';x.textContent='×';x.onclick=()=>{home.nb.splice(i,1);persist();renderNeighbours();};
@@ -2017,7 +2034,7 @@ document.getElementById('nbAdd').addEventListener('submit',e=>{e.preventDefault(
   if(!/^https:\/\//.test(u)){document.getElementById('nbU').focus();return;}
   home.nb=(home.nb||[]).concat([{n:(n||'Friend').slice(0,30),u:u.slice(0,300)}]).slice(0,10);
   document.getElementById('nbN').value='';document.getElementById('nbU').value='';persist();renderNeighbours();});
-document.getElementById('gAll').addEventListener('change',e=>{if(!home)return;home.projects.concat(home.skills).forEach(p=>p.vis=e.target.checked);persist();});
+
 document.getElementById('gSB').addEventListener('change',e=>{if(!home)return;home.sb=e.target.checked;persist();writePubBooks();});
 function renderGardens(){
   renderNeighbours();
@@ -2407,6 +2424,8 @@ const clTip=document.createElement('div');clTip.id='clTip';document.body.appendC
 function closeTip(){clTip.classList.remove('show');}
 function openTip(i,cx,cy){
   const td=todosOf()[i];if(!td)return;clTip.innerHTML='';const tx=document.createElement('span');tx.textContent=td.text;clTip.appendChild(tx);
+  if(!visiting&&home){const lb=document.createElement('button');lb.type='button';lb.className='lockb';paintLock(lb,td.lk,'to-do');
+    lb.addEventListener('click',e=>{e.stopPropagation();toggleLock(td,'to-do');paintLock(lb,td.lk,'to-do');});clTip.appendChild(lb);}
   if(!visiting&&home){const b=document.createElement('button');b.type='button';b.className='btn dark';b.textContent='Done ✓';b.addEventListener('click',e=>{e.stopPropagation();closeTip();doneTodo(td.id);});clTip.appendChild(b);}
   clTip.classList.add('show');const w=clTip.offsetWidth,h=clTip.offsetHeight;clTip.style.left=clamp(cx-w/2,6,Math.max(6,innerWidth-w-6))+'px';clTip.style.top=clamp(cy-h-18,6,innerHeight-h-6)+'px';
 }
@@ -2424,7 +2443,8 @@ function renderLine(){
     const bx=document.createElement('span');bx.style.cssText='flex:none;width:50px;height:50px;display:flex;align-items:center;justify-content:center';bx.appendChild(ic);
     const tx=document.createElement('span');tx.textContent=td.text;tx.style.cssText='flex:1;min-width:0;overflow-wrap:anywhere';
     r.appendChild(bx);r.appendChild(tx);
-    if(own){const b=document.createElement('button');b.type='button';b.className='btn';b.textContent='Done ✓';b.onclick=()=>doneTodo(td.id);r.appendChild(b);}
+    if(own){const lb=document.createElement('button');lb.type='button';lb.className='lockb';paintLock(lb,td.lk,'to-do');lb.onclick=()=>{toggleLock(td,'to-do');paintLock(lb,td.lk,'to-do');};r.appendChild(lb);
+      const b=document.createElement('button');b.type='button';b.className='btn';b.textContent='Done ✓';b.onclick=()=>doneTodo(td.id);r.appendChild(b);}
     box.appendChild(r);});
 }
 function openLine(){renderLine();lineM.classList.add('show');}
@@ -2724,7 +2744,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794815140"></script>
+<script src="config.js?v=1794836846"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -2735,7 +2755,7 @@ function maybeAutoVisit(){
   const showGate = (msg, form) => { gate.hidden = false; gMsg.textContent = msg || ''; gForm.hidden = !form; };
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 08:45';
+  const BUILD = '16.11. 14:47';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -2893,7 +2913,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 08:45'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 14:47'; help.appendChild(ver);
   }
 
   function openImport() {
