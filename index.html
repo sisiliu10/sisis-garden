@@ -127,6 +127,12 @@
     box-shadow:5px 5px 0 rgba(42,36,48,.28);padding:12px 14px;z-index:6;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;max-height:calc(100vh - 70px);overflow:auto}
   #dlg.show{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
   #dlg.show.pouring{opacity:0;pointer-events:none;transform:translate(-50%,-16px);transition:opacity .25s,transform .25s}
+  /* the plant window never sits on top of the garden you are playing in: on wide screens it docks to the side away from you,
+     on phones it goes to the top or bottom, whichever half you are not standing in */
+  #dlg.dock{left:auto;right:auto;width:min(360px,calc(50vw - 40px));transform:translate(0,-6px)}
+  #dlg.dock.show{transform:none}#dlg.dock.show.pouring{transform:translate(0,-16px)}
+  #dlg.dock.dl{left:14px}#dlg.dock.dr{right:14px}
+  #dlg.low{top:auto!important;bottom:66px;max-height:calc(52vh - 40px)}
   .dh{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
   #dCode{font-size:22px;font-weight:700;letter-spacing:1px}
   #dLv{display:none}
@@ -1743,7 +1749,14 @@ const dlg=document.getElementById('dlg'),dView=document.getElementById('dView'),
 document.getElementById('dLock').addEventListener('click',e=>{e.stopPropagation();if(!active)return;toggleLock(active,active.bed?'bed':'plant');paintLock(e.currentTarget,active.lk,active.bed?'bed':'plant');rebuildLabels();});
 const dNote=document.getElementById('dNote'),dProg=document.getElementById('dProg'),msgEl=document.getElementById('dMsg');
 let active=null,lastActive=undefined,editing=false,pendingEdit=null,banShown=false;
-function placeDialog(){const titleTop=(OY*.42+10)*S;dlg.style.top=Math.max(56,Math.min(titleTop-6,(OY+114)*S-280))+'px';}
+function placeDialog(){
+  const titleTop=(OY*.42+10)*S, ax=(OX+av.x)*S, ay=(OY+av.y-camR)*S, gw=CW*S, side=(innerWidth-gw)/2;
+  const dock=innerWidth>=820&&side>=170;   // enough empty grass next to the garden for a side panel
+  dlg.classList.toggle('dock',dock);dlg.classList.toggle('dl',dock&&ax>innerWidth/2);dlg.classList.toggle('dr',dock&&ax<=innerWidth/2);
+  const low=!dock&&ay<innerHeight*.5;
+  dlg.classList.toggle('low',low);
+  dlg.style.top=dock?'60px':low?'':Math.max(56,Math.min(titleTop-6,(OY+114)*S-280))+'px';
+}
 function fmtAgo(ts){
   if(!ts) return 'not watered yet';
   const m=Math.floor((Date.now()-ts)/60000);
@@ -2982,7 +2995,7 @@ function updateRest(dt,t){
   camY+=(camT-camY)*Math.min(1,dt*5);
   active=moving?null:best;
   if(active!==lastActive){
-    lastActive=active; dlg.classList.toggle('show',!!active);
+    lastActive=active; if(active)placeDialog(); dlg.classList.toggle('show',!!active);
     document.getElementById('title').style.opacity=active?0:1;
     if(active){updateDialog(true); if(pendingEdit===active.id){pendingEdit=null;openEdit(active);}}
     else editing=false;
@@ -3172,7 +3185,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794869243"></script>
+<script src="config.js?v=1794869647"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3197,7 +3210,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 23:47';
+  const BUILD = '16.11. 23:54';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3392,7 +3405,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 23:47'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 23:54'; help.appendChild(ver);
   }
 
   function openImport() {
