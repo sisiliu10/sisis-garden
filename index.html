@@ -123,7 +123,8 @@
   #dlg.show.pouring{opacity:0;pointer-events:none;transform:translate(-50%,-16px);transition:opacity .25s,transform .25s}
   .dh{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
   #dCode{font-size:22px;font-weight:700;letter-spacing:1px}
-  #dLv{font-family:Silkscreen,monospace;font-size:10px;color:var(--muted);white-space:nowrap;margin-left:auto}
+  #dLv{display:none}
+  .dh #dLock{margin-left:auto}
   .dh{flex-wrap:nowrap}
   .lockb{flex:none;align-self:center;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:2px solid transparent;background:none;color:var(--muted);cursor:pointer;border-radius:0}
   .lockb:hover{border-color:#e4dccb}.lockb.on{color:var(--ink);background:#f1ead9;border-color:var(--ink)}
@@ -3125,7 +3126,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794858803"></script>
+<script src="config.js?v=1794858946"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3150,7 +3151,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 20:53';
+  const BUILD = '16.11. 20:55';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3345,7 +3346,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 20:53'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 20:55'; help.appendChild(ver);
   }
 
   function openImport() {
