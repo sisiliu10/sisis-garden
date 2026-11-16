@@ -61,6 +61,12 @@
   .toast{position:fixed;left:50%;top:58px;transform:translateX(-50%);z-index:8;font-size:14px;line-height:1.35;background:var(--ink);color:#fff;padding:8px 12px;width:max-content;max-width:calc(100vw - 24px);text-align:center;box-shadow:3px 3px 0 rgba(42,36,48,.25)}
   @media (max-width:560px){.bub{max-width:130px;font-size:13px}}
   .bub{position:fixed;transform:translate(-50%,-100%);max-width:180px;background:#fff;color:var(--ink);border:2px solid var(--ink);padding:4px 8px;font-size:14px;line-height:1.25;pointer-events:none;z-index:4;word-wrap:break-word;box-shadow:2px 2px 0 rgba(0,0,0,.2)}
+  .bub.bty{display:flex;align-items:center;gap:3px;padding:4px 7px 4px 6px;white-space:nowrap}
+  .bub.bty svg{width:11px;height:11px;shape-rendering:crispEdges;display:block;margin-right:2px;animation:typen 1.2s steps(2) infinite}
+  .bub.bty i{display:block;width:3px;height:3px;background:var(--ink);animation:tydot 1.2s infinite}
+  .bub.bty i:nth-of-type(2){animation-delay:.2s}.bub.bty i:nth-of-type(3){animation-delay:.4s}
+  @keyframes tydot{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-2px)}}
+  @keyframes typen{0%{transform:translate(0,0)}50%{transform:translate(1px,-1px)}}
   .bub::after{content:"";position:absolute;left:50%;bottom:-8px;margin-left:-5px;border:5px solid transparent;border-top:6px solid var(--ink)}
   .prompt{position:fixed;left:50%;bottom:62px;transform:translateX(-50%);z-index:5;font-size:15px;padding:8px 14px}
   .prompt kbd{font-family:Silkscreen,monospace;font-size:10px;background:rgba(255,255,255,.2);padding:1px 4px;margin-left:6px}
@@ -1606,7 +1612,7 @@ function roomPeers(){
 function isHostPeer(p){ return !p.isMe&&!!visiting&&((!!p.by&&p.by===visiting.id)||(!!p.presence&&p.presence.u===visiting.id)); }
 function sendPresence(now){
   if(!room||now-lastPresT<60) return;
-  const st={g:gardenKey(),u:myId||null,sw:av.swim||av.jump?1:0,say:(mySay&&mySay.until>performance.now())?{n:mySay.n,t:mySay.t}:null,x:Math.round(av.x*2)/2,y:Math.round((av.y-(av.kh||0))*2)/2,act:myAct,al:riding?1:0,sl:slide?(slide.ph==='climb'?1:2):0,sg:mySeat===null?null:{s:mySeat,a:Math.round(swA*100)/100},s:scene==='house'?'h':'g',b:av.back?1:0,m:av.moving?1:0,r:av.run&&av.moving?1:0,n:(me().name||'Friend').slice(0,14),l:me().look,w:av.water>0?1:0};
+  const st={g:gardenKey(),u:myId||null,sw:av.swim||av.jump?1:0,say:(mySay&&mySay.until>performance.now())?{n:mySay.n,t:mySay.t}:null,ty:(document.activeElement===chatIn&&chatIn.value.trim()&&now-typingAt<5000)?1:0,x:Math.round(av.x*2)/2,y:Math.round((av.y-(av.kh||0))*2)/2,act:myAct,al:riding?1:0,sl:slide?(slide.ph==='climb'?1:2):0,sg:mySeat===null?null:{s:mySeat,a:Math.round(swA*100)/100},s:scene==='house'?'h':'g',b:av.back?1:0,m:av.moving?1:0,r:av.run&&av.moving?1:0,n:(me().name||'Friend').slice(0,14),l:me().look,w:av.water>0?1:0};
   const k=JSON.stringify(st); if(k===lastPres&&now-lastPresT<2500) return;
   lastPres=k; lastPresT=now; try{const pr=room.presence(st);if(pr&&pr.catch)pr.catch(()=>{});}catch(e){}
 }
@@ -1639,7 +1645,7 @@ function livePeers(){
     if(q.say&&typeof q.say.t==='string'&&q.say.n!==gh.sayN){if(gh.sayN!==undefined||now-roomT0>4000)logChat({t:Date.now(),n:str(q.n,14)||'Friend',text:q.say.t.slice(0,80)});gh.sayN=q.say.n;gh.sayT=q.say.t.slice(0,80);gh.sayUntil=now+6000+q.say.t.length*60;}
     const sgq=q.sg&&(q.sg.s===0||q.sg.s===1)?{s:q.sg.s,a:clamp(num(q.sg.a,0),-1.2,1.2)}:null;
     if(gh.pxx!==undefined&&Math.abs(gh.x-gh.pxx)>.02)gh.dir=gh.x>gh.pxx?1:-1;else if(gh.pxx===undefined&&Math.abs(tx-gh.x)>.6)gh.dir=tx>gh.x?1:-1;gh.pxx=gh.x;
-    out.push({sl:q.sl===1||q.sl===2?q.sl:0,ride:!!q.al,sg:sgq,say:gh.sayUntil>now?gh.sayT:'',id:p.peer,by:p.by,x:gh.x,y:gh.y,scene:q.s==='h'?'house':'garden',back:!!q.b,moving:!!q.m||now-(gh.mvT||0)<150,run:!!q.r,swim:!!q.sw,water:!!q.w,name:str(q.n,14)||'Friend',look:cleanLook(q.l)});
+    out.push({sl:q.sl===1||q.sl===2?q.sl:0,ride:!!q.al,sg:sgq,say:gh.sayUntil>now?gh.sayT:'',typing:!!q.ty&&!(gh.sayUntil>now),id:p.peer,by:p.by,x:gh.x,y:gh.y,scene:q.s==='h'?'house':'garden',back:!!q.b,moving:!!q.m||now-(gh.mvT||0)<150,run:!!q.r,swim:!!q.sw,water:!!q.w,name:str(q.n,14)||'Friend',look:cleanLook(q.l)});
   }
   return out;
 }
@@ -2746,6 +2752,13 @@ function drawCompost(t){
   const greens=(gx,gy)=>{R(gx,gy-3,1,3,'#5aa83a');R(gx-1,gy-4,1,2,'#7cc84e');R(gx+1,gy-4,1,1,'#7cc84e');R(gx+2,gy-5,1,2,'#5aa83a');R(gx-2,gy-2,1,1,'#5aa83a');};
   const sc=[()=>greens(COMP.x+1,top+1),()=>banana(COMP.x-6,top+3),()=>apple(COMP.x+4,top+2),()=>egg(COMP.x-2,top+5),()=>orange(COMP.x+2,top+6),()=>apple(COMP.x-8,top+7)];
   sc.slice(0,2+lv).forEach(f=>f());
+  // now and then a worm peeks out of the heap, wiggles and dives back in
+  {const P=13,cyc=Math.floor(t/P),ph=t-cyc*P,spots=[[-5,3],[3,2],[-1,1],[6,4],[-7,5]],sp=spots[cyc%spots.length];
+    if(ph<4.6){const h=Math.round(ph<.8?ph/.8*5:ph>3.8?(4.6-ph)/.8*5:5),r=Math.max(0,hh-1-sp[1]),sx=COMP.x+Math.max(-Math.floor(rows[r]/2)+2,Math.min(Math.floor(rows[r]/2)-3,sp[0]));
+      const wy=top+sp[1];
+      for(let i=0;i<h;i++){const wx=sx+Math.round(Math.sin(t*5+i*.9)*.8*(i/4));R(wx,wy-i,2,1,i===h-1?'#f6b3bf':(i%2?'#e48a9b':'#d97a8c'));}
+      if(h>=4){const hx=sx+Math.round(Math.sin(t*5+(h-1)*.9)*.8*((h-1)/4));R(hx,wy-h+1,1,1,'#2a2430');}
+      R(sx-1,wy+1,4,1,S1);}}
   // warm compost steams a little
   for(let k=0;k<2;k++){const ph=(t*.35+k*.5)%1,sx=COMP.x-4+k*8+Math.round(Math.sin(t*1.7+k*2)*1.2),sy=top-2-Math.round(ph*9);
     g.globalAlpha=.55*(1-ph);R(sx,sy,1,2,'#efe9df');R(sx+1,sy-1,1,1,'#efe9df');g.globalAlpha=1;}
@@ -2758,6 +2771,12 @@ function drawCompost(t){
   R(x0+6,y-5,1,1,WD);R(x0+16,y-2,2,1,WD);R(x0,y,24,1,OL);
   // grass tufts at the corners
   [[x0-2,y],[x0+23,y]].forEach(([gx,gy])=>{R(gx,gy-2,1,2,'#5a9a3c');R(gx+1,gy-3,1,3,'#6fb34a');R(gx+2,gy-1,1,1,'#5a9a3c');});
+  // a little mushroom pops up next to the crate every now and then (stays a few minutes)
+  {const W=240000,now=Date.now(),win=Math.floor(now/W),seen=(Math.imul(win,2654435761)>>>0)%3===0;
+    if(seen){const k=Math.min(1,(now-win*W)/1200),mx=x0-5,my=y+2,hgt=Math.round(1+k*2);
+      R(mx,my-hgt,2,hgt,'#f3ead6');R(mx+1,my-hgt,1,hgt,'#d9ccb0');
+      if(k>.3){R(mx-2,my-hgt-2,6,2,'#d8403a');R(mx-1,my-hgt-3,4,1,'#d8403a');R(mx-1,my-hgt-2,1,1,'#ffffff');R(mx+2,my-hgt-3,1,1,'#ffffff');R(mx+3,my-hgt-1,1,1,'#ffffff');R(mx-2,my-hgt-1,6,1,'#a82e2a');}
+      if(((win>>>1)%2)===0){const nx=x0+12,ny=y+5;R(nx,ny-2,1,2,'#f3ead6');R(nx-1,ny-3,3,1,'#c9864a');R(nx,ny-4,1,1,'#c9864a');}}}
   // a shovel leaning against the right post, blade stuck in the grass
   {const hx0=x0+24,hy0=y-21,hx1=x0+28,hy1=y-7;
     R(hx0-2,hy0-1,5,1,'#5e3a22');R(hx0-2,hy0,1,1,'#5e3a22');R(hx0+2,hy0,1,1,'#5e3a22');
@@ -2834,7 +2853,8 @@ function hideHint(){}
 /* ================= loop ================= */
 let last=performance.now(),uiTick=0;
 let mySay=null, sayN=0;
-const chatIn=document.getElementById('chatIn'), bubBox=document.getElementById('bubbles');
+const chatIn=document.getElementById('chatIn'), bubBox=document.getElementById('bubbles');let typingAt=0;
+chatIn.addEventListener('input',()=>{typingAt=performance.now();});chatIn.addEventListener('blur',()=>{typingAt=0;});
 document.getElementById('chatbar').addEventListener('submit',e=>{e.preventDefault();const t=chatIn.value.trim().slice(0,80);if(!t)return;
   sayN++;mySay={n:sayN,t,until:performance.now()+6000+t.length*60};chatIn.value='';chatIn.blur();
   logChat({t:Date.now(),n:me().name||'Me',text:t,me:true});
@@ -2844,11 +2864,11 @@ function drawBubbles(){
   const sc=scene==='house'?'house':'garden';
   const toS=(x,y)=>sc==='house'?[(RX+x)*S,(RY+y)*S]:[(OX+x)*S,(OY+y-camR)*S];
   if(mySay&&mySay.until>now) items.push({id:'me',x:av.x,y:av.y,t:mySay.t});
-  livePeers().forEach(p=>{if(p.scene===sc&&p.say)items.push({id:p.id,x:p.x,y:p.y,t:p.say});});
+  livePeers().forEach(p=>{if(p.scene!==sc)return;if(p.say)items.push({id:p.id,x:p.x,y:p.y,t:p.say});else if(p.typing)items.push({id:p.id+'~ty',x:p.x,y:p.y,ty:true});});
   const keep=new Set();
   items.forEach(it=>{keep.add(it.id);let el=bubBox.querySelector(`[data-b="${it.id}"]`);
-    if(!el){el=document.createElement('div');el.className='bub';el.dataset.b=it.id;bubBox.appendChild(el);}
-    if(el.textContent!==it.t){el.textContent=it.t;el._w=0;}
+    if(!el){el=document.createElement('div');el.className=it.ty?'bub bty':'bub';el.dataset.b=it.id;if(it.ty){el.innerHTML=PENCIL+'<i></i><i></i><i></i>';el.setAttribute('aria-label','is typing');}bubBox.appendChild(el);}
+    if(!it.ty&&el.textContent!==it.t){el.textContent=it.t;el._w=0;}
     if(!el._w)el._w=el.offsetWidth/2+6;
     const [x,y]=toS(it.x,it.y-(it.id==='me'?30:36));el.style.left=clamp(x,el._w,Math.max(el._w,innerWidth-el._w))+'px';el.style.top=y+'px';});
   [...bubBox.children].forEach(el=>{if(!keep.has(el.dataset.b))el.remove();});
@@ -3117,7 +3137,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 20:45';
+  const BUILD = '16.11. 21:15';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
