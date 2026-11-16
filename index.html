@@ -255,6 +255,7 @@
   .ledit .dbtns .btn{font-size:14px;padding:5px 10px}
   .ledit .ldel{margin-left:auto;color:#b0402c}
   .ledit .ldel.sure{background:#b0402c;color:#fff}
+  #dDidForm .dbtns{display:none}#dDidForm{margin-top:8px}
   #dDidOk{background:var(--water);color:#fff;text-shadow:0 1px 0 #2a7fb5}
   #dDidOk[disabled]{opacity:.5;cursor:default}
   .shake{animation:shake .3s}
@@ -342,6 +343,7 @@
     <input type="hidden" id="fWhy">
     <input type="hidden" id="fName">
     <div class="fl">SHORT DESCRIPTION</div><input class="inp" id="fSub" maxlength="60">
+    <div class="fl">NEXT STEP</div><input class="inp" id="fNote" maxlength="90" placeholder="Optional, e.g. new design">
     <div class="fl">LINKS</div><div id="fLinks"></div><button class="btn" type="button" id="fAddLink" style="margin-top:6px;font-size:13px;padding:4px 10px">+ Add link</button>
     <label class="chk"><input type="checkbox" id="fVis"> Visitors can see the next step and work log</label>
     <div class="fl" id="fKindL">PLANT</div><div class="sw tx" id="fKind"></div>
@@ -1774,8 +1776,8 @@ function updateDialog(full){
     const dn=document.getElementById('dName'); dn.innerHTML='';
     if(p.sub){const s=document.createElement('span'); s.textContent=p.sub; dn.appendChild(s);}
     document.getElementById('dWhy').textContent='';
-    dNote.hidden=!own; dNote.value=own?(home.notes[p.id]||''):'';
-    {const nt=!own&&V().notes&&V().notes[p.id];document.getElementById('dNoteRO').textContent=nt?'Next step: '+nt:'';}
+    dNote.hidden=true; dDidForm.hidden=!own;
+    {const nt=V().notes&&V().notes[p.id];document.getElementById('dNoteRO').textContent=nt?'Next step: '+nt:'';}
     dNote.placeholder=p.bed?'Next practice step…':'Next step for this project…';
     const dl=document.getElementById('dLinks'); dl.innerHTML='';
     (p.links||[]).forEach(l=>{const a=document.createElement('a');a.className='lnk';a.href=l.u;a.target='_blank';a.rel='noopener';a.textContent=l.t+' ↗';dl.appendChild(a);});
@@ -1808,7 +1810,7 @@ dProg.addEventListener('input',()=>{
   persist();
 });
 dProg.addEventListener('change',()=>dProg.blur());
-document.getElementById('dWater').addEventListener('click',()=>{if(active)openLog(active);});
+document.getElementById('dWater').addEventListener('click',()=>{if(active)submitLog();});
 
 /* edit form */
 const fKind=document.getElementById('fKind'); let fKindVal='sunflower', delArmed=false;
@@ -1816,7 +1818,7 @@ KINDS.concat(FLOWERS).forEach(k=>{const b=document.createElement('button');b.typ
 function openEdit(p){
   editing=true; dView.hidden=true; dForm.hidden=false; delArmed=false;
   document.getElementById('fCode').value=p.code; document.getElementById('fWhy').value=p.why;
-  document.getElementById('fName').value=p.name; document.getElementById('fSub').value=p.sub; renderLinkRows(p.links||[]); document.getElementById('fVis').checked=p.vis!==false;
+  document.getElementById('fName').value=p.name; document.getElementById('fSub').value=p.sub; document.getElementById('fNote').value=home.notes[p.id]||''; renderLinkRows(p.links||[]); document.getElementById('fVis').checked=p.vis!==false;
   fKindVal=p.kind; [...fKind.children].forEach(x=>{x.classList.toggle('on',x.dataset.k===p.kind);x.hidden=!!x.dataset.bed!==!!p.bed;});
   document.getElementById('fKindL').textContent=p.bed?'FLOWERS':'PLANT';
   document.getElementById('fTitle').textContent=p.bed?'Edit skill bed':'Edit plant';
@@ -1857,6 +1859,7 @@ dForm.addEventListener('submit',e=>{
   p.why=document.getElementById('fWhy').value.trim().slice(0,160);
   p.name=p.code.charAt(0)+p.code.slice(1).toLowerCase();
   p.sub=document.getElementById('fSub').value.trim().slice(0,60);
+  {const nv=document.getElementById('fNote').value.trim().slice(0,90);if(nv)home.notes[p.id]=nv;else delete home.notes[p.id];}
   p.links=[...document.querySelectorAll('#fLinks .lrow2')].map(r=>({t:r.children[0].value.trim().slice(0,40)||'Open page',u:r.children[1].value.trim().slice(0,300)})).filter(l=>/^https:\/\//.test(l.u)).slice(0,6);
   p.url=p.links[0]?p.links[0].u:'';
   p.kind=fKindVal; p.vis=document.getElementById('fVis').checked;
@@ -2071,14 +2074,17 @@ function logEditor(p,L,e){
 }
 // watering with a note: remember WHICH plant the form belongs to, so nothing else (walking, a re-render, a slow pour) can swallow the entry
 let logPlant=null;
+dBtns.parentNode.insertBefore(dDidForm,dBtns);
 function openLog(p){
   if(!p||visiting||!home) return;
-  logPlant=p; editing=true; dBtns.hidden=true; dNote.hidden=true; dDidForm.hidden=false; msgEl.textContent='';
-  document.getElementById('dDidQ').textContent=p.bed?'WHAT DID YOU PRACTISE?':'WHAT DID YOU DO?';
-  dDidIn.placeholder=p.bed?'One line, e.g. 20 min of reading a news article':'One line, e.g. sent the pitch deck to 3 founders';
-  dDidIn.value=''; try{dDidIn.focus();}catch(e){} setTimeout(()=>{if(!dDidForm.hidden&&document.activeElement!==dDidIn)dDidIn.focus();},30);
+  logPlant=p; try{dDidIn.focus();}catch(e){}
 }
-function closeLog(){ dDidForm.hidden=true; dBtns.hidden=false; if(!visiting) dNote.hidden=false; editing=false; }
+function closeLog(){ dDidIn.value=''; editing=false; const p=active;
+  if(p){document.getElementById('dDidQ').textContent=p.bed?'WHAT DID YOU PRACTISE?':'WHAT DID YOU DO?';
+    dDidIn.placeholder=p.bed?'e.g. 20 min of reading a news article':'e.g. sent the pitch deck to 3 founders';} }
+dDidIn.addEventListener('focus',()=>{editing=true;logPlant=active;});
+dDidIn.addEventListener('input',()=>{logPlant=active;});
+dDidIn.addEventListener('blur',()=>{if(dForm.hidden)editing=false;});
 let lastSubmit=0;
 function submitLog(){
   const p=logPlant||active; if(!p) return;
@@ -3008,8 +3014,8 @@ function updateRest(dt,t){
   if(active!==lastActive){
     lastActive=active; if(active)placeDialog(); dlg.classList.toggle('show',!!active);
     document.getElementById('title').style.opacity=active?0:1;
-    if(active){ if(logPlant===active&&!dDidForm.hidden){/* same plant came back while you are typing: keep your text */} else {logPlant=null;updateDialog(true);} if(pendingEdit===active.id){pendingEdit=null;openEdit(active);}}
-    else if(!(logPlant&&!dDidForm.hidden)) editing=false;
+    if(active){ if(logPlant===active&&dDidIn.value.trim()){/* same plant came back while you are typing: keep your text */} else {logPlant=null;updateDialog(true);} if(pendingEdit===active.id){pendingEdit=null;openEdit(active);}}
+    else if(document.activeElement!==dDidIn) editing=false;
     refreshLabels();
   }
   if(av.water>0){
@@ -3196,7 +3202,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794870001"></script>
+<script src="config.js?v=1794870483"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3221,7 +3227,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '17.11. 00:00';
+  const BUILD = '17.11. 00:08';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3416,7 +3422,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 00:00'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 00:08'; help.appendChild(ver);
   }
 
   function openImport() {
