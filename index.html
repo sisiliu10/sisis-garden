@@ -2736,15 +2736,15 @@ function maybeAutoVisit(){
 })();
 })();
 </script>
-<div id="gate" hidden><div class="gcard"><div class="gt">Sisi's<br>Garden</div><p id="gMsg">Loading…</p>
+<div id="gate" hidden><div class="gcard"><div class="gt">Sisi's<br>Garden</div><p id="gCount" hidden></p><p id="gMsg">Loading…</p>
 <form id="gForm" hidden autocomplete="on"><input id="gEmail" type="email" inputmode="email" autocomplete="email" placeholder="your@email.com" required><button id="gBtn" class="btn dark" type="submit">Send login link</button></form></div></div>
 <style>#gate{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:#2b3a7a;padding:16px}
 #gate[hidden]{display:none}.gcard{background:#fffdf6;border:3px solid #2a2430;box-shadow:4px 4px 0 rgba(0,0,0,.25);padding:22px;width:min(360px,100%);text-align:center;font-family:"Pixelify Sans",sans-serif;color:#2a2430}
-.gt{font-family:Silkscreen,monospace;font-size:28px;line-height:1.05;margin-bottom:12px}#gMsg{font-size:16px;line-height:1.4;margin:0 0 14px}
+.gt{font-family:Silkscreen,monospace;font-size:28px;line-height:1.05;margin-bottom:12px}#gMsg{font-size:16px;line-height:1.4;margin:0 0 14px}#gCount{font-family:Silkscreen,monospace;font-size:12px;line-height:1.5;letter-spacing:.5px;color:#fff;background:#4a8fd4;border:2px solid #2a2430;padding:6px 8px;margin:0 0 14px}#gCount b{color:#ffe27a;font-weight:400}
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794836846"></script>
+<script src="config.js?v=1794843880"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -2752,10 +2752,24 @@ function maybeAutoVisit(){
   const CFG = window.GARDEN_CONFIG || {};
   const $ = id => document.getElementById(id);
   const gate = $('gate'), gMsg = $('gMsg'), gForm = $('gForm'), gEmail = $('gEmail'), gBtn = $('gBtn');
-  const showGate = (msg, form) => { gate.hidden = false; gMsg.textContent = msg || ''; gForm.hidden = !form; };
+  let counted = false; const sbRef = () => window.__gardenSb;
+  const showGate = (msg, form) => { gate.hidden = false; gMsg.textContent = msg || ''; gForm.hidden = !form; if (form) showCount(); };
+  // "Join 12 gardeners …" on the sign-up screen, with the real number of gardens
+  async function showCount() {
+    if (counted || !sbRef()) return; counted = true;
+    try {
+      const { data, error } = await sbRef().rpc('garden_count'); const n = Number(data);
+      if (error || !Number.isFinite(n)) return;
+      const el = $('gCount'); el.textContent = '';
+      if (n < 20) { el.append('Be one of the ', Object.assign(document.createElement('b'), { textContent: 'first gardeners' }), '. Grow your projects, visit friends.'); el.hidden = false; return; }
+      el.append('Join ', Object.assign(document.createElement('b'), { textContent: n.toLocaleString('en-US') }),
+        n === 1 ? ' gardener keeping their projects watered.' : ' gardeners keeping their projects watered.');
+      el.hidden = false;
+    } catch (e) {}
+  }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 14:47';
+  const BUILD = '16.11. 16:44';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -2781,6 +2795,7 @@ function maybeAutoVisit(){
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit' },
     realtime: { params: { eventsPerSecond: 20 } },
   });
+  window.__gardenSb = sb;
   window.__sb = sb;
 
   let uid = null, ownerId = '', isOwner = false, launched = false;
@@ -2913,7 +2928,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 14:47'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 16:44'; help.appendChild(ver);
   }
 
   function openImport() {
