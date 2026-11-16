@@ -3227,7 +3227,7 @@ async function nearestPhoto(){
     if(best)break;}
   return best;
 }
-function closePhotos(){if(!CITY.photo)return;CITY.photo=false;photoBox.style.display='none';photoAv.style.display='none';cvs.style.visibility='';photoBtn.textContent='Photos';}
+function closePhotos(){if(!CITY.photo)return;CITY.photo=false;photoBox.style.display='none';photoAv.style.display='none';padEl.style.display='none';PH.pad='';cvs.style.visibility='';photoBtn.textContent='Photos';}
 async function openPhotos(){
   if(!mlyToken){
     if(visiting||!home){toast('Real street photos are not set up for this garden yet.',3000);return;}
@@ -3238,16 +3238,51 @@ async function openPhotos(){
   toast('Loading real street photos…',2500);
   try{
     await loadMly();const id=await nearestPhoto();if(!id){toast('No street photo close to here. Walk to a bigger street and try again.',3500);return;}
-    CITY.photo=true;CITY.touch=null;photoBox.style.display='block';photoAv.style.display='block';photoBtn.textContent='Pixel view';
-    if(!mlyViewer){mlyViewer=new mapillary.Viewer({accessToken:mlyToken,container:photoBox,imageId:id,component:{cover:false}});
-      mlyViewer.on('image',ev=>{const ll=ev&&ev.image&&(ev.image.lngLat||ev.image.originalLngLat);if(!ll)return;const [x,y]=fromLL(ll.lng,ll.lat);if(x>0&&y>0&&x<CITY.w&&y<CITY.h){av.x=x;av.y=y;}photoStep=performance.now();lastPres='';});}
+    CITY.photo=true;CITY.touch=null;photoBox.style.display='block';photoAv.style.display='block';padEl.style.display='grid';photoBtn.textContent='Pixel view';if(!PH.hint){PH.hint=true;setTimeout(()=>toast(('ontouchstart' in window)?'Hold ▲ to walk, ◀ ▶ to look around. Drag the photo to look freely.':'Hold W or ↑ to walk, A/D or ←/→ to look around, S or ↓ to go back.',5000),1200);}
+    if(!mlyViewer){mlyViewer=new mapillary.Viewer({accessToken:mlyToken,container:photoBox,imageId:id,component:{cover:false,direction:false,sequence:false,keyboard:false,zoom:false}});
+      mlyViewer.on('image',ev=>{const im=ev&&ev.image;if(im){PH.id=im.id;PH.pano=im.cameraType==='spherical'||im.cameraType==='equirectangular';PH.c=[.5,.5];}const ll=im&&(im.lngLat||im.originalLngLat);if(!ll)return;PH.ll=[ll.lng,ll.lat];const [x,y]=fromLL(ll.lng,ll.lat);if(x>0&&y>0&&x<CITY.w&&y<CITY.h){av.x=x;av.y=y;}photoStep=performance.now();lastPres='';});}
     else{mlyViewer.resize();await mlyViewer.moveTo(id);}
   }catch(e){closePhotos();mlyToken=/token|OAuth|access/i.test(String(e&&e.message))?'':mlyToken;toast('The street photos could not be loaded'+(mlyToken?'.':': the token was not accepted.')+' Try again.',4000);}
 }
 photoBtn.addEventListener('click',e=>{e.stopPropagation();photoBtn.blur();if(CITY.photo){closePhotos();}else openPhotos();});
+// character controller for the photo world: hold to walk from photo to photo, turn the camera smoothly, on-screen D-pad for touch
+const PH={id:'',pano:false,c:[.5,.5],ll:null,busy:false,pad:'',cache:null,miss:0,hint:false};
+const padEl=document.createElement('div');padEl.style.cssText='position:fixed;left:12px;bottom:70px;z-index:5;display:none;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(2,46px);gap:4px;touch-action:none;user-select:none;-webkit-user-select:none';
+[['','',''],['left','◀','1/2'],['fwd','▲','2/1'],['right','▶','3/2'],['back','▼','2/2']].slice(1).forEach(([k,ch,pos])=>{const b=document.createElement('button');b.type='button';b.className='btn';b.textContent=ch;b.style.cssText='grid-column:'+pos.split('/')[0]+';grid-row:'+pos.split('/')[1]+';padding:0;font-size:18px;display:flex;align-items:center;justify-content:center;touch-action:none'+(k==='fwd'?';background:var(--water);color:#fff':'');
+  const on=e=>{e.preventDefault();e.stopPropagation();PH.pad=k;},off=e=>{if(PH.pad===k)PH.pad='';};
+  b.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,off));b.addEventListener('contextmenu',e=>e.preventDefault());padEl.appendChild(b);});
+document.body.appendChild(padEl);
+async function photoStepDir(back){
+  if(PH.busy||!mlyViewer)return;PH.busy=true;
+  try{
+    const N=mapillary.NavigationDirection||{},d=back?(N.Backward??N.StepBackward):(N.Forward??N.StepForward);
+    let ok=false;
+    if(d!==undefined){try{await mlyViewer.moveDir(d);ok=true;}catch(e){}}
+    if(!ok){ // free roaming: the closest photo roughly in the direction I am looking, even from another photo series
+      let brg=0;try{brg=await mlyViewer.getBearing();}catch(e){}if(back)brg+=180;
+      const ll=PH.ll||toLL(av.x,av.y);
+      if(!PH.cache||Math.hypot((PH.cache.ll[0]-ll[0])*GEO.mx,(PH.cache.ll[1]-ll[1])*GEO.my)>50){const r=.0006,u='https://graph.mapillary.com/images?access_token='+encodeURIComponent(mlyToken)+'&fields=id,is_pano,computed_geometry,geometry&limit=200&bbox='+[ll[0]-r*1.5,ll[1]-r,ll[0]+r*1.5,ll[1]+r].join(',');
+        const j=await (await fetch(u)).json();PH.cache={ll:ll.slice(),list:(j.data||[]).map(im=>{const c=(im.computed_geometry||im.geometry||{}).coordinates;return c?{id:im.id,x:c[0],y:c[1],p:!!im.is_pano}:null;}).filter(Boolean)};}
+      let best=null,bs=1e9;PH.cache.list.forEach(im=>{if(im.id===PH.id)return;const ex=(im.x-ll[0])*GEO.mx/2,ny=(im.y-ll[1])*GEO.my/2,dist=Math.hypot(ex,ny);if(dist<3||dist>32)return;
+        let da=Math.abs(((Math.atan2(ex,ny)*180/Math.PI-brg)%360+540)%360-180);if(da>50)return;const sc=dist+da*.35-(im.p?4:0);if(sc<bs){bs=sc;best=im.id;}});
+      if(best){await mlyViewer.moveTo(best);ok=true;}
+    }
+    if(!ok){if(performance.now()-PH.miss>2500){PH.miss=performance.now();toast('No photo further this way. Turn a little and try again.',2200);}await new Promise(r=>setTimeout(r,350));}
+  }catch(e){}
+  PH.busy=false;
+}
+function photoControl(dt){
+  if(!mlyViewer||document.activeElement===chatIn)return;
+  const f=keys.arrowup||keys.w||PH.pad==='fwd',b=keys.arrowdown||keys.s||PH.pad==='back',l=keys.arrowleft||keys.a||PH.pad==='left',r=keys.arrowright||keys.d||PH.pad==='right';
+  if(l!==r){const rate=(PH.pano?.16:.3)*dt*(r?1:-1);PH.c[0]=PH.pano?((PH.c[0]+rate)%1+1)%1:clamp(PH.c[0]+rate,.08,.92);try{mlyViewer.setCenter(PH.c);}catch(e){}PH.turn=r?1:-1;PH.turnT=performance.now();}
+  if(f&&!PH.busy)photoStepDir(false);else if(b&&!PH.busy)photoStepDir(true);
+  if(PH.busy)photoStep=performance.now();
+}
 function drawPhotoAvatar(t){
   const c2=photoAv.getContext('2d');c2.clearRect(0,0,16,30);const walking=performance.now()-photoStep<900;
-  drawAvatar(c2,8,28-(walking&&Math.floor(t*8)%2?1:0),me().look,{frame:walking?[1,0,2,0][Math.floor(t*8)%4]:0,back:true,blink:false,shadow:false,t});
+  const turning=performance.now()-(PH.turnT||0)<160;
+  if(turning&&!walking)drawAvatar(c2,8,28,me().look,{side:true,dir:PH.turn,frame:Math.floor(t*6)%2,blink:false,shadow:false,t});
+  else drawAvatar(c2,8,28-(walking&&Math.floor(t*9)%2?1:0),me().look,{run:false,frame:walking?[1,0,2,0][Math.floor(t*9)%4]:0,back:true,blink:false,shadow:false,t});
 }
 /* ================= hint ================= */
 function hideHint(){}
@@ -3286,7 +3321,7 @@ function isWater(x,y){if(!av.swim&&x>BOARD.x0-2&&Math.abs(y-BOARD.y)<4)return fa
 function startJump(tx,ty,high){if(riding)dismount();av.jump={t:0,fx:av.x,fy:av.y,tx:clamp(tx,POOL.x0+8,POOL.x1-8),ty:clamp(ty,POOL.y0+9,POOL.y1-5),h:high?22:10,d:high?.75:.45};av.target=null;av.run=false;}
 function splash(x,y,n,vol,big){Sfx.splash(big===undefined?n>=20:big,vol===undefined?(n<10?.35:1):vol);for(let i=0;i<n;i++)spawn({kind:'splash',x:x+(Math.random()*10-5),y:y-2,vx:(Math.random()-.5)*50,vy:-30-Math.random()*30,floor:y,life:.8});}
 function update(dt,t){
-  if(scene==='city'&&CITY.photo){av.moving=false;return updateRest(dt,t);}
+  if(scene==='city'&&CITY.photo){av.moving=false;photoControl(dt);return updateRest(dt,t);}
   if(scene==='city'&&CITY.pov){povMove(dt);return updateRest(dt,t);}
   if(pendSlide&&!slide){const [bx,by]=slBase();if(Math.hypot(av.x-bx,av.y-by)<8){pendSlide=false;av.target=null;slide={ph:'climb',t:0};}else if(!av.target)pendSlide=false;}
   if(slide&&scene==='garden'){updateSlide(dt);updateCat(dt);return updateRest(dt,t);}
@@ -3520,7 +3555,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794873001"></script>
+<script src="config.js?v=1794873102"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3545,7 +3580,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '17.11. 00:50';
+  const BUILD = '17.11. 00:51';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3740,7 +3775,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 00:50'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 00:51'; help.appendChild(ver);
   }
 
   function openImport() {
