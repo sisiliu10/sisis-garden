@@ -293,8 +293,8 @@
 <div class="modal" id="addM">
   <div class="panel" style="width:min(380px,100%)">
     <h2>Add to your garden</h2>
-    <div class="lead">Plants are for long-term projects. Beds are for skills you practise.</div>
-    <div class="dbtns" style="margin-top:14px"><button class="btn dark" id="aPlant">Project plant</button><button class="btn dark" id="aBed">Skill bed</button><button class="btn" id="aCancel">Cancel</button></div>
+    <div class="lead">Projects grow as plants, skills as flower beds, to-dos hang on the line.</div>
+    <div class="dbtns" style="margin-top:14px"><button class="btn dark" id="aPlant">Add Project</button><button class="btn dark" id="aBed">Add Skill</button><button class="btn dark" id="aTodo">Add To-Do</button><button class="btn" id="aCancel">Cancel</button></div>
   </div>
 </div>
 
@@ -1738,11 +1738,13 @@ document.getElementById('bAdd').onclick=()=>{
   if(!home||visiting) return;
   document.getElementById('aPlant').disabled=home.projects.length>=SLOTS.length;
   document.getElementById('aBed').disabled=home.skills.length>=BED_SLOTS.length;
+  document.getElementById('aTodo').disabled=(home.todos||[]).length>=CLN.max;
   addM.classList.add('show');
 };
 document.getElementById('aCancel').onclick=()=>addM.classList.remove('show');
 document.getElementById('aPlant').onclick=()=>addItem(false);
 document.getElementById('aBed').onclick=()=>addItem(true);
+document.getElementById('aTodo').onclick=()=>{addM.classList.remove('show');openLine();setTimeout(()=>{const i=document.getElementById('lnIn');if(i)i.focus();},60);};
 function addItem(bed){
   addM.classList.remove('show');
   const arr=bed?home.skills:home.projects, max=(bed?BED_SLOTS:SLOTS).length;
@@ -2722,7 +2724,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794786981"></script>
+<script src="config.js?v=1794815140"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -2733,7 +2735,7 @@ function maybeAutoVisit(){
   const showGate = (msg, form) => { gate.hidden = false; gMsg.textContent = msg || ''; gForm.hidden = !form; };
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '16.11. 00:56';
+  const BUILD = '16.11. 08:45';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -2891,7 +2893,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 00:56'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 16.11. 08:45'; help.appendChild(ver);
   }
 
   function openImport() {
