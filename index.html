@@ -5,6 +5,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Sisi's Garden">
 <meta name="theme-color" content="#2b3a7a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%233c8a3a'/%3E%3Crect x='7' y='5' width='2' height='8' fill='%235a3420'/%3E%3Crect x='5' y='3' width='6' height='4' fill='%23e8506c'/%3E%3C/svg%3E">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>Sisi's Garden</title>
@@ -414,7 +416,8 @@
 <div class="modal" id="gardens">
   <div class="panel">
     <h2>Gardens</h2>
-    <div class="lead">Everyone who plants here gets their own garden. Visit to see how their projects are growing.</div>
+    <div class="lead">Everyone who plants here gets their own garden. Visit friends to see how their projects are growing.</div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><input class="inp" id="gSearch" placeholder="Search gardens…" maxlength="20" style="flex:1;min-width:140px;margin:0"><button class="btn dark" type="button" id="gInvite">Copy invite link</button></div>
     <div class="glist" id="glist"></div>
     <div id="gMine">
       <div class="dsec">NEIGHBOURS</div>
@@ -423,6 +426,7 @@
       <form class="nbadd" id="nbAdd" autocomplete="off"><input class="inp" id="nbN" maxlength="30" placeholder="Name, e.g. André"><input class="inp" id="nbU" maxlength="300" placeholder="https://claude.ai/artifact/…"><button class="btn dark" type="submit">Add</button></form>
       <div class="dsec">WHAT VISITORS SEE</div>
       <label class="chk"><input type="checkbox" id="gSB"> My bookshelf</label>
+      <label class="chk"><input type="checkbox" id="gListed"> List my garden for everyone (off: only people with my invite link find it)</label>
       <div class="lead" style="margin-top:6px">Want to keep a plant, bed or to-do to yourself? Tap it and use the little lock. Visitors can never change anything in your garden.</div>
     </div>
     <div class="pfoot"><span></span><button class="btn" id="gClose">Close</button></div>
@@ -530,7 +534,7 @@ function cleanGarden(g){
   rawS.slice(0,BED_SLOTS.length).forEach((p,i)=>{const c=cleanProject(p,i,true);if(!c)return;
     if(used2.has(c.slot)){for(let s=0;s<BED_SLOTS.length;s++)if(!used2.has(s)){c.slot=s;break;}}
     used2.add(c.slot);skills.push(c);});
-  return {v:2,name:str(g.name,14)||'Someone',look:cleanLook(g.look),projects,skills,saved:num(g.saved,0),owner:!!g.owner,cat:!!g.cat,sb:g.sb!==false,nb:Array.isArray(g.nb)?g.nb.filter(x=>x&&/^https:\/\//.test(x.u||'')).slice(0,10).map(x=>({n:str(x.n,30)||'Friend',u:str(x.u,300)})):[],created:g.created!==false,
+  return {v:2,name:str(g.name,14)||'Someone',look:cleanLook(g.look),projects,skills,saved:num(g.saved,0),owner:!!g.owner,cat:!!g.cat,sb:g.sb!==false,listed:g.listed===undefined?!!g.owner:!!g.listed,friends:Array.isArray(g.friends)?g.friends.filter(x=>typeof x==='string'&&x.length<64).slice(0,100):[],nb:Array.isArray(g.nb)?g.nb.filter(x=>x&&/^https:\/\//.test(x.u||'')).slice(0,10).map(x=>({n:str(x.n,30)||'Friend',u:str(x.u,300)})):[],created:g.created!==false,
     compost:Array.isArray(g.compost)?g.compost.filter(x=>x&&typeof x==='object').slice(0,30).map((x,i)=>{const c=cleanProject(x,0,!!x.bed);if(!c)return null;c.ct=num(x.ct,0);c.note=str(x.note,90);
       c.lg=Array.isArray(x.lg)?x.lg.slice(-LOG_MAX).filter(e=>e&&typeof e.text==='string').map(e=>({t:num(e.t,0),text:str(e.text,140)})):[];return c;}).filter(Boolean):[],
     todos:Array.isArray(g.todos)?g.todos.filter(x=>x&&typeof x.text==='string'&&x.text.trim()).slice(0,10).map((x,i)=>Object.assign({id:str(x.id,24)||('t'+i),text:str(x.text,60),t:num(x.t,0)},x.lk?{lk:true}:{},Number.isInteger(x.k)?{k:x.k%10}:{},Number.isInteger(x.c)?{c:x.c%8}:{})):[],
@@ -610,7 +614,7 @@ const pubRef=()=>(db&&myId&&canWrite!==false)?db.doc('gardens/'+myId):null;
 const writePriv=makeWriter(privRef,()=>JSON.parse(JSON.stringify(home)));
 const open_=a=>(a||[]).filter(x=>!x.lk);
 function sharedPart(obj){const out={};home.projects.concat(home.skills||[]).forEach(p=>{if(p.vis!==false&&!p.lk&&obj&&obj[p.id])out[p.id]=obj[p.id];});return out;}
-const writePub=makeWriter(pubRef,()=>({v:2,name:home.name,look:home.look,owner:isOwner,saved:home.saved,projects:open_(home.projects),skills:open_(home.skills),notes:sharedPart(home.notes),logs:sharedPart(home.logs),todos:open_(home.todos),compost:open_(home.compost).map(c=>({id:c.id,code:c.code,name:c.name,sub:c.sub,bed:c.bed,kind:c.kind,ct:c.ct})),sb:home.sb!==false}));
+const writePub=makeWriter(pubRef,()=>({v:2,name:home.name,look:home.look,listed:isListed(),owner:isOwner,saved:home.saved,projects:open_(home.projects),skills:open_(home.skills),notes:sharedPart(home.notes),logs:sharedPart(home.logs),todos:open_(home.todos),compost:open_(home.compost).map(c=>({id:c.id,code:c.code,name:c.name,sub:c.sub,bed:c.bed,kind:c.kind,ct:c.ct})),sb:home.sb!==false}));
 const pubBooksRef=()=>(db&&myId&&canWrite!==false)?db.doc('gardens/'+myId+'/x/books'):null;
 const writePubBooks=makeWriter(pubBooksRef,()=>({saved:Date.now(),list:(home&&home.sb!==false&&books)?books.list.slice(0,400):[]}));
 let pTimer=null;
@@ -2272,7 +2276,7 @@ function closeModals(){compM.classList.remove('show');lineM.classList.remove('sh
 /* ================= gardens (visiting) ================= */
 function renderNeighbours(){
   const mine=document.getElementById('gMine'); mine.hidden=!home||!!visiting; if(mine.hidden) return;
-  document.getElementById('gSB').checked=home.sb!==false;
+  document.getElementById('gSB').checked=home.sb!==false;document.getElementById('gListed').checked=isListed();
   const box=document.getElementById('nbList'); box.innerHTML='';
   (home.nb||[]).forEach((n,i)=>{const r=document.createElement('div');r.className='nbrow';const a=document.createElement('a');a.href=n.u;a.target='_blank';a.rel='noopener';a.textContent=n.n+'’s garden ↗';
     const x=document.createElement('button');x.className='btn';x.type='button';x.textContent='×';x.onclick=()=>{home.nb.splice(i,1);persist();renderNeighbours();};
@@ -2285,15 +2289,32 @@ document.getElementById('nbAdd').addEventListener('submit',e=>{e.preventDefault(
   document.getElementById('nbN').value='';document.getElementById('nbU').value='';persist();renderNeighbours();});
 
 document.getElementById('gSB').addEventListener('change',e=>{if(!home)return;home.sb=e.target.checked;persist();writePubBooks();});
-function renderGardens(){
-  renderNeighbours();
+document.getElementById('gListed').addEventListener('change',e=>{if(!home)return;home.listed=e.target.checked;persist();toast(home.listed?'Your garden is now in the list for everyone.':'Your garden is hidden from the list. Friends with your invite link can still visit.',3200);});
+document.getElementById('gSearch').addEventListener('input',()=>renderGardens(true));
+function isListed(){return !!home&&(home.listed===undefined?!!home.owner:!!home.listed);}
+const inviteUrl=()=>location.origin+location.pathname+'?g='+encodeURIComponent(myId||'');
+document.getElementById('gInvite').addEventListener('click',async()=>{if(!myId)return;const u=inviteUrl();
+  try{if(navigator.share&&innerWidth<700){await navigator.share({title:"Come visit my garden",text:'Come visit my garden 🌱',url:u});return;}}catch(e){if(e&&e.name==='AbortError')return;}
+  try{await navigator.clipboard.writeText(u);toast('Invite link copied. Whoever opens it lands in your garden.',3000);}catch(e){window.prompt('Copy your invite link:',u);}});
+// invite links: ?g=<garden id> brings a friend straight into that garden and remembers it as a friend
+let inviteId='';try{inviteId=new URLSearchParams(location.search).get('g')||localStorage.getItem('garden-invite')||'';}catch(e){}
+function handleInvite(){
+  if(!inviteId||!myId)return false; if(inviteId===myId){inviteId='';try{localStorage.removeItem('garden-invite');}catch(e){}return false;}
+  const gd=gardensList.find(x=>x.id===inviteId); if(!gd)return false;
+  if(home){home.friends=home.friends||[];if(!home.friends.includes(gd.id)){home.friends.push(gd.id);persist();}}
+  inviteId='';try{localStorage.removeItem('garden-invite');history.replaceState(null,'',location.pathname+location.hash);}catch(e){}
+  ownerVisited=true;visiting={id:gd.id,data:gd.data};visBooksFor=null;if(started)enterGarden();toast('Welcome to '+gd.data.name+"'s garden 🌱",3000);return true;
+}
+function renderGardens(keep){
+  if(!keep)renderNeighbours();
   const box=document.getElementById('glist'); box.innerHTML='';
   if(!db){const e=document.createElement('div');e.className='empty';e.textContent='Gardens sync once you are signed in.';box.appendChild(e);return;}
-  const list=gardensList.slice().sort((a,b)=>(b.id===myId)-(a.id===myId)||(b.data.owner-a.data.owner)||a.data.name.localeCompare(b.data.name));
-  if(!list.length){const e=document.createElement('div');e.className='empty';e.textContent='No gardens here yet.';box.appendChild(e);return;}
+  const q=(document.getElementById('gSearch').value||'').trim().toLowerCase(),fr=(home&&home.friends)||[];
+  const list=gardensList.filter(gd=>isOwner||gd.id===myId||gd.data.owner||gd.data.listed||fr.includes(gd.id)||(visiting&&visiting.id===gd.id)).filter(gd=>!q||gd.data.name.toLowerCase().includes(q)).sort((a,b)=>(b.id===myId)-(a.id===myId)||(b.data.owner-a.data.owner)||a.data.name.localeCompare(b.data.name));
+  if(!list.length){const e=document.createElement('div');e.className='empty';e.textContent=q?'No garden with that name. Ask your friend for their invite link.':'No gardens here yet.';box.appendChild(e);return;}
   list.forEach(gd=>{
     const row=document.createElement('div');row.className='grow';
-    const l=document.createElement('div');const b=document.createElement('b');b.textContent=gd.data.name+(gd.id===myId?' (you)':'');l.appendChild(b);
+    const l=document.createElement('div');const b=document.createElement('b');b.textContent=gd.data.name+(gd.id===myId?' (you)':fr.includes(gd.id)?' ♥':'');l.appendChild(b);
     if(gd.id!==myId&&onlineIds().has(gd.id)){const on=document.createElement('span');on.className='online';on.textContent='  ● here now';b.appendChild(on);}
     const m=document.createElement('div');m.className='m';
     const ps=gd.data.projects, avgP=ps.length?Math.round(ps.reduce((a,p)=>a+p.progress,0)/ps.length):0;
@@ -3534,7 +3555,7 @@ function maybeAutoVisit(){
     if(home&&home.name==='Sisi'&&isOwner) home.owner=true;
     // live list of everyone's gardens
     db.collection('gardens').limit(60).onSnapshot(snap=>{
-      gardensList=snap.docs.filter(x=>x.exists).map(x=>({id:x.id,data:cleanGarden(x.data())})).filter(x=>x.data);
+      gardensList=snap.docs.filter(x=>x.exists).map(x=>({id:x.id,data:cleanGarden(x.data())})).filter(x=>x.data);handleInvite();
       if(visiting){const v=gardensList.find(x=>x.id===visiting.id);if(v){visiting.data=v.data;rebuildLabels();refreshChrome();}}
       if(gardensM.classList.contains('show')) renderGardens();
       maybeAutoVisit();
@@ -3543,7 +3564,7 @@ function maybeAutoVisit(){
     if(home&&home.created){ writePriv(); writePub(); }
     loadRemoteBooks().then(()=>{if(home&&home.created)writePubBooks();});
     if((isOwner||myId===OWNER_ID)&&ownerVisited&&visiting&&home){visiting=null;if(started)enterGarden();}
-    forceOwnerVisit();
+    if(!handleInvite())forceOwnerVisit();
     initRoom();
     clearTimeout(fallbackTimer);
     if(home||visiting){ start(); if(!home&&!localSeen()) openCreator(); } else setTimeout(()=>{ if(!home&&!visiting){ localMe.name='Visitor'; } start(); },4000);
@@ -3564,7 +3585,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794889163"></script>
+<script src="config.js?v=1794890166"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3588,8 +3609,13 @@ function maybeAutoVisit(){
     } catch (e) {}
   }
 
+  // an invite link (?g=<garden id>) must survive the login round trip through the email
+  try { const gi = new URLSearchParams(location.search).get('g'); if (gi && /^[\w-]{6,64}$/.test(gi)) localStorage.setItem('garden-invite', gi); } catch (e) {}
+  // installable on the phone's home screen
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '17.11. 05:19';
+  const BUILD = '17.11. 05:36';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3784,7 +3810,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 05:19'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 05:36'; help.appendChild(ver);
   }
 
   function openImport() {
