@@ -384,7 +384,7 @@
 
 <div class="modal" id="booksM">
   <div class="panel">
-    <h2>Bookshelf</h2>
+    <div style="display:flex;align-items:center;gap:8px"><h2 style="flex:1;margin:0">Bookshelf</h2><button type="button" class="lockb" id="bkLock"></button></div>
     <div class="lead" id="bkLead"></div>
     <div class="tabs" id="bkTabs"></div>
     <form id="bkAdd" autocomplete="off"><input class="inp" id="bkT" maxlength="160" placeholder="Add a book, e.g. Steppenwolf, Hesse" aria-label="Add a book"><button class="btn dark" type="submit">Add</button></form>
@@ -424,6 +424,7 @@
     <div class="dsec">INVITE A FRIEND</div>
     <div class="lead">Send your link. Whoever opens it lands in your garden and can start their own.</div>
     <button class="btn dark" type="button" id="gInvite" style="margin-top:8px">Copy my invite link</button>
+    <label class="chk" id="gListedRow" style="margin-top:10px"><input type="checkbox" id="gListed"> Everyone here can find my garden</label>
     <div class="pfoot"><span></span><button class="btn" id="gClose">Close</button></div>
   </div>
 </div>
@@ -434,14 +435,7 @@
     <p><b>Plants</b> are your projects. Water one whenever you worked on it.</p>
     <p><b>Flower beds</b> are your skills, the <b>clothesline</b> holds your to-dos.</p>
     <p><b>Tap</b> anything to use it. Tap the grass to walk.</p>
-    <div id="gMine">
-      <div class="dsec">WHAT VISITORS SEE</div>
-      <div id="nbList" hidden></div>
-      <form class="nbadd" id="nbAdd" hidden style="display:none" autocomplete="off"><input class="inp" id="nbN" maxlength="30" placeholder="Name, e.g. André"><input class="inp" id="nbU" maxlength="300" placeholder="https://claude.ai/artifact/…"><button class="btn dark" type="submit">Add</button></form>
-      <label class="chk"><input type="checkbox" id="gSB"> My bookshelf</label>
-      <label class="chk"><input type="checkbox" id="gListed"> Show my garden to everyone (off: only friends with my link)</label>
-      <div class="lead" style="margin-top:6px">Visitors can never change anything in your garden.</div>
-    </div>
+    <div hidden><div id="gMine"><div id="nbList"></div><form id="nbAdd"><input id="nbN"><input id="nbU"></form><input type="checkbox" id="gSB"></div></div>
     <div class="pfoot"><span></span><button class="btn dark" id="helpOk">Got it</button></div>
   </div>
 </div>
@@ -1263,7 +1257,8 @@ let visBooks=undefined, visBooksFor=null;
 async function loadVisBooks(){ if(!visiting||!db) {visBooks=null;return;} if(visBooksFor===visiting.id) return; visBooksFor=visiting.id; visBooks=undefined;
   try{const sn=await db.doc('gardens/'+visiting.id+'/x/books').get(); visBooks=sn&&sn.exists?cleanBooks(sn.data()):null;}catch(e){visBooks=null;}
   if(booksM.classList.contains('show'))renderBooks(); }
-function openBooks(){ if(visiting) loadVisBooks();renderBooks();booksM.classList.add('show');getSample().then(()=>{if(booksM.classList.contains('show'))renderBooks();});}
+function paintBkLock(){const lb=document.getElementById('bkLock');lb.hidden=!!visiting||!home;if(!lb.hidden)paintLock(lb,home.sb===false,'bookshelf');}
+function openBooks(){ if(visiting) loadVisBooks();paintBkLock();renderBooks();booksM.classList.add('show');getSample().then(()=>{if(booksM.classList.contains('show'))renderBooks();});}
 
 /* ================= dashboard ================= */
 const dashM=document.getElementById('dashM');
@@ -1751,6 +1746,7 @@ function paintLock(btn,lk,what){btn.classList.toggle('on',!!lk);btn.innerHTML=lo
 function toggleLock(o,what){if(!o||visiting||!home)return;o.lk=!o.lk;persist();toast(o.lk?'🔒 Only you can see this '+what+' now.':'Visitors can see this '+what+' again.',2200);}
 /* ================= dialog ================= */
 const dlg=document.getElementById('dlg'),dView=document.getElementById('dView'),dForm=document.getElementById('dForm');
+document.getElementById('bkLock').addEventListener('click',()=>{if(!home||visiting)return;home.sb=home.sb===false;persist();writePubBooks();paintBkLock();toast(home.sb===false?'🔒 Only you can see this bookshelf now.':'Visitors can see this bookshelf again.',2200);});
 document.getElementById('dLock').addEventListener('click',e=>{e.stopPropagation();if(!active)return;toggleLock(active,active.bed?'bed':'plant');paintLock(e.currentTarget,active.lk,active.bed?'bed':'plant');rebuildLabels();});
 const dNote=document.getElementById('dNote'),dProg=document.getElementById('dProg'),msgEl=document.getElementById('dMsg');
 let active=null,lastActive=undefined,editing=false,pendingEdit=null,banShown=false;
@@ -2271,7 +2267,7 @@ function closeModals(){compM.classList.remove('show');lineM.classList.remove('sh
 
 /* ================= gardens (visiting) ================= */
 function renderNeighbours(){
-  const mine=document.getElementById('gMine'); mine.hidden=!home||!!visiting; if(mine.hidden) return;
+  const mine=document.getElementById('gMine'); mine.hidden=!home||!!visiting; document.getElementById('gListedRow').hidden=!home; if(home)document.getElementById('gListed').checked=isListed(); if(mine.hidden) return;
   document.getElementById('gSB').checked=home.sb!==false;document.getElementById('gListed').checked=isListed();
   const box=document.getElementById('nbList'); box.innerHTML='';
   (home.nb||[]).forEach((n,i)=>{const r=document.createElement('div');r.className='nbrow';const a=document.createElement('a');a.href=n.u;a.target='_blank';a.rel='noopener';a.textContent=n.n+'’s garden ↗';
@@ -3590,7 +3586,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794919805"></script>
+<script src="config.js?v=1794932116"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3620,7 +3616,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '17.11. 13:50';
+  const BUILD = '17.11. 17:15';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3815,7 +3811,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 13:50'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 17:15'; help.appendChild(ver);
   }
 
   function openImport() {
