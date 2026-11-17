@@ -569,7 +569,9 @@ const items=()=>projects().concat(skills());
 const waterOf=p=>clamp(p.w-(Date.now()-p.t)/DECAY_MS*100,0,100);
 const neglectDays=p=>(Date.now()-p.t)/DAY;
 const stageOf=p=>{const v=p.progress;return v<10?0:v<25?1:v<45?2:v<65?3:4;};
-const scaleOf=p=>p.bed||p.progress<65?1:1+Math.min(4,Math.floor((p.progress-65)/35*4.999))*.25;
+// plants grow a little with every bit of progress, so each watering is visible: within a stage they swell, then switch to the next shape
+const STG=[0,10,25,45,65];
+const scaleOf=p=>{if(p.bed)return 1;const v=p.progress;if(v>=65)return 1+(v-65)/35;const st=stageOf(p),a=STG[st],b=STG[st+1];return .9+.25*(v-a)/(b-a);};
 const weedsOf=p=>{const d=neglectDays(p);return d<5?0:Math.min(9,2+Math.floor((d-5)/1.2));};
 const fliesOf=p=>{const d=neglectDays(p);return d<9?0:Math.min(6,2+Math.floor((d-9)/2));};
 const plantTop=p=>p.bed?12:TOPS[p.kind][stageOf(p)]*scaleOf(p);
@@ -2093,7 +2095,7 @@ function submitLog(){
   if(text.length<2){dDidIn.classList.remove('shake');void dDidIn.offsetWidth;dDidIn.classList.add('shake');dDidIn.focus();msgEl.textContent='Write a few words about what you did.';return;}
   const now=performance.now(); if(now-lastSubmit<400) return; lastSubmit=now;
   dDidIn.value=''; dDidIn.blur(); closeLog(); logPlant=null;
-  if(av.water>0){av.water=0;waterFx=null;dlg.classList.remove('pouring');}   // a pour still running never blocks the next one
+  if(av.water>0){if(waterFx&&waterFx.grow>waterFx.p.progress)waterFx.p.progress=waterFx.grow;av.water=0;waterFx=null;dlg.classList.remove('pouring');}   // a pour still running never blocks the next one
   doWater(p,text);
 }
 dDidForm.addEventListener('submit',e=>{e.preventDefault();submitLog();});
@@ -2114,13 +2116,16 @@ function doWater(p,text){
   waterFx={p,from:before,t0:performance.now(),m:av.x<=posOf(p)[0]?1:-1,done:false};
   dlg.classList.add('pouring'); Sfx.pour(.3);
   p.w=100; p.t=Date.now(); p.last=Date.now();
-  const msg=catNews?'7 days in a row: a cat moved in! It will follow you around now.':weeds?`Pulled ${weeds} weed${weeds>1?'s':''} and watered. Welcome back to ${p.code}.`:
-    before<35?'Much better. Logged.':pick(['Logged and watered.','Fresh water, happy plant.','Logged. Keep it going.']);
+  // every watering is real work logged, so the plant grows: +4% (the slider can still set any value by hand)
+  const st0=stageOf(p),pr0=p.progress,pr1=Math.min(100,pr0+(pr0<100?4:0)),grew=pr1-pr0,stUp=stageOf({progress:pr1})>st0; waterFx.grow=pr1;
+  const msg=stUp?`${p.code} grew into a ${(p.bed?BED_STAGES:STAGE_NAMES)[stageOf({progress:pr1})].toLowerCase()}! Now at ${pr1}%.`:catNews?'7 days in a row: a cat moved in! It will follow you around now.':weeds?`Pulled ${weeds} weed${weeds>1?'s':''} and watered. Welcome back to ${p.code}.`:
+    (grew?`+${grew}% growth. `:'')+(before<35?'Much better. Logged.':pick(['Logged and watered.','Fresh water, happy plant.','Logged. Keep it going.']));
   if(weeds){const [x,y]=posOf(p);for(let i=0;i<14;i++)spawn({kind:'puff',x:x+(Math.random()*26-13),y:y+(Math.random()*6-2),vy:-6-Math.random()*6,life:.6});}
   persist();
   renderLog(p);
-  setTimeout(()=>{dlg.classList.remove('pouring');if(active===p&&!editing){updateDialog(false);msgEl.textContent=msg;}refreshLabels();},WATER_T*1000);
+  setTimeout(()=>{if(p.progress<pr1){p.progress=pr1;persist();}dlg.classList.remove('pouring');if(active===p&&!editing){updateDialog(false);msgEl.textContent=msg;}refreshLabels();},WATER_T*1000);
 }
+const grewBurst=p=>8;
 const WATER_T=2.4;let waterFx=null;const bounceAt={};
 // what the water bar and the plant show while the can is still pouring: it fills up with the stream
 function shownWater(p){if(waterFx&&waterFx.p===p){const e=(performance.now()-waterFx.t0)/1000,k=clamp((e-.35)/1.5,0,1);return waterFx.from+(100-waterFx.from)*(1-(1-k)*(1-k));}return waterOf(p);}
@@ -3374,7 +3379,7 @@ function updateRest(dt,t){
     av.water-=dt;const p=av.pourFor;
     if(p&&waterFx&&waterFx.p===p){const c=canPose(waterFx);
       if(c.pouring){let n=dt*75;while(n>0){if(Math.random()<n)spawn({kind:'drop',x:c.tip[0]+(Math.random()*2-1),y:c.tip[1]+Math.random()*2,vx:c.m*(6+Math.random()*10)+(Math.random()*8-4),vy:6+Math.random()*14,floor:c.py-1+Math.round(Math.random()*3-1),life:2});n-=1;}}
-      if(!waterFx.done&&c.e>=1.9){waterFx.done=true;bounceAt[p.id]=performance.now();Sfx.grow();
+      if(!waterFx.done&&c.e>=1.9){waterFx.done=true;if(waterFx.grow>p.progress){p.progress=waterFx.grow;burst(p,grewBurst(p));persist();}bounceAt[p.id]=performance.now();Sfx.grow();
         const base=p.bed?c.py+BED_H/2-2:c.py;
         spawn({kind:'ring',x:c.px,y:base,r:p.bed?16:11,life:.7});spawn({kind:'ring',x:c.px,y:base,r:p.bed?10:7,life:.5});
         for(let i=0;i<14;i++)spawn({kind:'spark',x:c.px+(Math.random()*26-13),y:c.top+Math.random()*(base-c.top)-2,vy:-10-Math.random()*10,life:.8+Math.random()*.5});
@@ -3556,7 +3561,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794873604"></script>
+<script src="config.js?v=1794873749"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3581,7 +3586,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '17.11. 01:00';
+  const BUILD = '17.11. 01:02';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3776,7 +3781,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 01:00'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 01:02'; help.appendChild(ver);
   }
 
   function openImport() {
