@@ -2209,7 +2209,7 @@ cvs.addEventListener('pointerdown',e=>{
   if(scene==='city'){cityPointer(e.clientX/S,e.clientY/S);return;}
   const lx=e.clientX/S-OX,ly=e.clientY/S+camR-OY;
   if(moving){av.run=false;placeAt(lx,ly);return;}
-  if(Math.hypot(lx-HOLE.x,(ly-HOLE.y)*1.6)<13&&!av.swim&&mySeat===null){av.run=false;av.target={x:HOLE.x,y:HOLE.y-1,onArrive:enterCity};return;}
+  if(HOLE_ON&&Math.hypot(lx-HOLE.x,(ly-HOLE.y)*1.6)<13&&!av.swim&&mySeat===null){av.run=false;av.target={x:HOLE.x,y:HOLE.y-1,onArrive:enterCity};return;}
   if(lx>=BOARD.x0-4&&lx<=BOARD.x1+2&&Math.abs(ly-BOARD.y)<8&&!av.swim){av.run=false;av.target={x:BOARD.x1-3,y:BOARD.y,onArrive:()=>{av.target={x:BOARD.x0+2,y:BOARD.y,onArrive:()=>startJump(BOARD.x0-20,BOARD.y+4,true)};}};return;}
   if(lx>40&&lx<92&&ly>HB-46&&ly<HB+2){goToDoor();return;}
   let hit=null;
@@ -2948,6 +2948,7 @@ async function loadChat(){
 }
 function toggleChatLog(on){chatLogEl.classList.toggle('show',on);chatHistBtn.classList.toggle('on',on);if(on){chatList.dataset.seen='';renderChat();loadChat();}}
 /* ================= the hole to Munich: Maxvorstadt as a walkable pixel map (data: OpenStreetMap) ================= */
+const HOLE_ON=false; // München world is parked for now: set to true to bring the hole back
 const HOLE={x:222,y:226};
 const CITY={ready:false,loading:false,cx:0,cy:0,sx:0,sy:0,bg:null,mask:null,mw:0,mh:0,trees:[],named:[],pois:[]};
 function drawHole(x,y,t){
@@ -3426,7 +3427,7 @@ function render(t){
   if(av.target&&!av.target.plant){const tx=Math.round(av.target.x),ty=Math.round(av.target.y);R(tx-2,ty,1,1,'#fff');R(tx+2,ty,1,1,'#fff');R(tx,ty-1,1,1,'#fff');R(tx,ty+1,1,1,'#fff');}
   const list=projects().map(p=>({y:posOf(p)[1],d:()=>withBounce(p,posOf(p)[1],()=>drawPlant(p,t))})).concat(skills().map(b=>({y:posOf(b)[1]+BED_H/2-2,d:()=>withBounce(b,posOf(b)[1]+BED_H/2,()=>drawBed(b,t))})));
   drawPool(t);
-  list.push({y:-999,d:()=>drawHole(HOLE.x,HOLE.y,t)});
+  if(HOLE_ON)list.push({y:-999,d:()=>drawHole(HOLE.x,HOLE.y,t)});
   list.push({y:FOUNT.y,d:()=>drawFountain(t)});
   list.push({y:SL.y,d:()=>drawSlide(t)});
   for(let r0=0;r0<lineRows();r0++)list.push({y:CLN.rows[r0],d:()=>drawLineRow(r0,t)});
@@ -3563,7 +3564,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794873826"></script>
+<script src="config.js?v=1794889163"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3588,7 +3589,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '17.11. 01:03';
+  const BUILD = '17.11. 05:19';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3783,7 +3784,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 01:03'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 05:19'; help.appendChild(ver);
   }
 
   function openImport() {
