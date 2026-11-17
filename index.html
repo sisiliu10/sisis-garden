@@ -3211,7 +3211,7 @@ function renderPov(t){
 const GEO={w:11.5650,n:48.1525,mx:111320*Math.cos(48.149*Math.PI/180)*2,my:111200*2};
 const toLL=(x,y)=>[GEO.w+x/GEO.mx,GEO.n-y/GEO.my], fromLL=(lon,lat)=>[(lon-GEO.w)*GEO.mx,(GEO.n-lat)*GEO.my];
 const photoBtn=document.createElement('button');photoBtn.type='button';photoBtn.id='photoBtn';photoBtn.className='btn';photoBtn.textContent='Photos';photoBtn.style.cssText='position:fixed;right:12px;top:'+(innerWidth<700?88:96)+'px;z-index:5';photoBtn.hidden=true;document.body.appendChild(photoBtn);
-const photoBox=document.createElement('div');photoBox.style.cssText='position:fixed;inset:0 0 56px 0;z-index:2;display:none;background:#111';document.body.appendChild(photoBox);
+const photoBox=document.createElement('div');photoBox.style.cssText='position:fixed;inset:0;z-index:2;display:none;background:#111';document.body.appendChild(photoBox);
 const photoAv=document.createElement('canvas');photoAv.width=16;photoAv.height=30;photoAv.style.cssText='position:fixed;left:50%;bottom:'+(innerWidth<700?150:190)+'px;width:'+(innerWidth<700?64:96)+'px;height:'+(innerWidth<700?120:180)+'px;margin-left:'+(innerWidth<700?-32:-48)+'px;image-rendering:pixelated;z-index:3;pointer-events:none;display:none;filter:drop-shadow(0 4px 0 rgba(0,0,0,.35))';document.body.appendChild(photoAv);
 let mlyToken='',mlyViewer=null,photoStep=0;
 const cfgRef=()=>{const id=visiting?visiting.id:myId;return (db&&id)?db.doc('gardens/'+id+'/x/cfg'):null;};
@@ -3220,14 +3220,14 @@ function loadMly(){return new Promise((res,rej)=>{if(window.mapillary)return res
   const sc=document.createElement('script');sc.src='https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.js';sc.onload=()=>window.mapillary?res():rej();sc.onerror=rej;document.head.appendChild(sc);});}
 async function nearestPhoto(){
   const [lon,lat]=toLL(av.x,av.y);let best=null,bd=1e9;
-  for(const r of [.0005,.0012,.0025]){
-    const u='https://graph.mapillary.com/images?access_token='+encodeURIComponent(mlyToken)+'&fields=id,is_pano,computed_geometry,geometry&limit=60&bbox='+[lon-r*1.5,lat-r,lon+r*1.5,lat+r].join(',');
+  for(const r of [.0009,.0025]){
+    const u='https://graph.mapillary.com/images?access_token='+encodeURIComponent(mlyToken)+'&fields=id,is_pano,captured_at,computed_geometry,geometry&limit=120&bbox='+[lon-r*1.5,lat-r,lon+r*1.5,lat+r].join(',');
     const j=await (await fetch(u)).json();if(j.error)throw new Error(j.error.message||'token');
-    (j.data||[]).forEach(im=>{const c=(im.computed_geometry||im.geometry||{}).coordinates;if(!c)return;const d=Math.hypot((c[0]-lon)*GEO.mx,(c[1]-lat)*GEO.my)*(im.is_pano?.5:1);if(d<bd){bd=d;best=im.id;}});
+    (j.data||[]).forEach(im=>{const c=(im.computed_geometry||im.geometry||{}).coordinates;if(!c)return;const age=Math.max(0,(Date.now()-(+im.captured_at||0))/31557600000),d=Math.hypot((c[0]-lon)*GEO.mx,(c[1]-lat)*GEO.my)/2+(im.is_pano?0:25)+Math.min(8,age)*4;if(d<bd){bd=d;best=im.id;}});
     if(best)break;}
   return best;
 }
-function closePhotos(){if(!CITY.photo)return;CITY.photo=false;photoBox.style.display='none';photoAv.style.display='none';padEl.style.display='none';PH.pad='';cvs.style.visibility='';photoBtn.textContent='Photos';}
+function closePhotos(){if(!CITY.photo)return;CITY.photo=false;photoBox.style.display='none';photoAv.style.display='none';padEl.style.display='none';PH.pad='';if(scene==='city')osmEl.hidden=false;cvs.style.visibility='';photoBtn.textContent='Photos';}
 async function openPhotos(){
   if(!mlyToken){
     if(visiting||!home){toast('Real street photos are not set up for this garden yet.',3000);return;}
@@ -3238,7 +3238,7 @@ async function openPhotos(){
   toast('Loading real street photos…',2500);
   try{
     await loadMly();const id=await nearestPhoto();if(!id){toast('No street photo close to here. Walk to a bigger street and try again.',3500);return;}
-    CITY.photo=true;CITY.touch=null;photoBox.style.display='block';photoAv.style.display='block';padEl.style.display='grid';photoBtn.textContent='Pixel view';if(!PH.hint){PH.hint=true;setTimeout(()=>toast(('ontouchstart' in window)?'Hold ▲ to walk, ◀ ▶ to look around. Drag the photo to look freely.':'Hold W or ↑ to walk, A/D or ←/→ to look around, S or ↓ to go back.',5000),1200);}
+    CITY.photo=true;CITY.touch=null;photoBox.style.display='block';photoAv.style.display='block';padEl.style.display='grid';osmEl.hidden=true;photoBtn.textContent='Pixel view';if(!PH.hint){PH.hint=true;setTimeout(()=>toast(('ontouchstart' in window)?'Hold ▲ to walk, ◀ ▶ to look around. Drag the photo to look freely.':'Hold W or ↑ to walk, A/D or ←/→ to look around, S or ↓ to go back.',5000),1200);}
     if(!mlyViewer){mlyViewer=new mapillary.Viewer({accessToken:mlyToken,container:photoBox,imageId:id,component:{cover:false,direction:false,sequence:false,keyboard:false,zoom:false}});
       mlyViewer.on('image',ev=>{const im=ev&&ev.image;if(im){PH.id=im.id;PH.pano=im.cameraType==='spherical'||im.cameraType==='equirectangular';PH.c=[.5,.5];}const ll=im&&(im.lngLat||im.originalLngLat);if(!ll)return;PH.ll=[ll.lng,ll.lat];const [x,y]=fromLL(ll.lng,ll.lat);if(x>0&&y>0&&x<CITY.w&&y<CITY.h){av.x=x;av.y=y;}photoStep=performance.now();lastPres='';});}
     else{mlyViewer.resize();await mlyViewer.moveTo(id);}
@@ -3247,7 +3247,7 @@ async function openPhotos(){
 photoBtn.addEventListener('click',e=>{e.stopPropagation();photoBtn.blur();const toPhoto=!CITY.photo;try{localStorage.setItem('garden-city-view',toPhoto?'photo':'pixel');}catch(_){}if(toPhoto)openPhotos();else closePhotos();});
 // character controller for the photo world: hold to walk from photo to photo, turn the camera smoothly, on-screen D-pad for touch
 const PH={id:'',pano:false,c:[.5,.5],ll:null,busy:false,pad:'',cache:null,miss:0,hint:false};
-const padEl=document.createElement('div');padEl.style.cssText='position:fixed;left:12px;bottom:70px;z-index:5;display:none;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(2,46px);gap:4px;touch-action:none;user-select:none;-webkit-user-select:none';
+const padEl=document.createElement('div');padEl.style.cssText='position:fixed;left:14px;bottom:64px;z-index:5;display:none;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(2,46px);gap:4px;touch-action:none;user-select:none;-webkit-user-select:none';
 [['','',''],['left','◀','1/2'],['fwd','▲','2/1'],['right','▶','3/2'],['back','▼','2/2']].slice(1).forEach(([k,ch,pos])=>{const b=document.createElement('button');b.type='button';b.className='btn';b.textContent=ch;b.style.cssText='grid-column:'+pos.split('/')[0]+';grid-row:'+pos.split('/')[1]+';padding:0;font-size:18px;display:flex;align-items:center;justify-content:center;touch-action:none'+(k==='fwd'?';background:var(--water);color:#fff':'');
   const on=e=>{e.preventDefault();e.stopPropagation();PH.pad=k;},off=e=>{if(PH.pad===k)PH.pad='';};
   b.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,off));b.addEventListener('contextmenu',e=>e.preventDefault());padEl.appendChild(b);});
@@ -3261,10 +3261,10 @@ async function photoStepDir(back){
     if(!ok){ // free roaming: the closest photo roughly in the direction I am looking, even from another photo series
       let brg=0;try{brg=await mlyViewer.getBearing();}catch(e){}if(back)brg+=180;
       const ll=PH.ll||toLL(av.x,av.y);
-      if(!PH.cache||Math.hypot((PH.cache.ll[0]-ll[0])*GEO.mx,(PH.cache.ll[1]-ll[1])*GEO.my)>50){const r=.0006,u='https://graph.mapillary.com/images?access_token='+encodeURIComponent(mlyToken)+'&fields=id,is_pano,computed_geometry,geometry&limit=200&bbox='+[ll[0]-r*1.5,ll[1]-r,ll[0]+r*1.5,ll[1]+r].join(',');
-        const j=await (await fetch(u)).json();PH.cache={ll:ll.slice(),list:(j.data||[]).map(im=>{const c=(im.computed_geometry||im.geometry||{}).coordinates;return c?{id:im.id,x:c[0],y:c[1],p:!!im.is_pano}:null;}).filter(Boolean)};}
+      if(!PH.cache||Math.hypot((PH.cache.ll[0]-ll[0])*GEO.mx,(PH.cache.ll[1]-ll[1])*GEO.my)>50){const r=.0006,u='https://graph.mapillary.com/images?access_token='+encodeURIComponent(mlyToken)+'&fields=id,is_pano,captured_at,computed_geometry,geometry&limit=300&bbox='+[ll[0]-r*1.5,ll[1]-r,ll[0]+r*1.5,ll[1]+r].join(',');
+        const j=await (await fetch(u)).json();PH.cache={ll:ll.slice(),list:(j.data||[]).map(im=>{const c=(im.computed_geometry||im.geometry||{}).coordinates;return c?{id:im.id,x:c[0],y:c[1],p:!!im.is_pano,a:Math.min(8,Math.max(0,(Date.now()-(+im.captured_at||0))/31557600000))}:null;}).filter(Boolean)};}
       let best=null,bs=1e9;PH.cache.list.forEach(im=>{if(im.id===PH.id)return;const ex=(im.x-ll[0])*GEO.mx/2,ny=(im.y-ll[1])*GEO.my/2,dist=Math.hypot(ex,ny);if(dist<3||dist>32)return;
-        let da=Math.abs(((Math.atan2(ex,ny)*180/Math.PI-brg)%360+540)%360-180);if(da>50)return;const sc=dist+da*.35-(im.p?4:0);if(sc<bs){bs=sc;best=im.id;}});
+        let da=Math.abs(((Math.atan2(ex,ny)*180/Math.PI-brg)%360+540)%360-180);if(da>50)return;const sc=dist+da*.35-(im.p?12:0)+im.a*2;if(sc<bs){bs=sc;best=im.id;}});
       if(best){await mlyViewer.moveTo(best);ok=true;}
     }
     if(!ok){if(performance.now()-PH.miss>2500){PH.miss=performance.now();toast('No photo further this way. Turn a little and try again.',2200);}await new Promise(r=>setTimeout(r,350));}
@@ -3280,6 +3280,7 @@ function photoControl(dt){
 }
 function drawPhotoAvatar(t){
   const c2=photoAv.getContext('2d');c2.clearRect(0,0,16,30);const walking=performance.now()-photoStep<900;
+  c2.fillStyle='rgba(0,0,0,.28)';c2.fillRect(3,28,10,1);c2.fillRect(2,29,12,1);
   const turning=performance.now()-(PH.turnT||0)<160;
   if(turning&&!walking)drawAvatar(c2,8,28,me().look,{side:true,dir:PH.turn,frame:Math.floor(t*6)%2,blink:false,shadow:false,t});
   else drawAvatar(c2,8,28-(walking&&Math.floor(t*9)%2?1:0),me().look,{run:false,frame:walking?[1,0,2,0][Math.floor(t*9)%4]:0,back:true,blink:false,shadow:false,t});
@@ -3555,7 +3556,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794873257"></script>
+<script src="config.js?v=1794873604"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3580,7 +3581,7 @@ function maybeAutoVisit(){
   }
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '17.11. 00:54';
+  const BUILD = '17.11. 01:00';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3775,7 +3776,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 00:54'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 01:00'; help.appendChild(ver);
   }
 
   function openImport() {
