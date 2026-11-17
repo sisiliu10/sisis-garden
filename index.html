@@ -604,7 +604,7 @@ const pubRef=()=>(db&&myId&&canWrite!==false)?db.doc('gardens/'+myId):null;
 const writePriv=makeWriter(privRef,()=>JSON.parse(JSON.stringify(home)));
 const open_=a=>(a||[]).filter(x=>!x.lk);
 function sharedPart(obj){const out={};home.projects.concat(home.skills||[]).forEach(p=>{if(p.vis!==false&&!p.lk&&obj&&obj[p.id])out[p.id]=obj[p.id];});return out;}
-const writePub=makeWriter(pubRef,()=>({v:2,name:home.name,look:home.look,listed:isListed(),owner:isOwner,saved:home.saved,projects:open_(home.projects),skills:open_(home.skills),notes:sharedPart(home.notes),logs:sharedPart(home.logs),todos:open_(home.todos),compost:open_(home.compost).map(c=>({id:c.id,code:c.code,name:c.name,sub:c.sub,bed:c.bed,kind:c.kind,ct:c.ct})),sb:home.sb!==false}));
+const writePub=makeWriter(pubRef,()=>({v:2,name:home.name,look:home.look,listed:isListed(),owner:isOwner,saved:home.saved,projects:open_(home.projects),skills:open_(home.skills),notes:sharedPart(home.notes),logs:sharedPart(home.logs),todos:(home.todos||[]).slice(0,10).map(td=>({id:td.id,text:'private',t:td.t||0,k:tdKind(td),c:tdCi(td)})),compost:open_(home.compost).map(c=>({id:c.id,code:c.code,name:c.name,sub:c.sub,bed:c.bed,kind:c.kind,ct:c.ct})),sb:home.sb!==false}));
 const pubBooksRef=()=>(db&&myId&&canWrite!==false)?db.doc('gardens/'+myId+'/x/books'):null;
 const writePubBooks=makeWriter(pubBooksRef,()=>({saved:Date.now(),list:(home&&home.sb!==false&&books)?books.list.slice(0,400):[]}));
 let pTimer=null;
@@ -2697,9 +2697,7 @@ function lineBlocked(x,y){for(let r=0;r<lineRows();r++){if(Math.abs(y-CLN.rows[r
 const clTip=document.createElement('div');clTip.id='clTip';document.body.appendChild(clTip);
 function closeTip(){clTip.classList.remove('show');}
 function openTip(i,cx,cy){
-  const td=todosOf()[i];if(!td)return;clTip.innerHTML='';const tx=document.createElement('span');tx.textContent=td.text;clTip.appendChild(tx);
-  if(!visiting&&home){const lb=document.createElement('button');lb.type='button';lb.className='lockb';paintLock(lb,td.lk,'to-do');
-    lb.addEventListener('click',e=>{e.stopPropagation();toggleLock(td,'to-do');paintLock(lb,td.lk,'to-do');});clTip.appendChild(lb);}
+  const td=todosOf()[i];if(!td)return;clTip.innerHTML='';const tx=document.createElement('span');tx.textContent=visiting?'🔒 This to-do is private.':td.text;clTip.appendChild(tx);
   if(!visiting&&home){const b=document.createElement('button');b.type='button';b.className='btn dark';b.textContent='Done ✓';b.addEventListener('click',e=>{e.stopPropagation();closeTip();doneTodo(td.id);});clTip.appendChild(b);}
   clTip.classList.add('show');const w=clTip.offsetWidth,h=clTip.offsetHeight;clTip.style.left=clamp(cx-w/2,6,Math.max(6,innerWidth-w-6))+'px';clTip.style.top=clamp(cy-h-18,6,innerHeight-h-6)+'px';
 }
@@ -2710,15 +2708,14 @@ document.body.appendChild(lineM);
 function renderLine(){
   const L=todosOf(),own=!visiting&&!!home,box=document.getElementById('lnList');box.innerHTML='';
   document.getElementById('lnForm').style.display=own&&L.length<CLN.max?'flex':'none';
-  document.getElementById('lnLead').textContent=own?(L.length?'Every piece of laundry is one to-do. Take it down when it is done.':'Nothing on the line. Hang up your first to-do.')+(L.length>=CLN.max?' Both lines are full, take something down first.':''):(L.length?(V().name+' has '+L.length+' to-do'+(L.length>1?'s':'')+' on the line.'):'Nothing on the line right now.');
+  document.getElementById('lnLead').textContent=own?(L.length?'Every piece of laundry is one to-do. Only you can read them. Take it down when it is done.':'Nothing on the line. Hang up your first to-do.')+(L.length>=CLN.max?' Both lines are full, take something down first.':''):(L.length?(V().name+' has '+L.length+' to-do'+(L.length>1?'s':'')+' on the line. What they are stays private.'):'Nothing on the line right now.');
   L.forEach(td=>{const r=document.createElement('div');r.style.cssText='display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid #eee6d6';
     const src=garmentCanvas(tdKind(td),tdCi(td)),ic=document.createElement('canvas');ic.width=src.width;ic.height=src.height;ic.getContext('2d').drawImage(src,0,0);
     ic.style.cssText='image-rendering:pixelated;width:'+src.width*3+'px;height:'+src.height*3+'px';
     const bx=document.createElement('span');bx.style.cssText='flex:none;width:50px;height:50px;display:flex;align-items:center;justify-content:center';bx.appendChild(ic);
-    const tx=document.createElement('span');tx.textContent=td.text;tx.style.cssText='flex:1;min-width:0;overflow-wrap:anywhere';
+    const tx=document.createElement('span');tx.textContent=own?td.text:'🔒 Private';tx.style.cssText='flex:1;min-width:0;overflow-wrap:anywhere'+(own?'':';color:var(--muted)');
     r.appendChild(bx);r.appendChild(tx);
-    if(own){const lb=document.createElement('button');lb.type='button';lb.className='lockb';paintLock(lb,td.lk,'to-do');lb.onclick=()=>{toggleLock(td,'to-do');paintLock(lb,td.lk,'to-do');};r.appendChild(lb);
-      const b=document.createElement('button');b.type='button';b.className='btn';b.textContent='Done ✓';b.onclick=()=>doneTodo(td.id);r.appendChild(b);}
+    if(own){const b=document.createElement('button');b.type='button';b.className='btn';b.textContent='Done ✓';b.onclick=()=>doneTodo(td.id);r.appendChild(b);}
     box.appendChild(r);});
 }
 function openLine(){renderLine();lineM.classList.add('show');}
@@ -3586,7 +3583,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794932116"></script>
+<script src="config.js?v=1794933007"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3616,7 +3613,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '17.11. 17:15';
+  const BUILD = '17.11. 17:30';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3811,7 +3808,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 17:15'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 17:30'; help.appendChild(ver);
   }
 
   function openImport() {
