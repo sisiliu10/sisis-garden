@@ -424,14 +424,6 @@
     <div class="dsec">INVITE A FRIEND</div>
     <div class="lead">Send your link. Whoever opens it lands in your garden and can start their own.</div>
     <button class="btn dark" type="button" id="gInvite" style="margin-top:8px">Copy my invite link</button>
-    <div id="gMine">
-      <div id="nbList" hidden></div>
-      <form class="nbadd" id="nbAdd" hidden style="display:none" autocomplete="off"><input class="inp" id="nbN" maxlength="30" placeholder="Name, e.g. André"><input class="inp" id="nbU" maxlength="300" placeholder="https://claude.ai/artifact/…"><button class="btn dark" type="submit">Add</button></form>
-      <div class="dsec">WHAT VISITORS SEE</div>
-      <label class="chk"><input type="checkbox" id="gSB"> My bookshelf</label>
-      <label class="chk"><input type="checkbox" id="gListed"> Show my garden to everyone (off: only friends with my link)</label>
-      <div class="lead" style="margin-top:6px">Want to keep a plant, bed or to-do to yourself? Tap it and use the little lock. Visitors can never change anything in your garden.</div>
-    </div>
     <div class="pfoot"><span></span><button class="btn" id="gClose">Close</button></div>
   </div>
 </div>
@@ -447,7 +439,14 @@
     <p><b>The cottage</b> top left: walk through the door to go inside. The computer on the desk opens a dashboard of everything you're growing, and the bookshelf keeps your reading list: reading now, want to read, and read, each with its English title and a two-line summary.</p>
     <p><b>Quiz show.</b> The arcade machine in the cottage opens a quiz show. Everyone in the same garden can join: 8 questions, 15 seconds each, faster answers score more. Pick a level (easy, medium, hard), add a topic if you like, and Claude writes the questions.</p>
     <p><b>Friends.</b> Everyone signed in sees everyone else in the same garden live: walking, swimming and chat bubbles, with names above the avatars. The dot in the chat bar shows whether you are live and how many people are here. Tap another avatar to hug, kiss, push or throw a water balloon.</p>
-    <p><b>Privacy.</b> Under Edit you decide per plant whether visitors see its next step and work log; the bookshelf has its own switch.</p>
+    <p><b>Privacy.</b> What visitors see in your garden:</p>
+    <div id="gMine">
+      <div id="nbList" hidden></div>
+      <form class="nbadd" id="nbAdd" hidden style="display:none" autocomplete="off"><input class="inp" id="nbN" maxlength="30" placeholder="Name, e.g. André"><input class="inp" id="nbU" maxlength="300" placeholder="https://claude.ai/artifact/…"><button class="btn dark" type="submit">Add</button></form>
+      <label class="chk"><input type="checkbox" id="gSB"> My bookshelf</label>
+      <label class="chk"><input type="checkbox" id="gListed"> Show my garden to everyone (off: only friends with my link)</label>
+      <div class="lead" style="margin-top:6px">To keep a single plant, bed or to-do to yourself, tap it and use the little lock. Visitors can never change anything in your garden.</div>
+    </div>
     <p><b>Friends</b> lists the gardens you can visit. Paste a friend's invite link there to enter their garden, or send them yours.</p>
     <div class="pfoot"><span></span><button class="btn dark" id="helpOk">Got it</button></div>
   </div>
@@ -2268,7 +2267,7 @@ document.getElementById('rnd').onclick=()=>{['skin','hair','hairColor','top','bo
 document.getElementById('done').onclick=closeCreator;
 document.getElementById('bAv').onclick=openCreator;
 const help=document.getElementById('help');
-document.getElementById('bHelp').onclick=()=>help.classList.add('show');
+document.getElementById('bHelp').onclick=()=>{renderNeighbours();help.classList.add('show');};
 document.getElementById('helpOk').onclick=()=>help.classList.remove('show');
 const gardensM=document.getElementById('gardens');
 document.getElementById('bGardens').onclick=()=>{renderGardens();gardensM.classList.add('show');};
@@ -2321,9 +2320,9 @@ function renderGardens(keep){
   const box=document.getElementById('glist'); box.innerHTML='';
   if(!db){const e=document.createElement('div');e.className='empty';e.textContent='Gardens sync once you are signed in.';box.appendChild(e);return;}
   const q=(document.getElementById('gSearch').value||'').trim().toLowerCase(),fr=(home&&home.friends)||[];
-  const list=gardensList.filter(gd=>gd.id===myId||gd.data.owner||gd.data.listed||fr.includes(gd.id)||(visiting&&visiting.id===gd.id)).filter(gd=>!q||gd.data.name.toLowerCase().includes(q)).sort((a,b)=>(b.id===myId)-(a.id===myId)||(b.data.owner-a.data.owner)||a.data.name.localeCompare(b.data.name));
-  const all=gardensList.filter(gd=>gd.id===myId||gd.data.owner||gd.data.listed||fr.includes(gd.id)||(visiting&&visiting.id===gd.id)).length;document.getElementById('gSearch').hidden=all<6&&!q;
-  if(!list.length){const e=document.createElement('div');e.className='empty';e.textContent=q?'Nobody with that name. Paste their invite link below.':'No friends here yet.';box.appendChild(e);return;}
+  const list=gardensList.filter(gd=>gd.id!==myId&&(gd.data.owner||gd.data.listed||fr.includes(gd.id)||(visiting&&visiting.id===gd.id))).filter(gd=>!q||gd.data.name.toLowerCase().includes(q)).sort((a,b)=>(b.id===myId)-(a.id===myId)||(b.data.owner-a.data.owner)||a.data.name.localeCompare(b.data.name));
+  const all=gardensList.filter(gd=>gd.id!==myId&&(gd.data.owner||gd.data.listed||fr.includes(gd.id)||(visiting&&visiting.id===gd.id))).length;document.getElementById('gSearch').hidden=all<6&&!q;
+  if(!list.length){const e=document.createElement('div');e.className='empty';e.textContent=q?'Nobody with that name. Paste their invite link below.':'No friends here yet. Paste a friend’s invite link below, or send them yours.';box.appendChild(e);return;}
   list.forEach(gd=>{
     const row=document.createElement('div');row.className='grow';
     const l=document.createElement('div');const b=document.createElement('b');b.textContent=gd.data.name+(gd.id===myId?' (you)':fr.includes(gd.id)?' ♥':'');l.appendChild(b);
@@ -3597,7 +3596,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794917283"></script>
+<script src="config.js?v=1794918285"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3627,7 +3626,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '17.11. 13:08';
+  const BUILD = '17.11. 13:24';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3822,7 +3821,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 13:08'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 13:24'; help.appendChild(ver);
   }
 
   function openImport() {
