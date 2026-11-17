@@ -29,12 +29,15 @@
   td a{color:#2a2430}
   .tag{font-family:Silkscreen,monospace;font-size:9px;border:2px solid #2a2430;padding:1px 5px;margin-left:6px;white-space:nowrap}
   .dim{color:#8b8490}
+  .mail{font-size:13px;color:#6b6372;word-break:break-all}
+  .showm{display:none}
   #msg{color:#fffdf6;font-size:17px;padding:30px 0;text-align:center}
   #msg a{color:#fffdf6}
   .note{font-size:13px;color:#6b6372;margin:12px 0 0}
   @media (max-width:620px){
     .stats{grid-template-columns:repeat(2,1fr)}
     .hidem{display:none}
+    .showm{display:block}
     td,th{padding:8px 5px}
   }
 </style>
@@ -45,7 +48,7 @@
   <div id="msg">Loading…</div>
   <div id="app" hidden>
     <div class="stats">
-      <div class="stat"><b id="sAll">0</b><span>gardens</span></div>
+      <div class="stat"><b id="sAll">0</b><span id="sAllL">gardens</span></div>
       <div class="stat"><b id="sWeek">0</b><span>active in the last 7 days</span></div>
       <div class="stat"><b id="sDay">0</b><span>active in the last 24 hours</span></div>
       <div class="stat"><b id="sProj">0</b><span>projects planted</span></div>
@@ -53,10 +56,10 @@
     <div class="card">
       <div class="bar"><input id="q" placeholder="Search by name…" maxlength="20"><button id="reload" type="button">Refresh</button></div>
       <table>
-        <thead><tr><th data-k="name">Gardener</th><th class="n" data-k="projects">Projects</th><th class="n hidem" data-k="skills">Skills</th><th class="n hidem" data-k="prog">Progress</th><th data-k="at">Last active</th><th></th></tr></thead>
+        <thead><tr><th data-k="name">Gardener</th><th class="hidem" data-k="email" id="thMail" hidden>Email</th><th class="n" data-k="projects">Projects</th><th class="n hidem" data-k="skills">Skills</th><th class="n hidem" data-k="prog">Progress</th><th data-k="at">Last active</th><th></th></tr></thead>
         <tbody id="rows"></tbody>
       </table>
-      <p class="note">Counts only. Other people's project names, notes and logs are not shown here. An account appears once its owner has created an avatar.</p>
+      <p class="note">Counts only. Other people's project names, notes and logs are not shown here. <span id="noteAcc">An account appears once its owner has created an avatar.</span></p>
     </div>
   </div>
 </main>
@@ -76,26 +79,28 @@
   try { const { data } = await sb.from('docs').select('data').eq('path', 'app/owner').maybeSingle(); owner = (data && data.data && data.data.id) || ''; } catch (e) {}
   if (owner !== uid) return say('This page is only for the garden keeper. <a href="./">Back to the garden</a>');
 
-  let list = [], sort = { k: 'at', d: -1 };
+  let list = [], hasUsers = false, sort = { k: 'at', d: -1 };
   const ago = t => { if (!t) return 'unknown'; const m = (Date.now() - t) / 60000;
     if (m < 2) return 'just now'; if (m < 60) return Math.round(m) + ' min ago'; if (m < 1440) return Math.round(m / 60) + ' h ago';
     if (m < 1440 * 30) return Math.round(m / 1440) + ' d ago'; return new Date(t).toLocaleDateString('de-DE'); };
   function draw() {
     const q = $('q').value.trim().toLowerCase(), rows = $('rows'); rows.textContent = '';
-    const l = list.filter(g => !q || g.name.toLowerCase().includes(q)).sort((a, b) => {
+    const l = list.filter(g => !q || g.name.toLowerCase().includes(q) || g.email.toLowerCase().includes(q)).sort((a, b) => {
       const x = a[sort.k], y = b[sort.k]; return (typeof x === 'string' ? x.localeCompare(y) : x - y) * sort.d; });
-    if (!l.length) { const tr = rows.insertRow(), td = tr.insertCell(); td.colSpan = 6; td.className = 'dim'; td.textContent = q ? 'No gardener with that name.' : 'No gardens yet.'; return; }
+    if (!l.length) { const tr = rows.insertRow(), td = tr.insertCell(); td.colSpan = 7; td.className = 'dim'; td.textContent = q ? 'No gardener with that name.' : 'No gardens yet.'; return; }
     for (const g of l) {
       const tr = rows.insertRow();
-      const c = tr.insertCell(); c.textContent = g.name;
+      const c = tr.insertCell(); c.textContent = g.name; if (!g.garden) c.className = 'dim';
+      if (hasUsers && g.email) { const sm = document.createElement('div'); sm.className = 'mail showm'; sm.textContent = g.email; c.appendChild(sm); }
       const tag = t => { const s = document.createElement('span'); s.className = 'tag'; s.textContent = t; c.appendChild(s); };
-      if (g.id === uid) tag('you'); if (g.listed) tag('listed');
-      let d = tr.insertCell(); d.className = 'n'; d.textContent = g.projects;
-      d = tr.insertCell(); d.className = 'n hidem'; d.textContent = g.skills;
+      if (g.id === uid) tag('you'); if (g.listed) tag('listed'); if (!g.garden) tag('no avatar yet');
+      if (hasUsers) { const e = tr.insertCell(); e.className = 'hidem mail'; e.textContent = g.email; }
+      let d = tr.insertCell(); d.className = 'n'; d.textContent = g.garden ? g.projects : '–';
+      d = tr.insertCell(); d.className = 'n hidem'; d.textContent = g.garden ? g.skills : '–';
       d = tr.insertCell(); d.className = 'n hidem'; d.textContent = g.projects ? g.prog + '%' : '–';
       d = tr.insertCell(); d.textContent = ago(g.at); if (!g.at || Date.now() - g.at > 7 * 864e5) d.className = 'dim';
       d = tr.insertCell(); d.className = 'n';
-      if (g.id !== uid) { const a = document.createElement('a'); a.href = './?g=' + encodeURIComponent(g.id); a.textContent = 'Visit'; d.appendChild(a); }
+      if (g.id !== uid && g.garden) { const a = document.createElement('a'); a.href = './?g=' + encodeURIComponent(g.id); a.textContent = 'Visit'; d.appendChild(a); }
     }
   }
   async function load() {
@@ -106,8 +111,15 @@
       const g = r.data, ps = Array.isArray(g.projects) ? g.projects : [], sk = Array.isArray(g.skills) ? g.skills : [];
       const at = Date.parse(r.updated_at || '') || Number(g.saved) || 0;
       const prog = ps.length ? Math.round(ps.reduce((a, p) => a + (Number(p.progress) || 0), 0) / ps.length) : 0;
-      return { id: r.path.slice(8), name: String(g.name || 'Someone').slice(0, 14), projects: ps.length, skills: sk.length, prog, at, listed: !!g.listed || !!g.owner };
+      return { garden: true, email: '', id: r.path.slice(8), name: String(g.name || 'Someone').slice(0, 14), projects: ps.length, skills: sk.length, prog, at, listed: !!g.listed || !!g.owner };
     });
+    // sign-ups and emails: only there once the admin_users() database function exists
+    try { const u = await sb.rpc('admin_users'); if (!u.error && Array.isArray(u.data)) { hasUsers = true;
+      const by = Object.fromEntries(list.map(g => [g.id, g]));
+      for (const a of u.data) { const at = Date.parse(a.last_sign_in_at || a.created_at || '') || 0;
+        if (by[a.id]) by[a.id].email = a.email || ''; else list.push({ garden: false, id: a.id, email: a.email || '', name: 'New', projects: 0, skills: 0, prog: 0, at, listed: false }); } } } catch (e) {}
+    $('thMail').hidden = !hasUsers; $('noteAcc').hidden = hasUsers; $('q').placeholder = hasUsers ? 'Search by name or email…' : 'Search by name…';
+    $('sAllL').textContent = hasUsers ? 'sign-ups, ' + list.filter(g => g.garden).length + ' with a garden' : 'gardens';
     $('sAll').textContent = list.length;
     $('sWeek').textContent = list.filter(g => g.at && now - g.at < 7 * 864e5).length;
     $('sDay').textContent = list.filter(g => g.at && now - g.at < 864e5).length;
