@@ -3559,6 +3559,10 @@ function maybeAutoVisit(){
       maybeAutoVisit();
       autoVisitOwner();
     },()=>{});
+    // Sisi's plants carry philosophers' names again (one-time rename of the descriptive labels)
+    if(isOwner&&home&&Array.isArray(home.projects)){const PH={SANOVIO:'HIPPOCRATES',RECRUITING:'PLATO',EDUCATION:'SOCRATES',EVENTS:'EPICURUS',TEA:'LAOZI',SUBSTACK:'MONTAIGNE',WEBSITE:'NIETZSCHE',BABYSITTER:'ROUSSEAU',CHINESE:'CONFUCIUS'};let ch=false;
+      home.projects.concat(home.skills||[]).forEach(q=>{const n=q&&PH[q.code];if(n&&!home.projects.concat(home.skills||[]).some(o=>o.code===n)){q.code=n;q.name=n.charAt(0)+n.slice(1).toLowerCase();ch=true;}});
+      if(ch){home.saved=Date.now();localSave();if(started)rebuildLabels();}}
     if(home&&home.created){ writePriv(); writePub(); }
     loadRemoteBooks().then(()=>{if(home&&home.created)writePubBooks();});
     if((isOwner||myId===OWNER_ID)&&ownerVisited&&visiting&&home){visiting=null;if(started)enterGarden();}
@@ -3583,7 +3587,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1794933007"></script>
+<script src="config.js?v=1795025531"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3613,7 +3617,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '17.11. 17:30';
+  const BUILD = '18.11. 19:12';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3808,7 +3812,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 17.11. 17:30'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 18.11. 19:12'; help.appendChild(ver);
   }
 
   function openImport() {
@@ -3830,19 +3834,20 @@ function maybeAutoVisit(){
   }
 
   /* ---------- login ---------- */
+  const KEEPER = 'b813b566-08f0-40c8-b392-6cc38a770940';
   const inviteCode = () => { try { const v = localStorage.getItem('garden-invite') || ''; return /^[\w-]{6,64}$/.test(v) ? v : ''; } catch (e) { return ''; } };
   let sbUserEmail = '';
   gForm.addEventListener('submit', async e => {
     e.preventDefault();
     const email = gEmail.value.trim(); if (!email) return;
     gBtn.disabled = true; gMsg.textContent = 'Sending…';
-    // invite only: a new account needs an invite link from a gardener; people who already play can always sign in
-    const inv = inviteCode();
-    const { error } = await sb.auth.signInWithOtp({ email, options: Object.assign({ emailRedirectTo: location.origin + location.pathname, shouldCreateUser: !!inv }, inv ? { data: { invite: inv } } : {}) });
+    // open to everyone: without a friend's invite link you come in as the garden keeper's guest and land in her garden
+    const inv = inviteCode() || KEEPER;
+    const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname, shouldCreateUser: true, data: { invite: inv } } });
     gBtn.disabled = false;
     if (error && (/signups? not allowed|not allowed for otp|user not found|database error|invite/i.test(error.message || '') || error.code === 'otp_disabled' || error.code === 'signup_disabled' || error.code === 'unexpected_failure')) {
       console.warn('[garden] invite only', error);
-      gMsg.textContent = inv ? 'This invite link does not work anymore. Ask your friend for a new one.' : 'This garden is invite only. Ask a gardener for their invite link, open it, and sign in from there.';
+      gMsg.textContent = 'That did not work. Please try again in a minute.';
       return; }
     if (error) { console.warn('[garden] login link', error); gMsg.textContent = /rate|limit|too many|seconds/i.test(error.message || '') ? 'Too many login emails just now. Wait a minute and try again.' : 'Hmm, the login email did not go out. Check the address and try again.'; return; }
     gMsg.textContent = 'Check your inbox and tap the link in the email from Supabase. Open it on this device.';
@@ -3852,7 +3857,7 @@ function maybeAutoVisit(){
   sb.auth.getSession().then(({ data }) => {
     const s = data && data.session;
     if (s) { sbUserEmail = s.user.email || ''; launch(s); }
-    else if (!/access_token|error_description/.test(location.hash)) showGate(inviteCode() ? 'You are invited 🌱 Sign in with your email. You get a link, no password needed.' : 'Invite only. Already a gardener? Sign in with your email. New here? Open the invite link a gardener sent you.', true);
+    else if (!/access_token|error_description/.test(location.hash)) showGate('Sign in with your email. You get a link, no password needed.', true);
     else if (/error_description/.test(location.hash)) showGate('That login link has expired. Ask for a new one.', true);
   });
 })();
