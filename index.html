@@ -555,6 +555,7 @@ function migrate(s){
 
 /* ================= state ================= */
 const LKEY='sisis-garden-v2', LKEY1='sisis-garden-v1', MEKEY='garden-me';
+let loadFailed=false;
 let home=null, visiting=null, myId=null, isOwner=false, canWrite=true, db=null, gardensList=[], started=false;
 let localMe={name:'Me',look:Object.assign({},DEF_LOOK)};
 try{ home=migrate(JSON.parse(localStorage.getItem(LKEY))); }catch(e){}
@@ -617,7 +618,7 @@ let pTimer=null;
 function persist(){
   if(!home) { localSave(); return; }
   home.saved=Date.now(); localSave();
-  clearTimeout(pTimer); pTimer=setTimeout(()=>{ if(!db||!myId) return; writePriv(); if(home.created) writePub(); },700);
+  clearTimeout(pTimer); pTimer=setTimeout(()=>{ if(!db||!myId||loadFailed) return; writePriv(); if(home.created) writePub(); },700);
 }
 
 /* ================= canvas ================= */
@@ -2253,9 +2254,11 @@ function buildCreator(){
   nm.value=me().name||'';
 }
 const GUEST_LOOK={skin:'#fde4d0',hair:'short',hairColor:'#c27a42',top:'#2b3550',bottom:'pants',bottomColor:'#2d2d35',acc:'glasses'};
-function openCreator(){if(!isOwner){const m=me();if(m&&(!m.name||m.name==='Me'||m.name==='Visitor')&&!m.tailored){m.look=Object.assign({},GUEST_LOOK);m.tailored=1;}}buildCreator();creator.classList.add('show');}
+function openCreator(){const m=me(),fresh=!!m&&(!m.name||m.name==='Me'||m.name==='Visitor');if(!isOwner&&fresh&&!m.tailored){m.look=Object.assign({},GUEST_LOOK);['skin','hair','hairColor','top','bottom','bottomColor','acc'].forEach(k=>m.look[k]=pick(OPT[k]));m.tailored=1;}buildCreator();if(fresh){nm.value='';nm.placeholder='Your name';}creator.classList.add('show');}
 function closeCreator(){
-  const m=me(); m.name=(nm.value||'').trim().slice(0,14)||m.name||'Me';
+  const m=me(),typed=(nm.value||'').trim().slice(0,14);
+  if(!typed&&(!m.name||m.name==='Me'||m.name==='Visitor')){nm.focus();toast('Give your gardener a name first.',2400);return;}
+  m.name=typed||m.name||'Me';
   const wasCreated=!!(home&&home.created);
   if(home) home.created=true;
   const first=!!home&&!wasCreated&&!homeHintSeen();
@@ -2317,7 +2320,7 @@ document.getElementById('gInvite').addEventListener('click',async()=>{if(!myId)r
 // invite links: ?g=<garden id> brings a friend straight into that garden and remembers it as a friend
 let inviteId='';try{inviteId=new URLSearchParams(location.search).get('g')||localStorage.getItem('garden-invite')||'';}catch(e){}
 function handleInvite(){
-  if(!inviteId||!myId)return false; if(inviteId===myId){inviteId='';try{localStorage.removeItem('garden-invite');}catch(e){}return false;}
+  if(!inviteId||!myId||stayHome)return false; if(inviteId===myId){inviteId='';try{localStorage.removeItem('garden-invite');}catch(e){}return false;}
   const gd=gardensList.find(x=>x.id===inviteId); if(!gd)return false;
   if(home){home.friends=home.friends||[];if(!home.friends.includes(gd.id)){home.friends.push(gd.id);persist();}}
   inviteId='';try{localStorage.removeItem('garden-invite');history.replaceState(null,'',location.pathname+location.hash);}catch(e){}
@@ -2347,7 +2350,8 @@ function renderGardens(keep){
   });
 }
 function visit(gd){visiting={id:gd.id,data:gd.data};visBooksFor=null;enterGarden();}
-function goHome(){if(!home)return;visiting=null;enterGarden();}
+let stayHome=false;
+function goHome(){if(!home)return;stayHome=true;visiting=null;enterGarden();}
 const bJump=document.getElementById('bJump');
 function updateJump(){const need=TH-H>8;bJump.hidden=!need;if(need){const up=camR>(TH-H)/2,narrow=innerWidth<560;bJump.textContent=narrow?(up?'↑':'↓'):(up?'Projects ↑':'Skills ↓');}}
 bJump.onclick=()=>{const toSkills=camR<=(TH-H)/2;av.target=null;av.x=120;av.y=toSkills?374:216;av.back=false;camY=clamp(av.y+OY-H*.55,0,Math.max(0,TH-H));};
@@ -3534,13 +3538,14 @@ function adoptHome(h){
 const OWNER_ID=window.__OWNER_ID||'__none__';
 let ownerVisited=false;
 function forceOwnerVisit(){
+  if(stayHome) return;
   if(ownerVisited||isOwner||visiting||myId===OWNER_ID||OWNER_ID==='__none__'||(home&&home.owner)) return;
   const o=gardensList.find(g=>g.id===OWNER_ID);
   let data=o?o.data:null; if(!data){data=preset(SISI,'Sisi',SISI_SKILLS);data.owner=true;data.created=true;}
   ownerVisited=true; visiting={id:OWNER_ID,data}; visBooksFor=null; if(started)enterGarden();
 }
 function autoVisitOwner(){
-  if(ownerVisited||isOwner||visiting||!myId) return;
+  if(ownerVisited||stayHome||isOwner||visiting||!myId) return;
   const o=gardensList.find(g=>g.data.owner&&g.id!==myId); if(!o) return;
   ownerVisited=true; visiting={id:o.id,data:o.data}; visBooksFor=null; if(started)enterGarden();
 }
@@ -3562,9 +3567,10 @@ function maybeAutoVisit(){
     try{ const cw=await u.can('data.write'); canWrite=cw===null?true:!!cw; }catch(e){}
     db=d;
     let remote=null;
-    try{ const snap=await Promise.race([db.doc('data/users/'+myId+'/garden').get(),new Promise((_,r)=>setTimeout(()=>r(0),10000))]); if(snap&&snap.exists) remote=migrate(snap.data()); }catch(e){}
+    try{ const snap=await Promise.race([db.doc('data/users/'+myId+'/garden').get(),new Promise((_,r)=>setTimeout(()=>r(0),10000))]); if(snap&&snap.exists) remote=migrate(snap.data()); }catch(e){ loadFailed=true; }
+    if(loadFailed&&!home){ toast('Could not load your garden. Check your connection and reload the page.',9000); }
     if(remote&&(!home||(remote.saved||0)>(home.saved||0))) adoptHome(remote);
-    else if(!home){
+    else if(!home&&!loadFailed){
       if(isOwner) adoptHome(preset(SISI,'Sisi',SISI_SKILLS));
       else if(canWrite) adoptHome(preset(STARTER,'Me'));
     }
@@ -3581,7 +3587,7 @@ function maybeAutoVisit(){
     if(isOwner&&home&&Array.isArray(home.projects)){const PH={SANOVIO:'HIPPOCRATES',RECRUITING:'PLATO',EDUCATION:'SOCRATES',EVENTS:'EPICURUS',TEA:'LAOZI',SUBSTACK:'MONTAIGNE',WEBSITE:'NIETZSCHE',BABYSITTER:'ROUSSEAU',CHINESE:'CONFUCIUS'};let ch=false;
       home.projects.concat(home.skills||[]).forEach(q=>{const n=q&&PH[q.code];if(n&&!home.projects.concat(home.skills||[]).some(o=>o.code===n)){q.code=n;q.name=n.charAt(0)+n.slice(1).toLowerCase();ch=true;}});
       if(ch){home.saved=Date.now();localSave();if(started)rebuildLabels();}}
-    if(home&&home.created){ writePriv(); writePub(); }
+    if(home&&home.created&&!loadFailed){ writePriv(); writePub(); }
     loadRemoteBooks().then(()=>{if(home&&home.created)writePubBooks();});
     if((isOwner||myId===OWNER_ID)&&ownerVisited&&visiting&&home){visiting=null;if(started)enterGarden();}
     if(!handleInvite())forceOwnerVisit();
@@ -3605,7 +3611,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795027745"></script>
+<script src="config.js?v=1795028158"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3635,7 +3641,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '18.11. 19:49';
+  const BUILD = '18.11. 19:55';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3806,9 +3812,12 @@ function maybeAutoVisit(){
   const user = { id: async () => uid, isOwner: async () => isOwner, can: async () => true };
 
   /* ---------- start ---------- */
+  const DEVICE_KEYS = ['sisis-garden-v2', 'sisis-garden-v1', 'garden-me', 'garden-books', 'garden-homehint', 'garden-brezn'];
   async function launch(session) {
     if (launched) return; launched = true;
     uid = session.user.id;
+    // what the browser remembers belongs to one account: a different login starts clean, never with the previous person's garden
+    try { if (localStorage.getItem('garden-uid') !== uid) { DEVICE_KEYS.forEach(k => localStorage.removeItem(k)); localStorage.setItem('garden-uid', uid); } } catch (e) {}
     gate.hidden = true;
     // claim or read who owns this app (the database only lets Sisi's own login claim it)
     try { await setDoc('app/owner', { id: uid }); isOwner = true; ownerId = uid; }
@@ -3826,11 +3835,11 @@ function maybeAutoVisit(){
     const row = document.createElement('p'); row.className = 'acct';
     const who = document.createElement('span'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you') + '. ';
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
-    out.onclick = async () => { await sb.auth.signOut(); location.reload(); };
+    out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid').forEach(k => localStorage.removeItem(k)); } catch (e) {} location.reload(); };
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 18.11. 19:49'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 18.11. 19:55'; help.appendChild(ver);
   }
 
   function openImport() {
