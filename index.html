@@ -593,13 +593,13 @@ function localSave(){
   try{ if(home) localStorage.setItem(LKEY,JSON.stringify(home)); else localStorage.setItem(MEKEY,JSON.stringify(localMe)); }catch(e){}
 }
 function makeWriter(getRef,getData){
-  let busy=false,again=false;
+  let busy=false,again=false,fails=0;
   const run=async()=>{
     const ref=getRef(); if(!ref) return;
     if(busy){again=true;return;}
     busy=true;
-    try{ await ref.set(getData()); }
-    catch(e){ if(e&&e.code==='invalid_argument'&&ref===pubRef()){ canWrite=false; } }
+    try{ await ref.set(getData()); fails=0; }
+    catch(e){ if(e&&e.code==='invalid_argument'&&ref===pubRef()){ canWrite=false; } else if(++fails<=5) setTimeout(run,8000*fails); }
     busy=false;
     if(again){again=false;run();}
   };
@@ -618,8 +618,27 @@ let pTimer=null;
 function persist(){
   if(!home) { localSave(); return; }
   home.saved=Date.now(); localSave();
-  clearTimeout(pTimer); pTimer=setTimeout(()=>{ if(!db||!myId||loadFailed) return; writePriv(); if(home.created) writePub(); },700);
+  clearTimeout(pTimer); pTimer=setTimeout(flushSave,700);
 }
+function flushSave(){ clearTimeout(pTimer); pTimer=null; if(!db||!myId||loadFailed||!home) return; writePriv(); if(home.created) writePub(); }
+document.addEventListener('visibilitychange',()=>{ if(document.hidden){ if(pTimer) flushSave(); } else refreshFromRemote(); });
+addEventListener('pagehide',()=>{ if(pTimer) flushSave(); });
+// F2 the same account on phone and laptop: when this tab comes back, take over what the other device saved meanwhile
+let refreshing=false;
+async function refreshFromRemote(){
+  if(refreshing||!db||!myId||pTimer) return;
+  const ae=document.activeElement; if(ae&&/^(INPUT|TEXTAREA)$/.test(ae.tagName)) return;   // never while someone is typing
+  refreshing=true;
+  try{ const snap=await db.doc('data/users/'+myId+'/garden').get();
+    if(loadFailed){ loadFailed=false; if(!home){ location.reload(); return; } }
+    const remote=snap&&snap.exists?migrate(snap.data()):null;
+    if(remote&&home&&!pTimer&&(remote.saved||0)>(home.saved||0)){ const hadDialog=typeof dlg!=='undefined'&&dlg.classList.contains('show'); adoptHome(remote); if(hadDialog&&!visiting) dlg.classList.remove('show'); }
+    else if(home&&home.created&&(!remote||(home.saved||0)>(remote.saved||0))) flushSave();
+  }catch(e){}
+  refreshing=false;
+}
+setInterval(()=>{ if(!document.hidden&&(loadFailed||Date.now()-lastRemoteCheck>120000)){ lastRemoteCheck=Date.now(); refreshFromRemote(); } },20000);
+let lastRemoteCheck=Date.now();
 
 /* ================= canvas ================= */
 const cvs=document.getElementById('c'), g=cvs.getContext('2d');
@@ -3541,7 +3560,8 @@ function forceOwnerVisit(){
   if(stayHome) return;
   if(ownerVisited||isOwner||visiting||myId===OWNER_ID||OWNER_ID==='__none__'||(home&&home.owner)) return;
   const o=gardensList.find(g=>g.id===OWNER_ID);
-  let data=o?o.data:null; if(!data){data=preset(SISI,'Sisi',SISI_SKILLS);data.owner=true;data.created=true;}
+  if(!o) return;
+  const data=o.data;
   ownerVisited=true; visiting={id:OWNER_ID,data}; visBooksFor=null; if(started)enterGarden();
 }
 function autoVisitOwner(){
@@ -3577,7 +3597,9 @@ function maybeAutoVisit(){
     if(home&&home.name==='Sisi'&&isOwner) home.owner=true;
     // live list of everyone's gardens
     db.collection('gardens').limit(60).onSnapshot(snap=>{
-      gardensList=snap.docs.filter(x=>x.exists).map(x=>({id:x.id,data:cleanGarden(x.data())})).filter(x=>x.data);handleInvite();
+      gardensList=snap.docs.filter(x=>x.exists).map(x=>({id:x.id,data:cleanGarden(x.data())})).filter(x=>x.data);
+      if(OWNER_ID!=='__none__')gardensList.forEach(x=>{x.data.owner=x.id===OWNER_ID;});
+      handleInvite();
       if(visiting){const v=gardensList.find(x=>x.id===visiting.id);if(v){visiting.data=v.data;rebuildLabels();refreshChrome();}}
       if(gardensM.classList.contains('show')) renderGardens();
       maybeAutoVisit();
@@ -3611,7 +3633,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795028158"></script>
+<script src="config.js?v=1795029117"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3641,7 +3663,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '18.11. 19:55';
+  const BUILD = '18.11. 20:11';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3839,7 +3861,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 18.11. 19:55'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 18.11. 20:11'; help.appendChild(ver);
   }
 
   function openImport() {
