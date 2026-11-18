@@ -3605,7 +3605,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795026884"></script>
+<script src="config.js?v=1795027568"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3622,7 +3622,7 @@ function maybeAutoVisit(){
       const { data, error } = await sbRef().rpc('garden_count'); const n = Number(data);
       if (error || !Number.isFinite(n)) return;
       const el = $('gCount'); el.textContent = '';
-      if (n < 20) { el.append('Be one of the ', Object.assign(document.createElement('b'), { textContent: 'first gardeners' }), '. Grow your projects, visit friends.'); el.hidden = false; return; }
+      if (n < 20) { el.append('Be one of the ', Object.assign(document.createElement('b'), { textContent: 'first gardeners' }), ' and grow your projects.'); el.hidden = false; return; }
       el.append('Join ', Object.assign(document.createElement('b'), { textContent: n.toLocaleString('en-US') }),
         n === 1 ? ' gardener keeping their projects watered.' : ' gardeners keeping their projects watered.');
       el.hidden = false;
@@ -3635,7 +3635,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '18.11. 19:34';
+  const BUILD = '18.11. 19:46';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3830,7 +3830,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 18.11. 19:34'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 18.11. 19:46'; help.appendChild(ver);
   }
 
   function openImport() {
