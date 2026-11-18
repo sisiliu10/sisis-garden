@@ -49,6 +49,12 @@
   .chatbar .live{border-left:0;border-right:2px solid var(--ink);background:#fff;font-family:Silkscreen,monospace;font-size:11px;padding:0 9px;color:#9a938a;white-space:nowrap}
   .chatbar .live.on{color:#2f9e52}
   /* who is here: a small pill under the garden chip (top left), tap for names */
+  #homeHint{position:fixed;z-index:60;max-width:210px;background:var(--ink,#2a2430);color:#fffdf6;font-family:"Pixelify Sans",sans-serif;font-size:14px;line-height:1.3;padding:8px 11px;box-shadow:3px 3px 0 rgba(0,0,0,.25);pointer-events:none;opacity:0;transform:translateY(-4px);transition:opacity .25s,transform .25s}
+  #homeHint.show{opacity:1;transform:none}
+  #homeHint:before{content:"";position:absolute;left:18px;top:-6px;border:6px solid transparent;border-top:0;border-bottom-color:var(--ink,#2a2430)}
+  @keyframes homeNudge{0%,100%{transform:none}50%{transform:translateY(2px)}}
+  #bHome.nudge{animation:homeNudge 1.1s steps(2) infinite}
+  @media (prefers-reduced-motion:reduce){#bHome.nudge{animation:none}}
   #live{align-self:center;display:inline-flex;align-items:center;gap:6px;font-family:"Pixelify Sans",sans-serif;font-size:13px;font-weight:600;
     color:var(--ink);background:var(--paper);border:2px solid var(--ink);box-shadow:2px 2px 0 rgba(42,36,48,.25);padding:3px 9px 3px 7px;cursor:pointer;white-space:nowrap}
   #live::before{content:"";width:8px;height:8px;background:#b9b2a6;box-shadow:inset -2px -2px 0 rgba(0,0,0,.15)}
@@ -314,7 +320,7 @@
 <div class="toast" id="toast" hidden></div>
 <button class="btn dark prompt" id="prompt" hidden></button>
 <div class="movebar" id="moveBar" hidden><span id="moveTxt"></span><button class="btn" id="moveCancel" type="button">Cancel</button></div>
-<form class="chatbar" id="chatbar" autocomplete="off"><input id="chatIn" maxlength="80" placeholder="Sag was …" aria-label="Chat message" enterkeyhint="send"><button type="submit" aria-label="Send">▶</button></form>
+<form class="chatbar" id="chatbar" autocomplete="off"><input id="chatIn" maxlength="80" placeholder="Say something…" aria-label="Chat message" enterkeyhint="send"><button type="submit" aria-label="Send">▶</button></form>
 <div id="bubbles"></div>
 <div id="loading">Growing the garden…</div>
 
@@ -2250,9 +2256,21 @@ const GUEST_LOOK={skin:'#fde4d0',hair:'short',hairColor:'#c27a42',top:'#2b3550',
 function openCreator(){if(!isOwner){const m=me();if(m&&(!m.name||m.name==='Me'||m.name==='Visitor')&&!m.tailored){m.look=Object.assign({},GUEST_LOOK);m.tailored=1;}}buildCreator();creator.classList.add('show');}
 function closeCreator(){
   const m=me(); m.name=(nm.value||'').trim().slice(0,14)||m.name||'Me';
+  const wasCreated=!!(home&&home.created);
   if(home) home.created=true;
+  const first=!!home&&!wasCreated&&!homeHintSeen();
   creator.classList.remove('show'); persist(); refreshLabels(); refreshChrome();
+  if(first)setTimeout(showHomeHint,900);
 }
+// first visit: a new gardener lands in someone else's garden, so point at the way to their own
+const homeHint=document.createElement('div');homeHint.id='homeHint';document.body.appendChild(homeHint);
+function homeHintSeen(){try{return localStorage.getItem('garden-homehint')==='1';}catch(e){return false;}}
+function hideHomeHint(done){homeHint.classList.remove('show');document.getElementById('bHome').classList.remove('nudge');if(done){try{localStorage.setItem('garden-homehint','1');}catch(e){}}}
+function showHomeHint(){const b=document.getElementById('bHome');if(!visiting||!home||b.hidden||homeHintSeen())return;
+  homeHint.textContent='This is '+visiting.data.name+'’s garden. Your own garden is waiting here.';
+  const r=b.getBoundingClientRect();homeHint.style.left=Math.max(6,r.left)+'px';homeHint.style.top=(r.bottom+10)+'px';
+  homeHint.classList.add('show');b.classList.add('nudge');setTimeout(()=>hideHomeHint(false),12000);}
+addEventListener('resize',()=>hideHomeHint(false));
 document.getElementById('rnd').onclick=()=>{['skin','hair','hairColor','top','bottom','bottomColor','acc'].forEach(k=>me().look[k]=pick(OPT[k]));const n=nm.value;buildCreator();nm.value=n;};
 document.getElementById('done').onclick=closeCreator;
 document.getElementById('bAv').onclick=openCreator;
@@ -2262,7 +2280,7 @@ document.getElementById('helpOk').onclick=()=>help.classList.remove('show');
 const gardensM=document.getElementById('gardens');
 document.getElementById('bGardens').onclick=()=>{renderGardens();gardensM.classList.add('show');};
 document.getElementById('gClose').onclick=()=>gardensM.classList.remove('show');
-document.getElementById('bHome').onclick=()=>goHome();
+document.getElementById('bHome').onclick=()=>{hideHomeHint(true);goHome();};
 function closeModals(){compM.classList.remove('show');lineM.classList.remove('show');askM.classList.remove('show');if(quizM.classList.contains('show'))closeQuiz();dashM.classList.remove('show');booksM.classList.remove('show');if(creator.classList.contains('show'))closeCreator();help.classList.remove('show');gardensM.classList.remove('show');addM.classList.remove('show');}
 
 /* ================= gardens (visiting) ================= */
@@ -3587,7 +3605,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:14px;font-size:14px}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795026235"></script>
+<script src="config.js?v=1795026454"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3617,7 +3635,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '18.11. 19:23';
+  const BUILD = '18.11. 19:27';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -3812,7 +3830,7 @@ function maybeAutoVisit(){
     row.appendChild(who); row.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import garden file'; im.style.marginLeft = '8px'; im.onclick = openImport; row.appendChild(im); }
     help.appendChild(row);
-    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 18.11. 19:23'; help.appendChild(ver);
+    const ver = document.createElement('p'); ver.className = 'acct'; ver.style.opacity = '.6'; ver.textContent = 'Version 18.11. 19:27'; help.appendChild(ver);
   }
 
   function openImport() {
