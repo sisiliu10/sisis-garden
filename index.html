@@ -205,6 +205,9 @@
   .lrow2 .inp{font-size:13px;padding:5px 7px}
   .lrow2 .btn{padding:2px 9px}
 .chk{display:flex;gap:8px;align-items:center;font-size:14px;margin-top:10px;cursor:pointer}
+.srow{margin:9px 0;font-size:14px;line-height:1.45}.srow b{display:block;font-size:11px;letter-spacing:1px;color:#3c8a3a}
+.nrow{margin:10px 0;padding:8px 10px;background:#fff6c2;border:2px solid #2a2430;font-size:14px;line-height:1.4}.nrow b{font-size:11px;letter-spacing:1px;color:#8a5a3a;margin-right:4px}
+.nact{display:flex;gap:14px;margin-top:6px}.nlink{background:none;border:0;padding:0;font:inherit;font-size:13px;color:#2a2430;text-decoration:underline;cursor:pointer}.nlink.dim{color:#8b8490}
   .chk input{width:16px;height:16px;accent-color:#2a2430}
   .nbrow{display:flex;justify-content:space-between;align-items:center;gap:10px;border:2px solid var(--ink);padding:8px 10px;background:#fff;margin-top:8px}
   .nbrow a{color:var(--ink);font-weight:600;text-decoration:none}
@@ -398,6 +401,24 @@
   </div>
 </div>
 
+<div class="modal" id="standM">
+  <div class="panel">
+    <h2>Stand-up</h2>
+    <div class="lead" id="standLead"></div>
+    <div id="standList"></div>
+    <div class="pfoot"><span></span><button class="btn dark" id="standClose">Back to work</button></div>
+  </div>
+</div>
+<div class="modal" id="deskM">
+  <div class="panel">
+    <h2>Your desk</h2>
+    <div class="lead">Your agents left these notes. Turn one into a to-do and it hangs on the clothesline.</div>
+    <div id="deskList"></div>
+    <label class="chk"><input type="checkbox" id="deskAi"> Let AI read my projects and write the notes</label>
+    <div class="lead" id="deskAiNote" style="font-size:12px;margin-top:4px"></div>
+    <div class="pfoot"><span></span><button class="btn dark" id="deskClose">Close</button></div>
+  </div>
+</div>
 <div class="modal" id="booksM">
   <div class="panel">
     <div style="display:flex;align-items:center;gap:8px"><h2 style="flex:1;margin:0">Bookshelf</h2><button type="button" class="lockb" id="bkLock"></button></div>
@@ -540,7 +561,10 @@ function cleanGarden(g){
   rawS.slice(0,BED_SLOTS.length).forEach((p,i)=>{const c=cleanProject(p,i,true);if(!c)return;
     if(used2.has(c.slot)){for(let s=0;s<BED_SLOTS.length;s++)if(!used2.has(s)){c.slot=s;break;}}
     used2.add(c.slot);skills.push(c);});
-  return {v:2,name:str(g.name,14)||'Someone',look:cleanLook(g.look),projects,skills,saved:num(g.saved,0),owner:!!g.owner,cat:!!g.cat,sb:g.sb!==false,listed:g.listed===undefined?!!g.owner:!!g.listed,friends:Array.isArray(g.friends)?g.friends.filter(x=>typeof x==='string'&&x.length<64).slice(0,100):[],nb:Array.isArray(g.nb)?g.nb.filter(x=>x&&/^https:\/\//.test(x.u||'')).slice(0,10).map(x=>({n:str(x.n,30)||'Friend',u:str(x.u,300)})):[],created:g.created!==false,hs:!!g.hs,
+  return {v:2,name:str(g.name,14)||'Someone',look:cleanLook(g.look),projects,skills,saved:num(g.saved,0),owner:!!g.owner,cat:!!g.cat,sb:g.sb!==false,listed:g.listed===undefined?!!g.owner:!!g.listed,friends:Array.isArray(g.friends)?g.friends.filter(x=>typeof x==='string'&&x.length<64).slice(0,100):[],nb:Array.isArray(g.nb)?g.nb.filter(x=>x&&/^https:\/\//.test(x.u||'')).slice(0,10).map(x=>({n:str(x.n,30)||'Friend',u:str(x.u,300)})):[],created:g.created!==false,hs:!!g.hs,ai:!!g.ai,aiDay:str(g.aiDay,12),
+    aiRep:(g.aiRep&&typeof g.aiRep==='object'&&g.aiRep.lines&&typeof g.aiRep.lines==='object')?{d:str(g.aiRep.d,12),lines:Object.fromEntries(Object.entries(g.aiRep.lines).slice(0,8).map(([k,v])=>[str(k,24),str(v,140)]))}:null,
+    od:(g.od&&typeof g.od==='object')?Object.fromEntries(Object.entries(g.od).slice(0,20).map(([k,v])=>[str(k,24),str(v,12)])):{},
+    on:Array.isArray(g.on)?g.on.filter(x=>x&&typeof x.text==='string').slice(-8).map(x=>Object.assign({id:str(x.id,24),pid:str(x.pid,24),code:str(x.code,14),d:str(x.d,12),st:['new','done','gone'].includes(x.st)?x.st:'gone',text:str(x.text,60)},x.ai?{ai:true}:{})):[],
     compost:Array.isArray(g.compost)?g.compost.filter(x=>x&&typeof x==='object').slice(0,30).map((x,i)=>{const c=cleanProject(x,0,!!x.bed);if(!c)return null;c.ct=num(x.ct,0);c.note=str(x.note,90);
       c.lg=Array.isArray(x.lg)?x.lg.slice(-LOG_MAX).filter(e=>e&&typeof e.text==='string').map(e=>({t:num(e.t,0),text:str(e.text,140)})):[];return c;}).filter(Boolean):[],
     todos:Array.isArray(g.todos)?g.todos.filter(x=>x&&typeof x.text==='string'&&x.text.trim()).slice(0,10).map((x,i)=>Object.assign({id:str(x.id,24)||('t'+i),text:str(x.text,60),t:num(x.t,0)},x.lk?{lk:true}:{},Number.isInteger(x.k)?{k:x.k%10}:{},Number.isInteger(x.c)?{c:x.c%8}:{})):[],
@@ -1094,7 +1118,7 @@ function houseUpdate(dt,t){
 const OFW=404, OFH=226, OFWALL=50;
 let ORX=0, ORY=0, ofNear=null, ofAgents=[], ofFor='';
 const OF_X=[168,226,284,342], OF_ROW=[96,158], OF_PANTRY={x:74,y:186}, OF_TOP=72, OF_MID=132, OF_LANE=124;
-const OF_SOLID=[[10,58,58,74],[10,104,58,120],[22,80,46,98],[0,132,112,140],[6,196,96,226],[0,50,8,132],[112,196,126,222]];
+const OF_SOLID=[[302,190,342,206],[10,58,58,74],[10,104,58,120],[22,80,46,98],[0,132,112,140],[6,196,96,226],[0,50,8,132],[112,196,126,222]];
 function officeOrigin(){
   // small screens: the camera follows you through the room
   ORX=OFW+16<=W?Math.floor((W-OFW)/2):Math.round(clamp(W/2-av.x,W-OFW-6,6));
@@ -1125,6 +1149,7 @@ function enterOffice(){
   active=null; lastActive=undefined; dlg.classList.remove('show'); editing=false;
   worldEl.style.visibility='hidden'; bJump.hidden=true; setPrompt(null);
   cat.x=264; cat.y=OFH-10;
+  ofEnter();
 }
 function exitOffice(silent){
   if(scene!=='office')return; scene='garden'; worldEl.style.visibility='';
@@ -1136,6 +1161,8 @@ function ofTalk(a){const L=(V().logs&&V().logs[a.p.id])||[],last=L.length?L[L.le
 function ofSteam(){for(let i=0;i<4;i++)spawn({kind:'z',x:60+Math.random()*4,y:186,vy:-8,life:1});}
 function officePointer(lx,ly){
   if(ly>OFH-14&&Math.abs(lx-250)<14){av.target={x:250,y:OFH+4};return;}
+  if(Math.abs(lx-OF_DESK.x)<24&&ly>176&&ly<210){av.target={x:OF_DESK.x,y:216,onArrive:()=>{av.back=true;openDesk();}};return;}
+  if(lx>236&&lx<270&&ly>102&&ly<126){av.target={x:253,y:134,onArrive:()=>{av.back=true;openStandup();}};return;}
   for(const a of ofAgents){if(Math.abs(lx-a.x)<13&&ly>a.y-24&&ly<a.y+(a.st==='sit'?18:4)){const tx=a.st==='sit'?a.sx:clamp(a.x,10,OFW-10),ty=a.st==='sit'?a.sy+24:a.y+10;av.target={x:tx,y:ty,onArrive:()=>{av.back=true;ofTalk(a);}};return;}}
   if(lx<100&&ly>184){av.target={x:clamp(lx,20,90),y:192,onArrive:()=>{av.back=false;toast('☕ Coffee break.',2000);ofSteam();}};return;}
   if(lx<60&&ly>52&&ly<124){av.target={x:66,y:90,onArrive:()=>{toast('The lounge. Sit down, your agents have it covered.',2600);}};return;}
@@ -1147,17 +1174,22 @@ function officeUpdate(dt,t){
   for(const a of ofAgents){
     const mood=ofMood(a); a.t-=dt;
     if(a.st==='sit'){a.moving=false;a.back=false;
-      if(a.t<=0){ if(mood!=='nap'&&Math.random()<(mood==='slow'?.6:.22)&&ofAgents.filter(b=>b.st!=='sit').length<2){a.st='walk';a.path=ofRoute(a,true);a.home=false;} else a.t=5+Math.random()*9; a.q=mood==='work'&&Math.random()<.3?2.2:0; }
+      if(a.t<=0){ if(mood!=='nap'&&Math.random()<(mood==='slow'?.6:ofP(a.p).c)&&ofAgents.filter(b=>b.st!=='sit').length<2){a.st='walk';a.path=ofRoute(a,true);a.home=false;} else a.t=5+Math.random()*9; a.q=mood==='work'&&Math.random()<.3?2.2:0; }
       if(a.q>0)a.q-=dt;
+      if(mood!=='nap'&&!(a.sayT>0)&&Math.random()<dt*.05&&!ofAgents.some(b=>b.sayT>0)){a.say=ofPick(ofP(a.p).say,a.p.id+Math.floor(t/7));a.sayT=4.5;}
       if(mood==='nap'&&Math.random()<dt*1.4)spawn({kind:'z',x:a.sx+4+Math.random()*4,y:a.sy-22,vy:-9,life:1.5});
     }else if(a.st==='walk'){
       const [tx,ty]=a.path[0],dx=tx-a.x,dy=ty-a.y,d=Math.hypot(dx,dy),sp=28*dt; a.moving=true; a.back=dy<-.5&&Math.abs(dy)>Math.abs(dx);
       if(d<=sp){a.x=tx;a.y=ty;a.path.shift();if(!a.path.length){if(a.home){a.st='sit';a.t=6+Math.random()*10;a.x=a.sx;a.y=a.sy;}else{a.st='brew';a.t=2.6+Math.random()*2;a.moving=false;a.back=false;}}}
       else{a.x+=dx/d*sp;a.y+=dy/d*sp;}
     }else if(a.st==='brew'){ if(Math.random()<dt*2.5)ofSteam(); if(a.t<=0){a.st='walk';a.path=ofRoute(a,false);a.home=true;} }
+    if(a.sayT>0)a.sayT-=dt;
     const d=Math.hypot(av.x-a.x,av.y-(a.st==='sit'?a.sy+22:a.y));if(d<22&&d<bd){bd=d;ofNear=a;}
   }
+  const nearDesk=Math.hypot(av.x-OF_DESK.x,av.y-216)<20, nearBoard=Math.hypot(av.x-253,av.y-134)<16;
   if(ofNear) setPrompt('Ask '+ofNear.p.code,'E');
+  else if(nearDesk) setPrompt(visiting?'Desk':'Notes on your desk','E');
+  else if(nearBoard) setPrompt('Stand-up','E');
   else if(av.y>OFH-24&&Math.abs(av.x-250)<20) setPrompt('Go outside','↓');
   else setPrompt(null);
   parts.forEach(q=>{q.age+=dt;if(q.kind==='z'){q.y+=q.vy*dt;q.x+=Math.sin(q.age*4)*.3;}});
@@ -1166,6 +1198,129 @@ function officeUpdate(dt,t){
 function ofTag(x,y,txt,col){g.font='5px Silkscreen, monospace';g.textBaseline='top';const w=Math.ceil(g.measureText(txt).width)+4;const lx=Math.round(clamp(x-w/2,1,OFW-w-1));R(lx,y,w,8,'rgba(16,20,18,.86)');g.fillStyle=col||'#7cf08a';g.fillText(txt,lx+2,y+1.5);}
 function ofSofa(x,y,w,flip){R(x,y,w,14,'#55627e');R(x,flip?y+10:y,w,4,'#414c66');R(x,y+2,3,10,'#414c66');R(x+w-3,y+2,3,10,'#414c66');for(let i=1;i<3;i++)R(x+Math.round(w*i/3),y+(flip?1:4),1,9,'#414c66');}
 function ofPlant(x,y){R(x-6,y-10,12,10,'#a8462c');R(x-7,y-10,14,2,'#d9744c');disc(x,y-16,6,'#3c8a3a');disc(x-4,y-14,4,'#4f9e43');disc(x+4,y-15,4,'#58a84a');R(x-1,y-20,2,1,'#78c65e');}
+/* ---- office agents: personalities, stand-up, notes on your desk ---- */
+const OF_DESK={x:322,y:194};
+const OF_PERSONA={
+  SOCRATES:{c:.3,say:['What would “done” look like this week?','Asked three questions about it. Answered one.','Is this the real problem, or just the loud one?'],
+    note:n=>'Write one question about '+n+', answer it today'},
+  PLATO:{c:.2,say:['Drew the perfect version on the whiteboard.','Now we need the smallest real piece of it.','Still chasing the idea behind it.'],
+    note:n=>'Pick the smallest real piece of '+n+' and ship it'},
+  EPICURUS:{c:.85,say:['Took a long coffee. Small pleasures, steady work.','Rested. Rest is part of the plan.','Tried every snack in the pantry. For research.'],
+    note:n=>'20 relaxed minutes on '+n+', then a treat'},
+  HIPPOCRATES:{c:.25,say:['Checked its pulse.','First, do no harm. Then one small thing.','Wrote a short diagnosis.'],
+    note:n=>'Check what is stuck in '+n+' and fix one thing'},
+  LAOZI:{c:0,say:['Did nothing. It still moved a little.','Waited for the right moment.','Like water: slow, but it gets there.'],
+    note:n=>'Do less on '+n+': drop one thing'},
+  NIETZSCHE:{c:.35,say:['Wrote BECOME WHO YOU ARE on the whiteboard. Again.','What does not kill this project makes it stronger.','Stared into the abyss. It asked for a deadline.'],
+    note:n=>'Set a bold deadline for '+n+''},
+  MONTAIGNE:{c:.3,say:['Wrote an essay about it. Mostly for myself.','Kept notes on what I actually know.','Started three drafts, finished one.'],
+    note:n=>'Write 5 honest lines about '+n+''},
+  ROUSSEAU:{c:.5,say:['Went for a walk to think it over.','Back to basics: what do people actually need?','Wrote down what felt natural.'],
+    note:n=>'Ask one person what they need from '+n+''},
+  CONFUCIUS:{c:.2,say:['Kept the routine. Same time, same desk.','Slow is fine, as long as we keep going.','Put things back in order.'],
+    note:n=>'Same time tomorrow: 15 min on '+n+''},
+  KANT:{c:.15,say:['Started at exactly 9:00. As always.','Made a rule for it and followed the rule.','Walked the same loop around the office.'],
+    note:n=>'Make one simple rule for '+n+''},
+  ARISTOTLE:{c:.3,say:['Sorted everything into categories.','We are what we repeatedly do.','Found the middle way between too much and too little.'],
+    note:n=>'Repeat one small habit for '+n+''}
+};
+const OF_GENERIC=[
+  {c:.3,say:['Made a plan. Then a smaller plan.','Cleared the desk. Ready when you are.','Pushed a little further.'],note:n=>'Write the very next step for '+n+''},
+  {c:.55,say:['Worked late. The coffee machine knows me now.','Night shift was quiet.','Left a note on your desk.'],note:n=>'15 minutes on '+n+'. Just 15.'},
+  {c:.3,say:['Tinkered with it.','Tried two things. One worked.','Broke it, fixed it, learned something.'],note:n=>'Try one small experiment for '+n+''},
+  {c:.4,say:['Good feeling about this one.','Small wins count.','Told the others about it.'],note:n=>'Tell one person about '+n+' today'}];
+function ofP(p){return OF_PERSONA[p.code]||OF_GENERIC[ofHash(p.id)%OF_GENERIC.length];}
+function ofShort(p){const n=(p.name||p.code||'it').trim();return n.length>16?n.slice(0,15)+'…':n;}
+function ofPick(arr,seed){return arr[ofHash(seed)%arr.length];}
+function ofToday(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+const ofAgo=ms=>{const h=ms/3600e3;return h<1?'under an hour':h<24?Math.round(h)+'h':Math.round(h/24)+(h<48?' day':' days');};
+// what each agent says it did while you were away (written from the project itself, no AI needed)
+function ofLine(p,since){
+  const w=waterOf(p),L=(V().logs&&V().logs[p.id])||[],n=L.filter(e=>e.t>since).length,say=ofPick(ofP(p).say,p.id+ofToday());
+  if(w<25) return 'Fell asleep at the desk. Nobody watered me for '+ofAgo(Date.now()-p.t)+'.';
+  if(n) return 'You watered me '+(n>1?n+' times':'once')+'. '+say;
+  if(w<60) return say+' Running a bit dry though.';
+  return say;
+}
+let ofAi=null, ofAiBusy=false;
+function ofReport(){return (!visiting&&home&&home.aiRep&&home.aiRep.d===ofToday()&&home.aiRep.lines)||{};}
+const standM=document.getElementById('standM'),deskM=document.getElementById('deskM');
+let ofSince=0;
+function renderStand(){
+  const ai=ofReport(), list=document.getElementById('standList'); list.textContent='';
+  if(!ofAgents.length){list.textContent='No agents yet. Plant a project in the garden and someone will sit down here.';}
+  ofAgents.forEach(a=>{const r=document.createElement('div');r.className='srow';const b=document.createElement('b');b.textContent=a.p.code+(!visiting&&ai[a.p.id]?' ✦':'');const s=document.createElement('span');s.textContent=(!visiting&&ai[a.p.id])||ofLine(a.p,ofSince);r.appendChild(b);r.appendChild(s);list.appendChild(r);});
+  document.getElementById('standLead').textContent=(visiting?visiting.data.name+'’s team':'Your team')+', while '+'you were'+' away for '+ofAgo(Date.now()-ofSince)+'.';
+}
+function openStandup(){
+  ofBuild(); const gid=visiting?visiting.id:'me', seen=JSON.parse(localStorage.getItem('garden-standup')||'{}');
+  ofSince=seen[gid]||Date.now()-864e5; renderStand();
+  seen[gid]=Date.now(); try{localStorage.setItem('garden-standup',JSON.stringify(seen));}catch(e){}
+  standM.classList.add('show');
+}
+document.getElementById('standClose').onclick=()=>standM.classList.remove('show');
+standM.addEventListener('pointerdown',e=>{if(e.target===standM)standM.classList.remove('show');});
+// notes: each day up to three agents leave a next step on your desk, the thirstiest first
+function ofNotes(){return (home&&Array.isArray(home.on))?home.on:[];}
+function ofMakeNotes(){
+  if(!home||visiting||!home.created)return; const day=ofToday(); home.od=home.od||{}; home.on=ofNotes().filter(x=>x&&x.st==='new');
+  const fresh=home.projects.filter(p=>home.od[p.id]!==day&&!home.on.some(x=>x.pid===p.id)).sort((a,b)=>waterOf(a)-waterOf(b)).slice(0,Math.max(0,3-home.on.filter(x=>x.d===day).length));
+  fresh.forEach(p=>{home.od[p.id]=day;const dry=waterOf(p)<25;home.on.push({id:'n'+Date.now().toString(36)+p.id.slice(-3),pid:p.id,code:p.code,d:day,st:'new',
+    text:(dry?'Wake '+ofShort(p)+' up: 10 minutes on it':ofP(p).note(ofShort(p))).slice(0,60)});});
+  home.on=home.on.slice(-8); if(fresh.length)persist();
+}
+function ofAddTodo(text){
+  home.todos=home.todos||[]; if(home.todos.length>=CLN.max){toast('The clothesline is full. Finish a to-do first.',2600);return false;}
+  const free=(n,f)=>{const used=new Set(home.todos.map(f)),o=[];for(let v=0;v<n;v++)if(!used.has(v))o.push(v);return o.length?o[Math.floor(Math.random()*o.length)]:Math.floor(Math.random()*n);};
+  home.todos.push({id:'t'+Date.now().toString(36)+Math.floor(Math.random()*1e3).toString(36),text:text.slice(0,60),t:Date.now(),k:free(GD.G.length,tdKind),c:free(GD.COL.length,tdCi)});return true;
+}
+function renderDesk(){
+  const list=document.getElementById('deskList'); list.textContent='';
+  const N=ofNotes().filter(x=>x.st==='new');
+  if(!N.length){const p=document.createElement('p');p.className='lead';p.textContent='No notes right now. Your agents leave new ones tomorrow.';list.appendChild(p);}
+  N.forEach(n=>{const r=document.createElement('div');r.className='nrow';const t=document.createElement('div');const b=document.createElement('b');b.textContent=n.code+(n.ai?' ✦':'');t.appendChild(b);t.appendChild(document.createTextNode(' '+n.text));
+    const act=document.createElement('div');act.className='nact';
+    const y=document.createElement('button');y.type='button';y.className='nlink';y.textContent='→ to-do';y.onclick=()=>{if(ofAddTodo(n.text)){n.st='done';persist();toast('Hung on the clothesline.',2000);renderDesk();}};
+    const x=document.createElement('button');x.type='button';x.className='nlink dim';x.textContent='not now';x.onclick=()=>{n.st='gone';persist();renderDesk();};
+    act.appendChild(y);act.appendChild(x);r.appendChild(t);r.appendChild(act);list.appendChild(r);});
+  const ai=document.getElementById('deskAi'); ai.checked=!!home.ai;
+  document.getElementById('deskAiNote').textContent=home.ai?(home.aiDay===ofToday()?'Today’s notes are written by AI (✦).':'AI writes the next notes, once a day.'):'Off: notes come from your agents’ habits.';
+}
+function openDesk(){
+  if(visiting){toast('These notes are private.',2200);return;}
+  if(!home)return; ofMakeNotes(); renderDesk(); deskM.classList.add('show');
+}
+document.getElementById('deskClose').onclick=()=>deskM.classList.remove('show');
+deskM.addEventListener('pointerdown',e=>{if(e.target===deskM)deskM.classList.remove('show');});
+document.getElementById('deskAi').onchange=e=>{home.ai=!!e.target.checked;persist();renderDesk();if(home.ai)ofAskAi(true);};
+// real suggestions: one small AI round per person and day, run by the garden's server function with hard limits
+async function ofAskAi(force){
+  if(ofAiBusy||!home||visiting||!home.ai||!home.created||!window.__agents)return;
+  const day=ofToday(); if(home.aiDay===day)return;
+  ofAiBusy=true;
+  try{
+    const projects=home.projects.slice(0,8).map(p=>({id:p.id,code:p.code,name:p.name,about:[p.sub,p.why].filter(Boolean).join('. ').slice(0,200),progress:Math.round(p.progress||0),water:Math.round(waterOf(p)),
+      lastWatered:Math.round((Date.now()-p.t)/3600e3),note:String((home.notes||{})[p.id]||'').slice(0,90),log:((home.logs||{})[p.id]||[]).slice(-5).map(e=>e.text.slice(0,100))}));
+    const r=await window.__agents.ask({projects});
+    if(r&&Array.isArray(r.agents)){
+      const lines={}; home.on=ofNotes().filter(x=>!(x.d===day&&x.st==='new'&&!x.ai));
+      r.agents.forEach(a=>{const p=home.projects.find(q=>q.id===a.id);if(!p)return;
+        if(typeof a.line==='string'&&a.line.trim())lines[p.id]=a.line.trim().slice(0,140);
+        if(typeof a.next==='string'&&a.next.trim()&&!home.on.some(x=>x.pid===p.id&&x.st==='new')){home.od=home.od||{};home.od[p.id]=day;home.on.push({id:'n'+Date.now().toString(36)+p.id.slice(-3),pid:p.id,code:p.code,d:day,st:'new',ai:true,text:a.next.trim().slice(0,60)});}});
+      home.on=home.on.slice(-8); home.aiDay=day; home.aiRep={d:day,lines}; persist();
+      if(standM.classList.contains('show'))renderStand();
+      if(deskM.classList.contains('show'))renderDesk();
+    }
+  }catch(e){}
+  ofAiBusy=false;
+}
+function ofEnter(){
+  ofMakeNotes();
+  const gid=visiting?visiting.id:'me',seen=JSON.parse(localStorage.getItem('garden-standup')||'{}');
+  if(!seen[gid]||Date.now()-seen[gid]>2*3600e3)setTimeout(()=>{if(scene==='office')openStandup();},900);
+  ofAskAi(false);
+}
+
 function renderOffice(t){
   officeOrigin();
   setTimeout(()=>placeTags(livePeers().filter(p=>p.scene==='office'),(x,y)=>[(ORX+x)*S,(ORY+y)*S]),0);
@@ -1215,6 +1370,11 @@ function renderOffice(t){
     R(dx+10,ry+3,3,1,'#fffdf6');
     if(!a){R(dx-5,ry-15,10,7,'#2a2e3d');R(dx-6,ry-9,12,2,'#15131a');}
   }});}));
+  // your desk with today's notes on it
+  list.push({y:206,d:()=>{const X=OF_DESK.x,Y=OF_DESK.y;R(X-20,Y-2,40,3,'#b98556');R(X-20,Y+1,40,10,'#8a5a3a');R(X-20,Y+1,40,1,'#a5744a');R(X-19,Y+11,2,4,'#5a3420');R(X+17,Y+11,2,4,'#5a3420');
+    R(X-6,Y-12,14,10,'#15131a');R(X-5,Y-11,12,8,'#2b3a7a');R(X,Y-2,2,1,'#15131a');R(X-15,Y-4,6,2,'#e8506c');
+    const n=visiting?0:ofNotes().filter(x=>x.st==='new').length;for(let k=0;k<Math.min(n,4);k++){R(X+9+(k%2)*5,Y-6-Math.floor(k/2)*5,4,4,k%2?'#f6e27a':'#fff08a');}
+    R(X-4,Y+16,8,6,'#55627e');R(X-5,Y+14,10,2,'#414c66');}});
   // plants
   list.push({y:OFH-4,d:()=>ofPlant(140,OFH-4)}); list.push({y:OFH-4,d:()=>ofPlant(OFW-14,OFH-4)}); list.push({y:66,d:()=>ofPlant(136,66)}); list.push({y:66,d:()=>ofPlant(OFW-52,66)});
   // agents
@@ -1227,13 +1387,16 @@ function renderOffice(t){
   livePeers().filter(p=>p.scene==='office').forEach(p=>list.push({y:p.y,d:()=>drawAvatar(g,p.x,p.y,p.look,{frame:p.moving?[1,0,2,0][Math.floor(t*8+p.x)%4]:0,back:p.back,blink:((t+p.x)%4)<.12,t})}));
   list.sort((a,b)=>a.y-b.y).forEach(o=>o.d());
   ofAgents.forEach(a=>ofTag(a.x,a.y-(a.st==='sit'?33:31),a.p.code.toLowerCase(),ofMood(a)==='nap'?'#8d93a3':'#7cf08a'));
+  ofTag(OF_DESK.x,OF_DESK.y-22,visiting?visiting.data.name.toLowerCase()+"'s desk":'your desk','#f6e27a');
+  ofAgents.forEach(a=>{if(!(a.sayT>0)||!a.say)return;g.font='5px Silkscreen, monospace';const txt=a.say.length>34?a.say.slice(0,33)+'…':a.say,w=Math.ceil(g.measureText(txt).width)+6,bx=Math.round(clamp(a.x-w/2,1,OFW-w-1)),by=(a.st==='sit'?a.sy:a.y)-46;
+    R(bx,by,w,9,'#fffdf6');R(bx,by,w,1,'#2a2430');R(bx,by+8,w,1,'#2a2430');R(bx,by,1,9,'#2a2430');R(bx+w-1,by,1,9,'#2a2430');R(Math.round(a.x)-1,by+9,3,2,'#fffdf6');g.fillStyle='#2a2430';g.textBaseline='top';g.fillText(txt,bx+3,by+2);});
   R(238,OFH-2,24,2,'#6b4430');
   if(nt>0){g.globalCompositeOperation='multiply';g.globalAlpha=nt*.28;R(-4,-4,OFW+8,OFH+8,'#4a5296');g.globalCompositeOperation='source-over';g.globalAlpha=1;}
   parts.forEach(q=>{if(q.kind==='z'){const x=Math.round(q.x),y=Math.round(q.y);g.globalAlpha=1-q.age/q.life;R(x,y,3,1,'#ffffff');R(x+1,y+1,1,1,'#ffffff');R(x,y+2,3,1,'#ffffff');g.globalAlpha=1;}});
   g.restore();
   // status line under the room, like a terminal
   const n=ofAgents.length,c=k=>ofAgents.filter(a=>(a.st!=='sit'?'coffee':ofMood(a))===k).length;
-  const line=n?n+' agents · '+c('work')+' typing · '+c('slow')+' slow · '+c('nap')+' asleep · '+c('coffee')+' coffee':'no projects yet · plant one in the garden';
+  const line=n?n+' agents   '+c('work')+' typing   '+c('slow')+' slow   '+c('nap')+' asleep   '+c('coffee')+' coffee':'no projects yet, plant one in the garden';
   const by=Math.min(H-66,ORY+OFH+6);g.fillStyle='#0d0c12';g.fillRect(0,by,W,9);g.font='5px Silkscreen, monospace';g.textBaseline='top';g.fillStyle='#7cf08a';g.fillText(line,4,by+2);
 }
 /* ---- map: one button, bottom right, to switch between the places ---- */
@@ -1259,7 +1422,7 @@ function setPrompt(txt,key){
 promptEl.onclick=()=>{
   if(scene==='house'){ if(houseNear) houseNear.act(); else av.target={x:RW/2,y:RH+4}; }
   else if(scene==='city'){ if(cityNearHole())exitCity(); else av.target={x:CITY.sx,y:CITY.sy+4}; }
-  else if(scene==='office'){ if(ofNear){av.back=true;ofTalk(ofNear);} else av.target={x:OFW/2,y:OFH+4}; }
+  else if(scene==='office'){ if(ofNear){av.back=true;ofTalk(ofNear);} else if(Math.hypot(av.x-OF_DESK.x,av.y-216)<20)openDesk(); else if(Math.hypot(av.x-253,av.y-134)<16)openStandup(); else av.target={x:OFW/2,y:OFH+4}; }
   else goToDoor();
 };
 function renderHouse(t){
@@ -2409,7 +2572,7 @@ addEventListener('keydown',e=>{
   if(['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d'].includes(k)){keys[k]=true;av.target=null;av.run=false;hideHint();e.preventDefault();}
   if(k==='e'||k===' '){
     if(scene==='house'){if(houseNear)houseNear.act();e.preventDefault();}
-    else if(scene==='office'){if(ofNear){av.back=true;ofTalk(ofNear);}e.preventDefault();}
+    else if(scene==='office'){if(ofNear){av.back=true;ofTalk(ofNear);} else if(Math.hypot(av.x-OF_DESK.x,av.y-216)<20)openDesk(); else if(Math.hypot(av.x-253,av.y-134)<16)openStandup(); e.preventDefault();}
     else if(scene==='city'){if(cityNearHole())exitCity();e.preventDefault();}
     else if(active&&!editing){openLog(active);e.preventDefault();}
     else if(promptEl.dataset.on){goToDoor();e.preventDefault();}
@@ -3852,7 +4015,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795087503"></script>
+<script src="config.js?v=1795129492"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3882,7 +4045,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '19.11. 12:25';
+  const BUILD = '20.11. 00:04';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -4049,6 +4212,15 @@ function maybeAutoVisit(){
     },
   };
 
+  /* ---------- AI agents in the office: one small round a day, limits are enforced on the server ---------- */
+  window.__agents = {
+    async ask(payload) {
+      if (!uid) return null;
+      try { const { data, error } = await sb.functions.invoke('agents', { body: payload }); if (error || !data || data.error) return null; return data; }
+      catch (e) { return null; }
+    },
+  };
+
   /* ---------- user ---------- */
   const user = { id: async () => uid, isOwner: async () => isOwner, can: async () => true };
 
@@ -4076,7 +4248,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 19.11. 12:25';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 20.11. 00:04';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid').forEach(k => localStorage.removeItem(k)); } catch (e) {} location.reload(); };
