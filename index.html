@@ -29,6 +29,9 @@
   .label .wb i{display:block;height:100%;background:var(--water)}
   .label.low .wb i{background:#e8835a}
   .label.on{transform:translateX(-50%) scale(1.12)}
+  .sign.mine{font-size:6px;color:#2a2430;background:#ffe27a;border-color:#2a2430;padding:3px 4px 2px;pointer-events:auto;cursor:pointer;z-index:3;animation:signbob 1.6s steps(2) infinite}
+  .sign.mine:after{content:"";position:absolute;left:50%;top:100%;width:2px;height:7px;margin-left:-1px;background:#5a3420}
+  @keyframes signbob{50%{transform:translateY(-1px)}}
   .sign{position:absolute;font-family:Silkscreen,monospace;font-size:5px;line-height:1;color:#fff;background:#8a5a36;border:1px solid #5a3420;padding:2px 3px 1px;white-space:nowrap;box-shadow:1px 1px 0 rgba(0,0,0,.2)}
 
   .hud{position:fixed;top:12px;display:flex;gap:6px;z-index:5}
@@ -1910,6 +1913,8 @@ function onlineIds(){ const set=new Set(); if(!lobby) return set; try{lobby.peer
 const labelsEl=document.createElement('div'); worldEl.appendChild(labelsEl);
 const signEl=document.createElement('div'); signEl.className='sign'; signEl.textContent='SKILLS ↓'; worldEl.appendChild(signEl);
 const signEl2=document.createElement('div'); signEl2.className='sign'; signEl2.textContent='TO-DOS ↓'; worldEl.appendChild(signEl2);
+const signMine=document.createElement('div'); signMine.className='sign mine'; signMine.textContent='YOUR GARDEN →'; signMine.hidden=true; worldEl.appendChild(signMine);
+signMine.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();hideHomeHint(true);goHome();});
 let labels={};
 function rebuildLabels(){
   labelsEl.innerHTML=''; labels={};
@@ -1925,6 +1930,7 @@ function rebuildLabels(){
 function layoutWorldUI(){
   document.getElementById('title').style.top=Math.round(OY*.42+10)+'px';
   signEl.style.left=(OX+63)+'px'; signEl.style.top=(OY+344)+'px'; signEl2.style.left=(OX+143)+'px'; signEl2.style.top=(OY+344)+'px';
+  signMine.style.left=(OX+141)+'px'; signMine.style.top=(OY+236)+'px';
   rebuildLabels(); placeDialog();
 }
 function gardenAvg(gd){const ps=gd?gd.projects.concat(gd.skills||[]):[];return ps.length?ps.reduce((a,p)=>a+waterOf(p),0)/ps.length:100;}
@@ -1942,7 +1948,7 @@ function refreshChrome(){
   document.getElementById('tName').textContent=(gd?gd.name:'My')+"'s";
   document.getElementById('tSub').textContent=visiting?'you are visiting':'keep your projects watered';
   document.title=(gd?gd.name:'My')+"'s Garden";
-  document.getElementById('bHome').hidden=!(visiting&&home);
+  document.getElementById('bHome').hidden=!(visiting&&home); signMine.hidden=!(visiting&&home);
   document.getElementById('bAdd').hidden=!!visiting||!home||(home.projects.length>=SLOTS.length&&home.skills.length>=BED_SLOTS.length);
   const ban=document.getElementById('banner');
   if(!home&&!visiting){ban.hidden=true;}
@@ -3845,7 +3851,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795086766"></script>
+<script src="config.js?v=1795086898"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3875,7 +3881,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '19.11. 12:12';
+  const BUILD = '19.11. 12:14';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -4069,7 +4075,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 19.11. 12:12';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 19.11. 12:14';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid').forEach(k => localStorage.removeItem(k)); } catch (e) {} location.reload(); };
