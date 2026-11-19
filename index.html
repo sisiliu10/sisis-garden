@@ -540,7 +540,7 @@ function cleanGarden(g){
   rawS.slice(0,BED_SLOTS.length).forEach((p,i)=>{const c=cleanProject(p,i,true);if(!c)return;
     if(used2.has(c.slot)){for(let s=0;s<BED_SLOTS.length;s++)if(!used2.has(s)){c.slot=s;break;}}
     used2.add(c.slot);skills.push(c);});
-  return {v:2,name:str(g.name,14)||'Someone',look:cleanLook(g.look),projects,skills,saved:num(g.saved,0),owner:!!g.owner,cat:!!g.cat,sb:g.sb!==false,listed:g.listed===undefined?!!g.owner:!!g.listed,friends:Array.isArray(g.friends)?g.friends.filter(x=>typeof x==='string'&&x.length<64).slice(0,100):[],nb:Array.isArray(g.nb)?g.nb.filter(x=>x&&/^https:\/\//.test(x.u||'')).slice(0,10).map(x=>({n:str(x.n,30)||'Friend',u:str(x.u,300)})):[],created:g.created!==false,
+  return {v:2,name:str(g.name,14)||'Someone',look:cleanLook(g.look),projects,skills,saved:num(g.saved,0),owner:!!g.owner,cat:!!g.cat,sb:g.sb!==false,listed:g.listed===undefined?!!g.owner:!!g.listed,friends:Array.isArray(g.friends)?g.friends.filter(x=>typeof x==='string'&&x.length<64).slice(0,100):[],nb:Array.isArray(g.nb)?g.nb.filter(x=>x&&/^https:\/\//.test(x.u||'')).slice(0,10).map(x=>({n:str(x.n,30)||'Friend',u:str(x.u,300)})):[],created:g.created!==false,hs:!!g.hs,
     compost:Array.isArray(g.compost)?g.compost.filter(x=>x&&typeof x==='object').slice(0,30).map((x,i)=>{const c=cleanProject(x,0,!!x.bed);if(!c)return null;c.ct=num(x.ct,0);c.note=str(x.note,90);
       c.lg=Array.isArray(x.lg)?x.lg.slice(-LOG_MAX).filter(e=>e&&typeof e.text==='string').map(e=>({t:num(e.t,0),text:str(e.text,140)})):[];return c;}).filter(Boolean):[],
     todos:Array.isArray(g.todos)?g.todos.filter(x=>x&&typeof x.text==='string'&&x.text.trim()).slice(0,10).map((x,i)=>Object.assign({id:str(x.id,24)||('t'+i),text:str(x.text,60),t:num(x.t,0)},x.lk?{lk:true}:{},Number.isInteger(x.k)?{k:x.k%10}:{},Number.isInteger(x.c)?{c:x.c%8}:{})):[],
@@ -2474,6 +2474,7 @@ function buildCreator(){
 const GUEST_LOOK={skin:'#fde4d0',hair:'short',hairColor:'#c27a42',top:'#2b3550',bottom:'pants',bottomColor:'#2d2d35',acc:'glasses'};
 function openCreator(){const m=me(),fresh=!!m&&(!m.name||m.name==='Me'||m.name==='Visitor');if(!isOwner&&fresh&&!m.tailored){m.look=Object.assign({},GUEST_LOOK);['skin','hair','hairColor','top','bottom','bottomColor','acc'].forEach(k=>m.look[k]=pick(OPT[k]));m.tailored=1;}buildCreator();if(fresh){nm.value='';nm.placeholder='Your name';}creator.classList.add('show');}
 function closeCreator(){
+  if(loadFailed){toast('Could not load your garden. Check your connection and reload the page.',4000);return;}
   const m=me(),typed=(nm.value||'').trim().slice(0,14);
   if(!typed&&(!m.name||m.name==='Me'||m.name==='Visitor')){nm.focus();toast('Give your gardener a name first.',2400);return;}
   m.name=typed||m.name||'Me';
@@ -2569,7 +2570,7 @@ function renderGardens(keep){
 }
 function visit(gd){visiting={id:gd.id,data:gd.data};visBooksFor=null;enterGarden();}
 let stayHome=false;
-function goHome(){if(!home)return;stayHome=true;visiting=null;enterGarden();}
+function goHome(){if(!home)return;stayHome=true;if(home.created&&!home.hs){home.hs=true;persist();}visiting=null;enterGarden();}
 const bJump=document.getElementById('bJump');
 function updateJump(){const need=TH-H>8;bJump.hidden=!need;if(need){const up=camR>(TH-H)/2,narrow=innerWidth<560;bJump.textContent=narrow?(up?'↑':'↓'):(up?'Projects ↑':'Skills ↓');}}
 bJump.onclick=()=>{const toSkills=camR<=(TH-H)/2;av.target=null;av.x=120;av.y=toSkills?374:216;av.back=false;camY=clamp(av.y+OY-H*.55,0,Math.max(0,TH-H));};
@@ -3775,7 +3776,7 @@ function adoptHome(h){
 const OWNER_ID=window.__OWNER_ID||'__none__';
 let ownerVisited=false;
 function forceOwnerVisit(){
-  if(stayHome) return;
+  if(stayHome||(home&&home.hs)) return;
   if(ownerVisited||isOwner||visiting||myId===OWNER_ID||OWNER_ID==='__none__'||(home&&home.owner)) return;
   const o=gardensList.find(g=>g.id===OWNER_ID);
   if(!o) return;
@@ -3783,7 +3784,7 @@ function forceOwnerVisit(){
   ownerVisited=true; visiting={id:OWNER_ID,data}; visBooksFor=null; if(started)enterGarden();
 }
 function autoVisitOwner(){
-  if(ownerVisited||stayHome||isOwner||visiting||!myId) return;
+  if(ownerVisited||stayHome||isOwner||visiting||!myId||(home&&home.hs)) return;
   const o=gardensList.find(g=>g.data.owner&&g.id!==myId); if(!o) return;
   ownerVisited=true; visiting={id:o.id,data:o.data}; visBooksFor=null; if(started)enterGarden();
 }
@@ -3791,7 +3792,7 @@ function localSeen(){try{return !!localStorage.getItem(MEKEY);}catch(e){return t
 function maybeAutoVisit(){
   if(home||visiting) return;
   const o=gardensList.find(g=>g.data.owner)||gardensList[0];
-  if(o){visiting={id:o.id,data:o.data}; visBooksFor=null; if(started)enterGarden(); start(); if(!localSeen())openCreator();}
+  if(o){visiting={id:o.id,data:o.data}; visBooksFor=null; if(started)enterGarden(); start(); if(!localSeen()&&!loadFailed)openCreator();}
 }
 (async()=>{
   let fallbackTimer=setTimeout(()=>{ if(!home&&!visiting){ home=preset(STARTER,'Me'); } forceOwnerVisit(); start(); initRoom(); },10000);
@@ -3833,7 +3834,7 @@ function maybeAutoVisit(){
     if(!handleInvite())forceOwnerVisit();
     initRoom();
     clearTimeout(fallbackTimer);
-    if(home||visiting){ start(); if(!home&&!localSeen()) openCreator(); } else setTimeout(()=>{ if(!home&&!visiting){ localMe.name='Visitor'; } start(); },4000);
+    if(home||visiting){ start(); if(!home&&!localSeen()&&!loadFailed) openCreator(); } else setTimeout(()=>{ if(!home&&!visiting){ localMe.name='Visitor'; } start(); },4000);
   }catch(e){
     clearTimeout(fallbackTimer);
     if(!home) home=preset(STARTER,'Me');
@@ -3851,7 +3852,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795086898"></script>
+<script src="config.js?v=1795087503"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3881,7 +3882,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '19.11. 12:14';
+  const BUILD = '19.11. 12:25';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -4075,7 +4076,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 19.11. 12:14';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 19.11. 12:25';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid').forEach(k => localStorage.removeItem(k)); } catch (e) {} location.reload(); };
