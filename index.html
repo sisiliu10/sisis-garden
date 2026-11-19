@@ -1367,20 +1367,32 @@ function cleanBooks(b){
 }
 books=cleanBooks(books);
 if(!books) books={saved:1,list:[]};
-{const SEEDS=[
+const SEEDS=[
   {k:'sontag',ti:'Über Frauen',au:'Susan Sontag',sh:'currently-reading',en:'On Women',yr:2023,ds:'Seven essays and interviews from 1972 to 1975, collected in 2023, in which Sontag takes on aging, beauty, feminism, sexuality and fascism. Edited by her son David Rieff, with an introduction by Merve Emre.'},
   {k:'steppenwolf',ti:'Der Steppenwolf',au:'Hermann Hesse',sh:'to-read',en:'Steppenwolf',yr:1927,ds:'Harry Haller, a lonely intellectual nearing fifty, feels split between his cultured self and a wild, wolfish side that despises ordinary middle-class life. Meeting the free-spirited Hermine and a strange "Magic Theatre" pushes him to face the many selves inside him and learn to laugh at himself.'},
  ];
+// these are the keeper's own books: only her shelf starts with them
+function seedBooks(){
  const done=Array.isArray(books.seeds)?books.seeds:(books.seeded?['sontag']:[]);
  SEEDS.forEach(sd=>{if(done.includes(sd.k))return;done.push(sd.k);
    if(!books.list.some(b=>b.ti.toLowerCase()===sd.ti.toLowerCase()||(b.en||'').toLowerCase()===sd.en.toLowerCase()))books.list.push({id:'',ti:sd.ti,au:sd.au,sh:sd.sh,ra:0,dr:0,da:Date.now(),m:true,en:sd.en,ds:sd.ds,yr:sd.yr});});
  books.seeds=done;
  books.list.forEach(b=>{const sd=SEEDS.find(x=>x.ti===b.ti&&x.au===b.au);if(sd){if(!b.ds){b.en=sd.en;b.ds=sd.ds;}if(!b.yr)b.yr=sd.yr;}});}
+// everyone else: take the keeper's books back off the shelf if an older version put them there
+function unseedBooks(){
+ if(!books||(!Array.isArray(books.seeds)&&!books.seeded))return false;
+ const n=books.list.length;
+ books.list=books.list.filter(b=>!(SEEDS.some(x=>x.ti===b.ti&&x.au===b.au)&&!b.ra&&!b.dr&&!b.id));
+ delete books.seeds;delete books.seeded;return true;
+}
 const writeBooks=makeWriter(booksRef,()=>books);
 async function loadRemoteBooks(){
   const ref=booksRef(); if(!ref) return;
   try{const snap=await ref.get(); if(snap&&snap.exists){const r=cleanBooks(snap.data()); if(r&&(!books||r.saved>books.saved)){books=r;try{localStorage.setItem(BKEY,JSON.stringify(books));}catch(e){}}}
       else if(books) writeBooks();}catch(e){}
+  if(!books) books={saved:1,list:[]};
+  if(isOwner){const n=books.list.length;seedBooks();if(books.list.length!==n)saveBooks();}
+  else if(unseedBooks())saveBooks();
 }
 document.getElementById('bkClose').onclick=()=>booksM.classList.remove('show');
 function saveBooks(){books.saved=Date.now();try{localStorage.setItem(BKEY,JSON.stringify(books));}catch(e){}writeBooks();if(home&&home.created)writePubBooks();}
@@ -3833,7 +3845,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795085648"></script>
+<script src="config.js?v=1795086766"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -3863,7 +3875,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '19.11. 11:54';
+  const BUILD = '19.11. 12:12';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -4057,7 +4069,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 19.11. 11:54';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 19.11. 12:12';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid').forEach(k => localStorage.removeItem(k)); } catch (e) {} location.reload(); };
