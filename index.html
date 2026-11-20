@@ -27,11 +27,10 @@
     text-shadow:0 1px 0 #3d7a35,1px 0 0 #3d7a35,-1px 0 0 #3d7a35,0 -1px 0 #3d7a35;white-space:nowrap;transition:transform .2s}
   .label .wb{width:20px;height:2px;margin:2px auto 0;background:rgba(42,36,48,.35);outline:.5px solid rgba(42,36,48,.5)}
   .label .wb i{display:block;height:100%;background:var(--water)}
+  @media (max-width:560px){.label{font-size:6.2px}.label:not(.low):not(.on) .wb{visibility:hidden}}
   .label.low .wb i{background:#e8835a}
   .label.on{transform:translateX(-50%) scale(1.12)}
-  .sign.mine{font-size:6px;color:#2a2430;background:#ffe27a;border-color:#2a2430;padding:3px 4px 2px;pointer-events:auto;cursor:pointer;z-index:3;animation:signbob 1.6s steps(2) infinite}
-  .sign.mine:after{content:"";position:absolute;left:50%;top:100%;width:2px;height:7px;margin-left:-1px;background:#5a3420}
-  @keyframes signbob{50%{transform:translateY(-1px)}}
+  .sign.mine{pointer-events:auto;cursor:pointer;z-index:3}
   .sign{position:absolute;font-family:Silkscreen,monospace;font-size:5px;line-height:1;color:#fff;background:#8a5a36;border:1px solid #5a3420;padding:2px 3px 1px;white-space:nowrap;box-shadow:1px 1px 0 rgba(0,0,0,.2)}
 
   .hud{position:fixed;top:12px;display:flex;gap:6px;z-index:5}
@@ -255,6 +254,11 @@
   .qrank{display:flex;flex-direction:column;gap:4px}
   .qrank div{display:flex;justify-content:space-between;background:rgba(255,255,255,.08);padding:6px 10px;font-size:16px}
   .btn.qjoin{position:fixed;left:50%;top:60px;transform:translateX(-50%);z-index:6;font-size:15px;background:#e8506c;color:#fff}
+  #ofLayer{position:fixed;left:0;top:0;pointer-events:none;z-index:3}
+  #ofLayer .ot{position:absolute;transform:translate(-50%,-100%);font-family:Silkscreen,monospace;font-size:10px;line-height:1.2;color:#7cf08a;background:rgba(16,20,18,.86);padding:1px 5px;white-space:nowrap}
+  #ofLayer .ot.nap{color:#b9bec9}#ofLayer .ot.desk{color:#f6e27a}
+  #ofLayer .ob{position:absolute;transform:translate(-50%,-100%);font-size:12px;line-height:1.3;color:#2a2430;background:#fffdf6;border:2px solid #2a2430;padding:3px 7px;max-width:170px;width:max-content;text-align:center;box-shadow:2px 2px 0 rgba(42,36,48,.25)}
+  #ofLayer .os{position:fixed;left:0;right:0;font-family:Silkscreen,monospace;font-size:10px;line-height:1;color:#7cf08a;background:#0d0c12;padding:4px 8px;white-space:pre;overflow:hidden}
   .ptag{position:fixed;transform:translate(-50%,-100%);font-family:Silkscreen,monospace;font-size:10px;color:#fff;background:rgba(42,36,48,.72);padding:2px 5px;white-space:nowrap;pointer-events:none;z-index:3}
   .online{color:#3d9a35;font-weight:600}
   .logs{margin-top:10px;border-top:2px dashed #d9d2c4;padding-top:8px}
@@ -485,7 +489,7 @@ const DAY=86400000, DECAY_MS=7*DAY, LOG_MAX=60;
 const STAGE_NAMES=['Seed','Sprout','Sapling','Budding','In bloom'];
 const KINDS=['tree','sunflower','lantern','plum','tea','bamboo','beet'];
 const KIND_LABEL={tree:'Tree',sunflower:'Sunflower',lantern:'Lantern plant',plum:'Plum blossom',tea:'Tea bush',bamboo:'Bamboo',beet:'Beet'};
-const SLOTS=[[120,174],[36,214],[198,202],[34,258],[206,258],[66,318],[104,330],[150,214]];
+const SLOTS=[[120,174],[36,214],[198,202],[34,258],[206,258],[66,318],[104,330],[166,276]];
 const TOPS={sunflower:[5,10,15,23,34],lantern:[5,10,13,19,22],plum:[5,10,14,27,28],tea:[5,10,8,12,17],tree:[5,10,18,27,39],bamboo:[5,10,13,20,27],beet:[5,10,11,16,21]};
 const FOUNT={x:120,y:258};
 const WORLD_H=486, BED_W=46, BED_H=28;
@@ -1321,6 +1325,16 @@ function ofEnter(){
   ofAskAi(false);
 }
 
+const ofLayer=document.createElement('div');ofLayer.id='ofLayer';document.body.appendChild(ofLayer);
+const ofEls={};
+function ofDom(list){
+  const seen={};
+  list.forEach(o=>{let e=ofEls[o.k];if(!e){e=ofEls[o.k]=document.createElement('div');ofLayer.appendChild(e);}
+    if(e._t!==o.t){e.textContent=o.t;e._t=o.t;} if(e._c!==o.c){e.className=o.c;e._c=o.c;}
+    const L=o.fixed?o.x+'px':Math.round((ORX+o.x)*S)+'px',T=o.fixed?o.y+'px':Math.round((ORY+o.y)*S)+'px';
+    if(e._l!==L){e.style.left=L;e._l=L;} if(e._tp!==T){e.style.top=T;e._tp=T;} seen[o.k]=1;});
+  for(const k in ofEls) if(!seen[k]){ofEls[k].remove();delete ofEls[k];}
+}
 function renderOffice(t){
   officeOrigin();
   setTimeout(()=>placeTags(livePeers().filter(p=>p.scene==='office'),(x,y)=>[(ORX+x)*S,(ORY+y)*S]),0);
@@ -1386,10 +1400,6 @@ function renderOffice(t){
   list.push({y:hasCat()?cat.y:-99,d:()=>{if(hasCat())drawCat(t);}});
   livePeers().filter(p=>p.scene==='office').forEach(p=>list.push({y:p.y,d:()=>drawAvatar(g,p.x,p.y,p.look,{frame:p.moving?[1,0,2,0][Math.floor(t*8+p.x)%4]:0,back:p.back,blink:((t+p.x)%4)<.12,t})}));
   list.sort((a,b)=>a.y-b.y).forEach(o=>o.d());
-  ofAgents.forEach(a=>ofTag(a.x,a.y-(a.st==='sit'?33:31),a.p.code.toLowerCase(),ofMood(a)==='nap'?'#8d93a3':'#7cf08a'));
-  ofTag(OF_DESK.x,OF_DESK.y-22,visiting?visiting.data.name.toLowerCase()+"'s desk":'your desk','#f6e27a');
-  ofAgents.forEach(a=>{if(!(a.sayT>0)||!a.say)return;g.font='5px Silkscreen, monospace';const txt=a.say.length>34?a.say.slice(0,33)+'…':a.say,w=Math.ceil(g.measureText(txt).width)+6,bx=Math.round(clamp(a.x-w/2,1,OFW-w-1)),by=(a.st==='sit'?a.sy:a.y)-46;
-    R(bx,by,w,9,'#fffdf6');R(bx,by,w,1,'#2a2430');R(bx,by+8,w,1,'#2a2430');R(bx,by,1,9,'#2a2430');R(bx+w-1,by,1,9,'#2a2430');R(Math.round(a.x)-1,by+9,3,2,'#fffdf6');g.fillStyle='#2a2430';g.textBaseline='top';g.fillText(txt,bx+3,by+2);});
   R(238,OFH-2,24,2,'#6b4430');
   if(nt>0){g.globalCompositeOperation='multiply';g.globalAlpha=nt*.28;R(-4,-4,OFW+8,OFH+8,'#4a5296');g.globalCompositeOperation='source-over';g.globalAlpha=1;}
   parts.forEach(q=>{if(q.kind==='z'){const x=Math.round(q.x),y=Math.round(q.y);g.globalAlpha=1-q.age/q.life;R(x,y,3,1,'#ffffff');R(x+1,y+1,1,1,'#ffffff');R(x,y+2,3,1,'#ffffff');g.globalAlpha=1;}});
@@ -1397,7 +1407,12 @@ function renderOffice(t){
   // status line under the room, like a terminal
   const n=ofAgents.length,c=k=>ofAgents.filter(a=>(a.st!=='sit'?'coffee':ofMood(a))===k).length;
   const line=n?n+' agents   '+c('work')+' typing   '+c('slow')+' slow   '+c('nap')+' asleep   '+c('coffee')+' coffee':'no projects yet, plant one in the garden';
-  const by=Math.min(H-66,ORY+OFH+6);g.fillStyle='#0d0c12';g.fillRect(0,by,W,9);g.font='5px Silkscreen, monospace';g.textBaseline='top';g.fillStyle='#7cf08a';g.fillText(line,4,by+2);
+  const by=Math.min(H-66,ORY+OFH+6), tags=[];
+  ofAgents.forEach(a=>{const y=a.st==='sit'?a.sy:a.y;tags.push({k:'n'+a.p.id,x:a.x,y:y-27,t:a.p.code.toLowerCase(),c:'ot'+(ofMood(a)==='nap'?' nap':'')});
+    if(a.sayT>0&&a.say)tags.push({k:'b'+a.p.id,x:a.x,y:y-37,t:a.say,c:'ob'});});
+  tags.push({k:'desk',x:OF_DESK.x,y:OF_DESK.y-14,t:visiting?visiting.data.name+'’s desk':'your desk',c:'ot desk'});
+  tags.push({k:'status',x:0,y:Math.round(by*S),t:line,c:'os',fixed:true});
+  ofDom(tags);
 }
 /* ---- map: one button, bottom right, to switch between the places ---- */
 const mapBtn=document.createElement('button');mapBtn.id='mapBtn';mapBtn.type='button';mapBtn.setAttribute('aria-label','Map');
@@ -2076,7 +2091,7 @@ function onlineIds(){ const set=new Set(); if(!lobby) return set; try{lobby.peer
 const labelsEl=document.createElement('div'); worldEl.appendChild(labelsEl);
 const signEl=document.createElement('div'); signEl.className='sign'; signEl.textContent='SKILLS ↓'; worldEl.appendChild(signEl);
 const signEl2=document.createElement('div'); signEl2.className='sign'; signEl2.textContent='TO-DOS ↓'; worldEl.appendChild(signEl2);
-const signMine=document.createElement('div'); signMine.className='sign mine'; signMine.textContent='YOUR GARDEN →'; signMine.hidden=true; worldEl.appendChild(signMine);
+const signMine=document.createElement('div'); signMine.className='sign mine'; signMine.textContent='YOUR GARDEN'; signMine.hidden=true; worldEl.appendChild(signMine);
 signMine.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();hideHomeHint(true);goHome();});
 let labels={};
 function rebuildLabels(){
@@ -2093,7 +2108,7 @@ function rebuildLabels(){
 function layoutWorldUI(){
   document.getElementById('title').style.top=Math.round(OY*.42+10)+'px';
   signEl.style.left=(OX+63)+'px'; signEl.style.top=(OY+344)+'px'; signEl2.style.left=(OX+143)+'px'; signEl2.style.top=(OY+344)+'px';
-  signMine.style.left=(OX+141)+'px'; signMine.style.top=(OY+236)+'px';
+  signMine.style.left=(OX+5)+'px'; signMine.style.top=(OY+344)+'px';
   rebuildLabels(); placeDialog();
 }
 function gardenAvg(gd){const ps=gd?gd.projects.concat(gd.skills||[]):[];return ps.length?ps.reduce((a,p)=>a+waterOf(p),0)/ps.length:100;}
@@ -3858,6 +3873,7 @@ function render(t){
   X=g;
   if(scene==='house'){renderHouse(t);return;}
   if(scene==='office'){renderOffice(t);return;}
+  if(ofLayer.firstChild)ofDom([]);
   if(scene==='city'){renderCity(t);return;}
   const cr=Math.round(camY); if(cr!==camR){camR=cr;worldEl.style.transform=`scale(${S}) translateY(${-camR}px)`;updateJump();}
   g.drawImage(bg,0,-camR);
@@ -4015,7 +4031,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795129492"></script>
+<script src="config.js?v=1795158253"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -4045,7 +4061,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '20.11. 00:04';
+  const BUILD = '20.11. 08:04';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -4142,7 +4158,9 @@ function maybeAutoVisit(){
     clearTimeout(tTimer); tTimer = null;
     if (!ch || !connected) return;
     lastTrack = performance.now();
-    ch.track({ u: uid, s: sessT, at: Date.now(), p: JSON.parse(JSON.stringify(mine)) }).catch(() => {});
+    const c = ch;
+    // if the server did not take it, the line is dead even if the browser still thinks it is open: reconnect
+    ch.track({ u: uid, s: sessT, at: Date.now(), p: JSON.parse(JSON.stringify(mine)) }).then(r => { if (r !== 'ok' && ch === c) { clearTimeout(retry); retry = setTimeout(connect, 800); } }).catch(() => { if (ch === c) { clearTimeout(retry); retry = setTimeout(connect, 800); } });
   }
   // movement goes out ~15 times a second as a light broadcast; the presence state (who is here) only every 1.5 s
   function cast() {
@@ -4178,7 +4196,21 @@ function maybeAutoVisit(){
         }
       });
   }
-  document.addEventListener('visibilitychange', () => { if (!document.hidden && !connected) connect(); });
+  // a tab in the background loses its live line without noticing (browsers slow its timers down);
+  // coming back after a while always rejoins fresh, so friends see you again right away, no reload needed
+  let hiddenAt = 0;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { hiddenAt = Date.now(); return; }
+    if (!connected || Date.now() - hiddenAt > 15000) connect(); else flush();
+  });
+  addEventListener('pageshow', e => { if (e.persisted) connect(); });
+  // keep my presence fresh while I stand still, and repair a channel that dropped out
+  setInterval(() => {
+    if (document.hidden || !uid) return;
+    const st = ch && ch.state;
+    if (!ch || st === 'closed' || st === 'errored') { connect(); return; }
+    if (connected && performance.now() - lastTrack > 10000) flush();
+  }, 5000);
   // leaving the page: take my avatar out right away instead of waiting for the server to notice
   addEventListener('pagehide', () => { try { if (ch) { ch.untrack(); sb.removeChannel(ch); } } catch (e) {} });
   addEventListener('online', () => { if (!connected) connect(); });
@@ -4248,7 +4280,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 20.11. 00:04';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 20.11. 08:04';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid').forEach(k => localStorage.removeItem(k)); } catch (e) {} location.reload(); };
