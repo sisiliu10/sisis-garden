@@ -4055,14 +4055,15 @@ function maybeAutoVisit(){
 })();
 </script>
 <div id="gate" hidden><div class="gcard"><div class="gt">Sisi's<br>Garden</div><p id="gCount" hidden></p><p id="gMsg">Loading…</p>
-<form id="gForm" hidden autocomplete="on"><input id="gEmail" type="email" inputmode="email" autocomplete="email" placeholder="your@email.com" required><button id="gBtn" class="btn dark" type="submit">Send login link</button></form></div></div>
+<form id="gForm" hidden autocomplete="on"><input id="gEmail" type="email" inputmode="email" autocomplete="email" placeholder="your@email.com" required><button id="gBtn" class="btn dark" type="submit">Send login email</button></form>
+<form id="gCode" hidden autocomplete="off"><input id="gTok" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="12" placeholder="12345678" required><button id="gTokBtn" class="btn dark" type="submit">Enter the garden</button><a id="gBack" href="#">Use another email</a></form></div></div>
 <style>#gate{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:#2b3a7a;padding:16px}
 #gate[hidden]{display:none}.gcard{background:#fffdf6;border:3px solid #2a2430;box-shadow:4px 4px 0 rgba(0,0,0,.25);padding:22px;width:min(360px,100%);text-align:center;font-family:"Pixelify Sans",sans-serif;color:#2a2430}
 .gt{font-family:Silkscreen,monospace;font-size:28px;line-height:1.05;margin-bottom:12px}#gMsg{font-size:16px;line-height:1.4;margin:0 0 14px}#gCount{font-family:Silkscreen,monospace;font-size:12px;line-height:1.5;letter-spacing:.5px;color:#fff;background:#4a8fd4;border:2px solid #2a2430;padding:6px 8px;margin:0 0 14px}#gCount b{color:#ffe27a;font-weight:400}
-#gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
-#gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
+#gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
+#gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795173012"></script>
+<script src="config.js?v=1795186245"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -4071,7 +4072,7 @@ function maybeAutoVisit(){
   const $ = id => document.getElementById(id);
   const gate = $('gate'), gMsg = $('gMsg'), gForm = $('gForm'), gEmail = $('gEmail'), gBtn = $('gBtn');
   let counted = false; const sbRef = () => window.__gardenSb;
-  const showGate = (msg, form) => { gate.hidden = false; gMsg.textContent = msg || ''; gForm.hidden = !form; if (form) showCount(); };
+  const showGate = (msg, form) => { gate.hidden = false; gMsg.textContent = msg || ''; gForm.hidden = !form; const gc = $('gCode'); if (gc) gc.hidden = true; if (form) showCount(); };
   // "Join 12 gardeners …" on the sign-up screen, with the real number of gardens
   async function showCount() {
     if (counted || !sbRef()) return; counted = true;
@@ -4092,7 +4093,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '20.11. 12:10';
+  const BUILD = '20.11. 15:50';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -4314,7 +4315,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 20.11. 12:10';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 20.11. 15:50';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid').forEach(k => localStorage.removeItem(k)); } catch (e) {} location.reload(); };
@@ -4364,15 +4365,40 @@ function maybeAutoVisit(){
       console.warn('[garden] invite only', error);
       gMsg.textContent = 'That did not work. Please try again in a minute.';
       return; }
-    if (error) { console.warn('[garden] login link', error); gMsg.textContent = /only request this (once|after)|seconds/i.test(error.message || '') ? 'You just asked for a link. Check your inbox, or try again in a minute.' : (/rate|limit|too many/i.test(error.message || '') || error.status === 429) ? 'The garden has sent all its login emails for this hour. Please try again a little later.' : 'Hmm, the login email did not go out. Check the address and try again.'; return; }
-    gMsg.textContent = 'Check your inbox and tap the link in the email.';
-    gForm.hidden = true;
+    if (error && /only request this (once|after)|seconds/i.test(error.message || '')) { setPending(email); askCode(email); gMsg.textContent = 'We just sent you a code. Type it here.'; return; }
+    if (error) { console.warn('[garden] login link', error); gMsg.textContent = (/rate|limit|too many/i.test(error.message || '') || error.status === 429) ? 'The garden has sent all its login emails for this hour. Please try again a little later.' : 'Hmm, the login email did not go out. Check the address and try again.'; return; }
+    setPending(email); askCode(email);
+  });
+  /* ---------- code login: type the code where you play, so this device stays signed in ---------- */
+  const gCode = $('gCode'), gTok = $('gTok'), gTokBtn = $('gTokBtn'), gBack = $('gBack');
+  const PEND = 'garden-pending';
+  function setPending(email) { try { localStorage.setItem(PEND, JSON.stringify({ email, t: Date.now() })); } catch (e) {} }
+  function getPending() { try { const p = JSON.parse(localStorage.getItem(PEND) || 'null'); return p && p.email && Date.now() - p.t < 3600000 ? p.email : ''; } catch (e) { return ''; } }
+  function clearPending() { try { localStorage.removeItem(PEND); } catch (e) {} }
+  let codeEmail = '';
+  function askCode(email) {
+    codeEmail = email; gate.hidden = false; gForm.hidden = true; gCode.hidden = false;
+    gMsg.textContent = 'We sent a code to ' + email + '. Type it here.';
+    gTok.value = ''; setTimeout(() => { try { gTok.focus(); } catch (e) {} }, 50);
+  }
+  gBack.addEventListener('click', e => { e.preventDefault(); clearPending(); gCode.hidden = true; showGate('Sign in with your email.', true); });
+  gCode.addEventListener('submit', async e => {
+    e.preventDefault();
+    const token = gTok.value.replace(/\D/g, ''); if (token.length < 6) { gMsg.textContent = 'Type the full code from the email.'; return; }
+    gTokBtn.disabled = true; gMsg.textContent = 'Checking…';
+    let { data, error } = await sb.auth.verifyOtp({ email: codeEmail, token, type: 'email' });
+    // a brand-new account gets the sign-up email, whose code is a signup code
+    if (error) { const r2 = await sb.auth.verifyOtp({ email: codeEmail, token, type: 'signup' }); if (!r2.error) { data = r2.data; error = null; } }
+    gTokBtn.disabled = false;
+    if (error) { console.warn('[garden] code', error); gMsg.textContent = /rate|too many/i.test(error.message || '') || error.status === 429 ? 'Too many tries. Wait a minute and try again.' : 'That code did not work. Check it, or get a new one below.'; return; }
+    clearPending();
+    if (data && data.session) { sbUserEmail = data.session.user.email || ''; launch(data.session); }
   });
   sb.auth.onAuthStateChange((ev, session) => { if (session) { sbUserEmail = session.user.email || ''; launch(session); } });
   sb.auth.getSession().then(({ data }) => {
     const s = data && data.session;
-    if (s) { sbUserEmail = s.user.email || ''; launch(s); }
-    else if (!/access_token|error_description/.test(location.hash)) showGate('Sign in with your email.', true);
+    if (s) { clearPending(); sbUserEmail = s.user.email || ''; launch(s); }
+    else if (!/access_token|error_description/.test(location.hash)) { const pe = getPending(); if (pe) askCode(pe); else showGate('Sign in with your email.', true); }
     else if (/error_description/.test(location.hash)) showGate('That login link has expired. Ask for a new one.', true);
   });
 })();
