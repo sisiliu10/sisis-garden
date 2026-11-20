@@ -2891,7 +2891,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){if(Lofi.on
 /* ================= actions: hug, kiss, push ================= */
 let myAct=null,actN=0,myHeartUntil=0,myWetUntil=0,knock=null;const actSeen={};
 const actMenu=document.createElement('div');actMenu.id='actMenu';document.body.appendChild(actMenu);
-[['swing','🎐 Anschubsen'],['hug','🤗 Hug'],['kiss','💋 Kiss'],['push','💨 Push'],['balloon','💦 Balloon']].forEach(([k,l])=>{const b=document.createElement('button');b.className='btn';b.type='button';b.textContent=l;b.dataset.k=k;
+[['swing','🎐 Anschubsen'],['kiss','💋 Kiss'],['push','💨 Push'],['balloon','💦 Balloon']].forEach(([k,l])=>{const b=document.createElement('button');b.className='btn';b.type='button';b.textContent=l;b.dataset.k=k;
   b.addEventListener('click',e=>{e.stopPropagation();const id=actMenu.dataset.p;closeActMenu();goAct(k,id);});actMenu.appendChild(b);});
 function closeActMenu(){actMenu.classList.remove('show');}
 function openActMenu(p,cx,cy){actMenu.dataset.p=p.id;actMenu.querySelectorAll('button').forEach(b=>{const k=b.dataset.k;b.hidden=p.sg?!(k==='swing'||k==='balloon'||k==='kiss'):k==='swing';});actMenu.classList.add('show');
@@ -4054,7 +4054,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795172192"></script>
+<script src="config.js?v=1795172435"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -4084,7 +4084,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '20.11. 11:56';
+  const BUILD = '20.11. 12:00';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -4306,7 +4306,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 20.11. 11:56';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 20.11. 12:00';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid').forEach(k => localStorage.removeItem(k)); } catch (e) {} location.reload(); };
