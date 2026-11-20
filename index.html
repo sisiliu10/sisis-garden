@@ -3045,6 +3045,13 @@ function drawAlpaca(x,y,dir,frame,t){
   R(dir>0?hx+2:hx-5,y-25,4,3,Cl);R(dir>0?hx+5:hx-5,y-25,1,1,O);R(hx+dir,y-26,1,1,O);R(dir>0?hx+3:hx-4,y-23,2,1,'#e9a0a8');
   R(x-4,y-16,8,3,'#e8506c');R(x-4,y-14,8,1,'#f2c94c');R(x-4,y-13,1,2,'#f2c94c');R(x+3,y-13,1,2,'#f2c94c');
 }
+function drawRiderSwim(x,y,dir,look,moving,t,heart){
+  const wl=Math.round(y-7+Math.sin(t*3)*0.6);
+  g.save();g.beginPath();g.rect(x-30,wl-60,60,60);g.clip();
+  drawRider(x,y+6,dir,look,false,t,heart);g.restore();
+  const k=Math.floor(t*4)%2;ell(Math.round(x),wl,14+k,2,'#9fdcfa');ell(Math.round(x),wl,11,1,'#3f9ad8');
+  if(moving){R(Math.round(x-dir*15),wl,3,1,'#cfeefc');R(Math.round(x-dir*18),wl+1,2,1,'#cfeefc');}
+}
 function drawRider(x,y,dir,look,moving,t,heart){
   const fr=moving?Math.floor(t*7)%2+1:0,bob=moving&&fr===1?1:0;
   drawAlpaca(x,y-bob,dir,fr,t);
@@ -3053,7 +3060,7 @@ function drawRider(x,y,dir,look,moving,t,heart){
 }
 function goRide(){if(av.swim||av.jump||knock||mySeat!==null)return;pendRide=true;av.run=false;av.target={x:alp.x,y:alp.y+3};}
 function mount(){pendRide=false;riding=true;Sfx.sit();av.target=null;av.x=alp.x;av.y=alp.y;av.dir=alp.dir;lastPres='';for(let i=0;i<5;i++)spawn({kind:'spark',x:av.x+(Math.random()*14-7),y:av.y-22-Math.random()*8,vy:-10,life:.5});}
-function dismount(){if(!riding)return;riding=false;alp.x=alp.hx=alp.tx=av.x;alp.y=alp.hy=alp.ty=av.y;alp.dir=av.dir||1;alp.next=performance.now()+4000;
+function dismount(){if(!riding)return;if(av.swim||av.jump){toast('Swim to the edge first, then hop off.',2200);return;}riding=false;alp.x=alp.hx=alp.tx=av.x;alp.y=alp.hy=alp.ty=av.y;alp.dir=av.dir||1;alp.next=performance.now()+4000;
   const nx=av.x-(av.dir||1)*11;if(!blocked(nx,av.y+2)&&!isWater(nx,av.y+2)){av.x=nx;av.y+=2;}lastPres='';}
 function updateAlpaca(dt){
   if(scene!=='garden')return;
@@ -3805,7 +3812,7 @@ function frame(now){
   requestAnimationFrame(frame);
 }
 function isWater(x,y){if(!av.swim&&x>BOARD.x0-2&&Math.abs(y-BOARD.y)<4)return false;return x>POOL.x0+3&&x<POOL.x1-3&&y>POOL.y0+5&&y<POOL.y1-2;}
-function startJump(tx,ty,high){if(riding)dismount();av.jump={t:0,fx:av.x,fy:av.y,tx:clamp(tx,POOL.x0+8,POOL.x1-8),ty:clamp(ty,POOL.y0+9,POOL.y1-5),h:high?22:10,d:high?.75:.45};av.target=null;av.run=false;}
+function startJump(tx,ty,high){av.jump={t:0,fx:av.x,fy:av.y,tx:clamp(tx,POOL.x0+8,POOL.x1-8),ty:clamp(ty,POOL.y0+9,POOL.y1-5),h:high?22:10,d:high?.75:.45};av.target=null;av.run=false;}
 function splash(x,y,n,vol,big){Sfx.splash(big===undefined?n>=20:big,vol===undefined?(n<10?.35:1):vol);for(let i=0;i<n;i++)spawn({kind:'splash',x:x+(Math.random()*10-5),y:y-2,vx:(Math.random()-.5)*50,vy:-30-Math.random()*30,floor:y,life:.8});}
 function update(dt,t){
   if(scene==='city'&&CITY.photo){av.moving=false;photoControl(dt);return updateRest(dt,t);}
@@ -3815,7 +3822,7 @@ function update(dt,t){
   if(scene==='garden'&&updateSwing(dt)){updateCat(dt);return updateRest(dt,t);}
   if(knock&&scene==='garden'){updateKnock(dt);updateCat(dt);return updateRest(dt,t);}
   if(av.jump&&scene==='garden'){const J=av.jump;J.t+=dt/J.d;const k=Math.min(1,J.t);av.x=J.fx+(J.tx-J.fx)*k;av.y=J.fy+(J.ty-J.fy)*k;av.moving=false;
-    if(k>=1){av.jump=null;av.swim=true;splash(av.x,av.y-6,J.h>15?22:12);}
+    if(k>=1){av.jump=null;av.swim=true;splash(av.x,av.y-6,riding?28:J.h>15?22:12,undefined,riding||undefined);}
     updateCat(dt);return updateRest(dt,t);}
   let dx=0,dy=0;
   if(keys.arrowleft||keys.a)dx-=1;if(keys.arrowright||keys.d)dx+=1;if(keys.arrowup||keys.w)dy-=1;if(keys.arrowdown||keys.s)dy+=1;
@@ -3917,14 +3924,15 @@ function render(t){
   if(alpIdle())list.push({y:alp.y,d:()=>drawAlpaca(alp.x,alp.y,alp.dir,alp.moving?Math.floor(t*5)%2+1:0,t)});
   list.push({y:HB,d:()=>drawCottage(t)});
   const myLook=me().look, blink=(t%4)<.12;
-  if(av.jump){const J=av.jump,k=Math.min(1,J.t);list.push({y:9999,d:()=>drawAvatar(g,av.x,av.y-Math.sin(Math.PI*k)*J.h,myLook,{frame:1,back:false,blink:false,t,shadow:false})});}
+  if(av.jump){const J=av.jump,k=Math.min(1,J.t);list.push({y:9999,d:()=>riding?drawRider(av.x,av.y-Math.sin(Math.PI*k)*J.h,av.dir||1,myLook,true,t,null):drawAvatar(g,av.x,av.y-Math.sin(Math.PI*k)*J.h,myLook,{frame:1,back:false,blink:false,t,shadow:false})});}
+  else if(av.swim&&riding) list.push({y:av.y,d:()=>drawRiderSwim(av.x,av.y,av.dir||1,myLook,av.moving,t,myHeartUntil>performance.now()?'#e8506c':null)});
   else if(av.swim) list.push({y:av.y,d:()=>drawSwimmer(av.x,av.y,myLook,{t,moving:av.moving,back:av.back,blink})});
   else if(slide){}
   else if(mySeat===null&&riding) list.push({y:av.y,d:()=>drawRider(av.x,av.y,av.dir||1,myLook,av.moving,t,myHeartUntil>performance.now()?'#e8506c':null)});
   else if(mySeat===null) list.push({y:av.y,d:()=>{const rn=av.run&&av.moving,fr=av.moving?(rn?[1,2][Math.floor(t*10)%2]:[1,0,2,0][Math.floor(t*8)%4]):0;
     drawAvatar(g,av.x,av.y-(rn&&fr===1?1:0)-(av.kh||0),myLook,{run:rn||!!knock,frame:knock?1:fr,back:av.back,blink:blink||!!knock,can:!rn&&!knock&&!visiting&&!!active&&av.water<=0,pour:false,happy:av.water>0&&av.water<.7,heart:myHeartUntil>performance.now()?'#e8506c':(visiting?null:moodColor(gardenAvg(home))),t,shadow:!knock});}});
   if(hasCat()) list.push({y:cat.y,d:()=>drawCat(t)});
-  livePeers().filter(p=>p.scene==='garden'&&!p.sg).forEach(p=>list.push({y:p.sl?SL.y+1:p.y,d:()=>p.sl?drawAvatar(g,p.x,p.y,p.look,p.sl===1?{side:true,dir:-1,frame:Math.floor((SL.y-1-p.y)/4.9)%2,happy:true,shadow:false,t}:{sit:true,kick:1,shadow:false,t}):p.ride&&!p.swim?drawRider(p.x,p.y,(ghosts[p.id]&&ghosts[p.id].dir)||1,p.look,p.moving,t,(ghosts[p.id]&&ghosts[p.id].heartUntil>performance.now())?'#e8506c':null):p.swim?drawSwimmer(p.x,p.y,p.look,{t,moving:p.moving,back:p.back}):drawAvatar(g,p.x,p.y,p.look,{run:p.run&&p.moving,frame:p.moving?(p.run?[1,2][Math.floor(t*10)%2]:[1,0,2,0][Math.floor(t*8+p.x)%4]):0,back:p.back,blink:((t+p.x)%4)<.12,can:p.water,pour:p.water,heart:(ghosts[p.id]&&ghosts[p.id].heartUntil>performance.now())?'#e8506c':null,t})}));
+  livePeers().filter(p=>p.scene==='garden'&&!p.sg).forEach(p=>list.push({y:p.sl?SL.y+1:p.y,d:()=>p.sl?drawAvatar(g,p.x,p.y,p.look,p.sl===1?{side:true,dir:-1,frame:Math.floor((SL.y-1-p.y)/4.9)%2,happy:true,shadow:false,t}:{sit:true,kick:1,shadow:false,t}):p.ride&&p.swim?drawRiderSwim(p.x,p.y,(ghosts[p.id]&&ghosts[p.id].dir)||1,p.look,p.moving,t,null):p.ride&&!p.swim?drawRider(p.x,p.y,(ghosts[p.id]&&ghosts[p.id].dir)||1,p.look,p.moving,t,(ghosts[p.id]&&ghosts[p.id].heartUntil>performance.now())?'#e8506c':null):p.swim?drawSwimmer(p.x,p.y,p.look,{t,moving:p.moving,back:p.back}):drawAvatar(g,p.x,p.y,p.look,{run:p.run&&p.moving,frame:p.moving?(p.run?[1,2][Math.floor(t*10)%2]:[1,0,2,0][Math.floor(t*8+p.x)%4]):0,back:p.back,blink:((t+p.x)%4)<.12,can:p.water,pour:p.water,heart:(ghosts[p.id]&&ghosts[p.id].heartUntil>performance.now())?'#e8506c':null,t})}));
   {const nowp=performance.now(),drip=(x,y)=>{if(Math.random()<.6)spawn({kind:'drop',x:x+Math.round(Math.random()*10-5),y:y-20+Math.random()*10,vy:10,floor:y,life:1});};
    if(myWetUntil>nowp&&!av.swim)drip(av.x,av.y);
    livePeers().forEach(p=>{const gh=ghosts[p.id];if(gh&&gh.wetUntil>nowp&&p.scene==='garden'&&!p.swim)drip(p.x,p.y);});}
@@ -4054,7 +4062,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795172435"></script>
+<script src="config.js?v=1795172479"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -4084,7 +4092,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '20.11. 12:00';
+  const BUILD = '20.11. 12:01';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -4306,7 +4314,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 20.11. 12:00';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 20.11. 12:01';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid').forEach(k => localStorage.removeItem(k)); } catch (e) {} location.reload(); };
