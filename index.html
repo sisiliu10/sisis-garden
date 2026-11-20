@@ -322,6 +322,13 @@
     .chip .long{display:none}
     .hud .btn,.chip{font-size:13px;padding:5px 8px}
   }
+  @media (max-width:480px){
+    .hud{gap:4px;top:10px}.hud.r{right:8px}
+    .hud .btn{font-size:12px;padding:4px 7px}
+    .hud.l{top:auto;left:12px;bottom:62px;align-items:flex-end}
+    .title .t1,.title .t2{font-size:21px}.title .t2{padding-left:14px}
+  }
+  #homeHint.up:before{top:auto;bottom:-6px;border-top:6px solid var(--ink,#2a2430);border-bottom:0}
 #clTip{position:fixed;display:none;z-index:7;gap:10px;align-items:center;background:var(--paper);border:2px solid var(--ink);box-shadow:3px 3px 0 rgba(42,36,48,.25);padding:6px 6px 6px 10px;font-size:15px;max-width:min(300px,calc(100vw - 12px))}#clTip.show{display:flex}#clTip span{overflow-wrap:anywhere}
 #actMenu{position:fixed;display:none;gap:6px;z-index:7}#actMenu.show{display:flex}#actMenu .btn{white-space:nowrap}
 #bMusic.off{opacity:.45;text-decoration:line-through}
@@ -692,7 +699,7 @@ function resize(){
   const vw=innerWidth, vh=innerHeight;
   S=Math.min(vw/CW,vh/CH);
   W=Math.ceil(vw/S); H=Math.ceil(vh/S);
-  OX=Math.floor((W-CW)/2); OY=Math.max(0,H-WORLD_H); TH=OY+WORLD_H; camR=-1;
+  OX=Math.floor((W-CW)/2); OY=Math.max(0,H-WORLD_H); TH=OY+WORLD_H+(vw<=560?Math.ceil(64/S):0); camR=-1;
   cvs.width=W; cvs.height=H; cvs.style.width=(W*S)+'px'; cvs.style.height=(H*S)+'px';
   worldEl.style.width=W+'px'; worldEl.style.height=TH+'px';
   bg.width=W; bg.height=TH; drawBG();
@@ -2106,7 +2113,7 @@ function rebuildLabels(){
   refreshLabels();
 }
 function layoutWorldUI(){
-  document.getElementById('title').style.top=Math.round(OY*.42+10)+'px';
+  document.getElementById('title').style.top=Math.round(Math.max(OY*.42+10,innerWidth<=480?46/S:0))+'px';
   signEl.style.left=(OX+63)+'px'; signEl.style.top=(OY+344)+'px'; signEl2.style.left=(OX+143)+'px'; signEl2.style.top=(OY+344)+'px';
   signMine.style.left=(OX+5)+'px'; signMine.style.top=(OY+344)+'px';
   rebuildLabels(); placeDialog();
@@ -2551,7 +2558,7 @@ let parts=[];
 function spawn(o){parts.push(Object.assign({life:1,age:0},o));}
 const flies=[{x:60,y:190,tx:60,ty:190,ph:0,c:'#ffffff',next:0},{x:180,y:280,tx:180,ty:280,ph:1.3,c:'#ffe27a',next:0}];
 const av={x:120,y:216,back:false,moving:false,target:null,water:0,pourFor:null};
-const host={x:114,y:328};
+const host={x:40,y:172};
 function drawSleeper(t){
   const hx=host.x,hy=host.y,L=visiting.data.look;
   g.fillStyle='rgba(40,80,40,.28)';g.fillRect(hx-13,hy+5,27,2);
@@ -2668,7 +2675,7 @@ function homeHintSeen(){try{return localStorage.getItem('garden-homehint')==='1'
 function hideHomeHint(done){homeHint.classList.remove('show');document.getElementById('bHome').classList.remove('nudge');if(done){try{localStorage.setItem('garden-homehint','1');}catch(e){}}}
 function showHomeHint(){const b=document.getElementById('bHome');if(!visiting||!home||b.hidden||homeHintSeen())return;
   homeHint.textContent='This is '+visiting.data.name+'’s garden. Your own garden is waiting here.';
-  const r=b.getBoundingClientRect();homeHint.style.left=Math.max(6,r.left)+'px';homeHint.style.top=(r.bottom+10)+'px';
+  const r=b.getBoundingClientRect(),up=r.top>innerHeight/2;homeHint.classList.toggle('up',up);homeHint.style.left=Math.max(6,r.left)+'px';homeHint.style.top=(up?Math.max(6,r.top-10-(homeHint.offsetHeight||60)):(r.bottom+10))+'px';
   homeHint.classList.add('show');b.classList.add('nudge');setTimeout(()=>hideHomeHint(false),12000);}
 addEventListener('resize',()=>hideHomeHint(false));
 document.getElementById('rnd').onclick=()=>{['skin','hair','hairColor','top','bottom','bottomColor','acc'].forEach(k=>me().look[k]=pick(OPT[k]));const n=nm.value;buildCreator();nm.value=n;};
@@ -4031,7 +4038,7 @@ function maybeAutoVisit(){
 #gForm{display:flex;flex-direction:column;gap:10px}#gEmail{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}
 #gBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795158253"></script>
+<script src="config.js?v=1795171591"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -4061,7 +4068,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '20.11. 08:04';
+  const BUILD = '20.11. 11:46';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -4280,7 +4287,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 20.11. 08:04';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 20.11. 11:46';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid').forEach(k => localStorage.removeItem(k)); } catch (e) {} location.reload(); };
