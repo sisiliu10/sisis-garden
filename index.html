@@ -247,6 +247,7 @@
   .qlobby .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .qlobby .inp{flex:1;min-width:180px}
   .qlobby .btn{font-size:15px}
+  .qchips{display:flex;flex-wrap:wrap;gap:4px 12px;margin:2px 0 10px}.qchips button{background:none;border:0;padding:2px 0;font-family:"Pixelify Sans",sans-serif;font-size:14px;color:#c9b8f0;cursor:pointer;text-decoration:underline dotted 1px;text-underline-offset:3px}.qchips button:hover{color:#fff}.qchips .more{text-decoration:none;font-size:16px}
   .qlvl{gap:6px}
   .qlvl span{font-family:Silkscreen,monospace;font-size:11px;color:#c9b8f0;margin-right:4px}
   .qlvl button{font-family:"Pixelify Sans",sans-serif;font-size:14px;font-weight:600;padding:4px 12px;border:2px solid var(--ink);background:#fffdf7;color:var(--ink);cursor:pointer;border-radius:0}
@@ -1427,14 +1428,14 @@ function renderOffice(t){
 const mapBtn=document.createElement('button');mapBtn.id='mapBtn';mapBtn.type='button';mapBtn.setAttribute('aria-label','Map');
 mapBtn.innerHTML='<svg viewBox="0 0 16 16" width="22" height="22" shape-rendering="crispEdges"><path d="M1 3h4v11H1zM6 2h4v11H6zM11 3h4v11h-4z" fill="#fffdf6" stroke="#2a2430" stroke-width="1"/><path d="M3 5h1v1H3zM8 6h1v1H8zM12 9h2v1h-2zM7 9h2v1H7z" fill="#58a84a"/><path d="M12 5h1v2h-1z" fill="#e8506c"/></svg>';
 const mapMenu=document.createElement('div');mapMenu.id='mapMenu';mapMenu.hidden=true;
-[['garden','Garden'],['house','Cottage'],['office','Office']].forEach(([k,l])=>{const b=document.createElement('button');b.type='button';b.dataset.k=k;b.textContent=l;b.onclick=()=>{mapMenu.hidden=true;goScene(k);};mapMenu.appendChild(b);});
+[['garden','Garden'],['house','Cottage']].forEach(([k,l])=>{const b=document.createElement('button');b.type='button';b.dataset.k=k;b.textContent=l;b.onclick=()=>{mapMenu.hidden=true;goScene(k);};mapMenu.appendChild(b);});
 document.body.appendChild(mapMenu);document.body.appendChild(mapBtn);
 mapBtn.onclick=e=>{e.stopPropagation();mapMenu.querySelectorAll('button').forEach(b=>b.classList.toggle('here',b.dataset.k===scene));mapMenu.hidden=!mapMenu.hidden;};
 document.addEventListener('pointerdown',e=>{if(!mapMenu.hidden&&!mapMenu.contains(e.target)&&e.target!==mapBtn&&!mapBtn.contains(e.target))mapMenu.hidden=true;});
 function goScene(k){
   if(k===scene||!started)return;
   if(scene==='house')exitHouse(true);else if(scene==='office')exitOffice(true);else if(scene==='city')exitCity(true);
-  if(k==='house')enterHouse();else if(k==='office')enterOffice();
+  if(k==='house')enterHouse();
 }
 const promptEl=document.getElementById('prompt');
 function setPrompt(txt,key){
@@ -1533,7 +1534,7 @@ function renderHouse(t){
     {y:hasCat()?cat.y:-99,d:()=>{if(hasCat())drawCat(t);}},
     ...(!napping&&bedSleepers().length?[{y:91,d:()=>{bedSleepers().forEach(z=>drawAvatar(g,z.x,78,z.look,{frame:0,back:false,blink:true,t:0,shadow:false}));
         R(123,65,32,23,'#8fb6ea');R(123,65,32,3,'#c7defa');for(let y=70;y<86;y+=5)for(let x=127;x<153;x+=6)R(x+(y%10?3:0),y,1,1,'#ffffff');}}]:[]),
-    ...livePeers().filter(p=>p.scene==='house'&&!p.nap).map(p=>({y:p.y,d:()=>drawAvatar(g,p.x,p.y,p.look,{frame:p.moving?[1,0,2,0][Math.floor(t*8+p.x)%4]:0,back:p.back,blink:((t+p.x)%4)<.12,t})})),
+    ...livePeers().filter(p=>p.scene==='house'&&!p.nap).map(p=>({y:p.y,d:()=>drawAvatar(g,p.x,p.y,p.look,{run:p.run&&p.moving,frame:p.moving?(p.run?[1,2][Math.floor(t*10)%2]:[1,0,2,0][Math.floor(t*8+p.x)%4]):0,back:p.back,blink:((t+p.x)%4)<.12,t})})),
   ];
   list.sort((a,b)=>a.y-b.y).forEach(o=>o.d());
   // ceiling fan
@@ -1796,7 +1797,10 @@ const Q_LEVEL_TEXT={
  schwer:'schwer. Für Leute, die sich mit dem Thema richtig gut auskennen. Keine Fragen, die man mit Allgemeinwissen, Schulwissen oder Raten beantworten kann. Frag nach konkreten Details: Jahreszahlen, Namen, Zahlen, Orten, Zusammenhängen und weniger bekannten Fakten. Zum Maßstab: „Wie heißt die Hauptstadt von Frankreich?“ wäre viel zu leicht, „Welcher französische König widerrief das Edikt von Nantes?“ hat das richtige Niveau. Wenn du dir bei einem Fakt nicht sicher bist, nimm einen anderen, aber werde nicht leichter.',
 };
 let quizLevel='schwer'; try{const l=localStorage.getItem('garden-quiz-level');if(Q_LEVELS[l])quizLevel=l;}catch(e){}
-const askedQs=[];
+const askedQs=(()=>{try{const a=JSON.parse(localStorage.getItem('garden-quiz-asked')||'[]');return Array.isArray(a)?a.filter(x=>typeof x==='string').slice(-80):[];}catch(e){return [];}})();
+function rememberAsked(){try{localStorage.setItem('garden-quiz-asked',JSON.stringify(askedQs.slice(-80)));}catch(e){}}
+const Q_TOPICS=['Philosophie','China','Robotik','Künstliche Intelligenz','München','Startups','Kunstgeschichte','Weltraum','Chinesische Küche','Psychologie','Bücher und Autoren','2000er Musik','Filme','Mode und Design','Architektur','Erfindungen','Antikes Griechenland','Japan','Tiere','Ozeane','Kaffee und Tee','Wirtschaft','Sprachen','Mythologie','Olympische Spiele','Pflanzen und Gärten','Deutsche Geschichte','Weltreligionen','Klassische Musik','Mathematik','Medizin','Videospiele','Seidenstraße','Berühmte Frauen','Farben','Schokolade','Reisen in Europa','Internet-Geschichte','Pixel Art','Chinesische Philosophie'];
+let qTopicPick=[];function pickTopics(){const fresh=shuffled(Q_TOPICS).slice(0,5);qTopicPick=fresh;}
 function quizPrompt(topic,level){
   const avoid=askedQs.slice(-24);
   return `Du schreibst Fragen für eine Quiz-Show unter Freunden. Sprache: Deutsch.
@@ -1819,13 +1823,15 @@ const Q_TIME=15000, Q_REVEAL=4200, Q_COUNT=8;
 const quizM=document.getElementById('quizM'), qJoin=document.getElementById('qJoin');
 let hostState=null, quizJoined=null, myAns=null, qLastPub='', qLastPubT=0, qGenBusy=false, qGenErr='';
 function myPeer(){try{const m=room&&room.peers().find(p=>p.isMe&&p.sameTab);return m?m.peer:'me';}catch(e){return 'me';}}
+function quizRank(id,ph,key){const t=parseInt(String(id).slice(1),36)||0;return [ph&&ph!=='lobby'?0:1,t,String(key)];}
+function rankLess(a,b){for(let i=0;i<3;i++){if(a[i]<b[i])return true;if(a[i]>b[i])return false;}return false;}
 function quizHost(){
-  if(!room||!visiting) return {self:true};
-  const ps=roomPeers();
-  const h=ps.find(p=>isHostPeer(p)&&p.presence&&p.presence.qs);
-  if(h) return {peer:h};
-  const o=ps.find(isHostPeer);
-  return o?{peer:o,idle:true}:{self:true};
+  if(!room) return {self:true};
+  let best=null;
+  if(hostState) best={self:true,r:quizRank(hostState.id,hostState.ph,myPeer())};
+  roomPeers().forEach(p=>{if(p.isMe||p.kind!=='viewer'||!p.presence||p.presence.s!=='h')return;const q=cleanQS(p.presence.qs);if(!q)return;
+    const r=quizRank(q.id,q.ph,p.peer);if(!best||rankLess(r,best.r))best={peer:p,r};});
+  return best&&best.peer?{peer:best.peer}:{self:true};
 }
 function cleanQS(q){
   if(!q||typeof q!=='object'||typeof q.id!=='string') return null;
@@ -1862,26 +1868,31 @@ async function startQuiz(topic){
   const level=quizLevel, sample=await getSample();
   if(hostState!==H||H.ph!=='lobby') return;
   let qs=null;
-  if(sample){
+  const make=window.__quiz&&window.__quiz.make;
+  if(make||sample){
     H.ph='gen'; renderQuiz();
     const ac=new AbortController(), to=setTimeout(()=>ac.abort(),45000);
     try{
-      const r=await sample(quizPrompt(H.topic,level),{modelTier:'default',cache:false,signal:ac.signal});
-      const m=String(r&&r.text||'').match(/\[[\s\S]*\]/); const arr=m?JSON.parse(m[0]):[];
+      let arr=[];
+      if(make){const r=await make({topic:H.topic,level,avoid:askedQs.slice(-30),n:Q_COUNT});if(r&&r.error)throw new Error(r.error);arr=r&&Array.isArray(r.qs)?r.qs:[];}
+      else{const r=await sample(quizPrompt(H.topic,level),{modelTier:'default',cache:false,signal:ac.signal});
+        const m=String(r&&r.text||'').match(/\[[\s\S]*\]/); arr=m?JSON.parse(m[0]):[];}
       const ok=x=>x&&typeof x.q==='string'&&x.q.trim()&&Array.isArray(x.o)&&x.o.length===3
         &&x.o.every(v=>(typeof v==='string'||typeof v==='number')&&String(v).trim())
         &&new Set(x.o.map(v=>String(v).trim().toLowerCase())).size===3&&Number.isInteger(x.a)&&x.a>=0&&x.a<3;
       qs=(Array.isArray(arr)?arr:[]).filter(ok).slice(0,Q_COUNT).map(x=>mixQ([x.q.trim().slice(0,200),x.o.map(v=>String(v).trim().slice(0,60)),x.a]));
-      if(qs.length<4){qs=null;qGenErr='Claude hatte keine passenden Fragen. Es geht mit gemischten Fragen weiter.';}
-    }catch(e){qs=null;qGenErr='Die Fragen konnten gerade nicht erstellt werden. Es geht mit gemischten Fragen weiter.';}
+      if(qs.length<4){qs=null;qGenErr='Zum Thema kamen keine passenden Fragen. Es geht mit gemischten Fragen weiter.';}
+    }catch(e){qs=null;const m=String(e&&e.message||'');
+      qGenErr=m==='off'?'Fragen zum Thema gehen erst, wenn die KI eingerichtet ist. Es geht mit gemischten Fragen weiter.':m==='limit'?'Für heute sind alle Themen-Quizze aufgebraucht. Es geht mit gemischten Fragen weiter.':'Die Fragen konnten gerade nicht erstellt werden. Es geht mit gemischten Fragen weiter.';}
     clearTimeout(to);
   }
   if(hostState!==H) return;
   if(!qs){qs=bankQuestions(level);H.topic='';}
-  H.qs=qs; qs.forEach(q=>askedQs.push(q[0])); if(askedQs.length>60)askedQs.splice(0,askedQs.length-60);
+  H.qs=qs; qs.forEach(q=>askedQs.push(q[0])); if(askedQs.length>80)askedQs.splice(0,askedQs.length-80); rememberAsked();
   H.ph='q'; H.ends=Date.now()+Q_TIME; H.left=Q_TIME/1000; myAns=null; renderQuiz();
 }
 function hostTick(){
+  if(hostState&&hostState.ph==='lobby'){const h=quizHost();if(!h.self){hostState=null;if(room)room.presence({qs:null}).catch(()=>{});const st=quizState();if(st&&quizM.classList.contains('show'))joinQuiz(st.id);renderQuiz();return;}}
   const H=hostState; if(!H) return; const now=Date.now();
   if(H.ph==='q'){
     H.left=Math.max(0,Math.ceil((H.ends-now)/1000));
@@ -1904,7 +1915,7 @@ function answer(c){
 }
 function openQuiz(){
   const h=quizHost(), st=quizState();
-  if(h.self&&!hostState) newHost();
+  if(h.self&&!hostState&&!(st&&st.ph!=='lobby')) newHost();
   else if(st&&quizJoined!==st.id) joinQuiz(st.id);
   quizM.classList.add('show'); renderQuiz();
 }
@@ -1940,19 +1951,24 @@ function renderQuiz(){
     const old=document.getElementById('qTopic'), keep=old?old.value:'', focus=!!old&&document.activeElement===old;
     lobby.dataset.k=key; lobby.innerHTML=''; build(keep,focus);
   };
-  if(!st){setText(board,h.idle?`Warte, bis ${visiting?visiting.data.name:'der Host'} die Show öffnet.`:'Die Show ist gerade geschlossen.');clearOpts();setText(info,'');setLobby('none',()=>{});drawStage(null,players);return;}
+  if(!st&&h.self&&!hostState){newHost();return renderQuiz();}
+  if(!st){setText(board,'Die Show ist gerade geschlossen.');clearOpts();setText(info,'');setLobby('none',()=>{});drawStage(null,players);return;}
   setText(info,st.ph==='q'||st.ph==='reveal'?`FRAGE ${st.qi+1}/${st.n}, ${st.ph==='q'?'NOCH '+st.left+' S':'AUFLÖSUNG'}`:st.ph==='end'?'ENDE':'LOBBY');
   if(st.ph==='lobby'||st.ph==='gen'){
     setText(board,st.ph==='gen'?'Gleich geht’s los …':(players.length>1?`${players.length} Spieler sind bereit.`:'Warte auf Mitspieler oder spiel alleine.'));
     clearOpts();
-    if(isHost&&st.ph==='lobby') getSample();
-    setLobby(['L',st.id,st.ph,isHost?1:0,sampleFn?1:0,qGenErr,isHost?quizLevel:st.host].join('|'),(keep,focus)=>{
+    if(isHost&&st.ph==='lobby'&&!qTopicPick.length) pickTopics();
+    setLobby(['L',st.id,st.ph,isHost?1:0,qGenErr,isHost?quizLevel:st.host,qTopicPick.join(',')].join('|'),(keep,focus)=>{
       if(isHost&&st.ph==='lobby'){
         const row=document.createElement('div');row.className='row';
-        const inp=document.createElement('input');inp.className='inp';inp.id='qTopic';inp.maxLength=40;inp.autocomplete='off';inp.placeholder='Thema (optional), z. B. Philosophie, China, 2000er Musik';inp.value=keep;
+        const inp=document.createElement('input');inp.className='inp';inp.id='qTopic';inp.maxLength=40;inp.autocomplete='off';inp.placeholder='Thema (optional)';inp.value=keep;
         const go=document.createElement('button');go.className='btn dark';go.type='button';go.textContent='▶ Start';go.onclick=()=>startQuiz(inp.value.trim());
         inp.addEventListener('keydown',e=>{if(e.key==='Enter')go.click();});
         row.appendChild(inp);row.appendChild(go);lobby.appendChild(row);
+        const ch=document.createElement('div');ch.className='qchips';
+        qTopicPick.forEach(t=>{const b=document.createElement('button');b.type='button';b.textContent=t;b.onclick=()=>{inp.value=t;inp.focus();};ch.appendChild(b);});
+        const more=document.createElement('button');more.type='button';more.className='more';more.textContent='↻';more.setAttribute('aria-label','Andere Themen');more.onclick=()=>{pickTopics();renderQuiz();};ch.appendChild(more);
+        lobby.appendChild(ch);
         const lv=document.createElement('div');lv.className='row qlvl';const lab=document.createElement('span');lab.textContent='NIVEAU';lv.appendChild(lab);
         Object.entries(Q_LEVELS).forEach(([k,label])=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.setAttribute('aria-pressed',k===quizLevel?'true':'false');if(k===quizLevel)b.classList.add('on');
           b.onclick=()=>{quizLevel=k;try{localStorage.setItem('garden-quiz-level',k);}catch(e){}renderQuiz();};lv.appendChild(b);});
@@ -2014,7 +2030,7 @@ setInterval(()=>{
   hostTick();
   if(quizM.classList.contains('show')) renderQuiz();
   const h=quizHost(), st=h.self?null:quizState();
-  const showJ=!!(st&&!quizM.classList.contains('show')&&st.ph!=='end'&&quizJoined!==st.id&&scene!=='none');
+  const showJ=!!(st&&!quizM.classList.contains('show')&&st.ph!=='end'&&quizJoined!==st.id&&scene==='house');
   if(qJoin.hidden===showJ) qJoin.hidden=!showJ;
   if(showJ){const tx=`Quiz-Show von ${st.host}: mitmachen`;if(qJoin.textContent!==tx)qJoin.textContent=tx;}
 },250);
@@ -2043,6 +2059,7 @@ function isHostPeer(p){ return !p.isMe&&!!visiting&&((!!p.by&&p.by===visiting.id
 function sendPresence(now){
   if(!room||now-lastPresT<60) return;
   const st={g:gardenKey(),u:myId||null,sw:av.swim||av.jump?1:0,say:(mySay&&mySay.until>performance.now())?{n:mySay.n,t:mySay.t}:null,ty:(document.activeElement===chatIn&&chatIn.value.trim()&&now-typingAt<5000)?1:0,x:Math.round(av.x*2)/2,y:Math.round((av.y-(av.kh||0))*2)/2,act:myAct,al:riding?1:0,sl:slide?(slide.ph==='climb'?1:2):0,sg:mySeat===null?null:{s:mySeat,a:Math.round(swA*100)/100},s:scene==='house'?'h':scene==='office'?'o':scene==='city'?'m':'g',b:av.back?1:0,m:av.moving?1:0,r:av.run&&av.moving?1:0,n:(me().name||'Friend').slice(0,14),l:me().look,w:av.water>0?1:0,nap:napping&&scene==='house'?1:0};
+  if(scene==='garden'&&alpIdle()&&alpLeader().me)st.ap=[Math.round(alp.x),Math.round(alp.y),alp.dir>0?1:-1,alp.moving?1:0];
   const k=JSON.stringify(st); if(k===lastPres&&now-lastPresT<2500) return;
   lastPres=k; lastPresT=now; try{const pr=room.presence(st);if(pr&&pr.catch)pr.catch(()=>{});}catch(e){}
 }
@@ -2062,14 +2079,15 @@ function livePeers(){
     if(p.isMe||p.kind!=='viewer') continue;
     const q=p.presence||{}; if(typeof q.x!=='number'||typeof q.y!=='number') continue;
     const tx=(q.s==='h'||q.s==='o')?clamp(q.x,-200,400):q.s==='m'?clamp(q.x,0,4000):clamp(q.x,-OX+14,CW+OX-14), ty=clamp(q.y,0,q.s==='m'?3000:600);
-    let gh=ghosts[p.peer]; if(!gh){ gh=ghosts[p.peer]={x:tx,y:ty}; if(now-roomT0>4000){try{Sfx.join();}catch(e){}} }
+    let gh=ghosts[p.peer]; if(!gh){ gh=ghosts[p.peer]={x:tx,y:ty,sc:q.s}; if(now-roomT0>4000){try{Sfx.join();}catch(e){}} }
+    let fresh=false;if(gh.sc!==q.s){gh.sc=q.s;gh.buf=[];gh.off=undefined;gh.jit=0;gh.x=tx;gh.y=ty;gh.pxx=undefined;fresh=true;}
     if(typeof q._t==='number'){
       // smooth playback: keep the last positions with the sender's timestamps and replay them ~140 ms behind, interpolating in between,
       // so a friend's walk looks continuous even when network packets arrive in bursts
       const B=gh.buf||(gh.buf=[]),wall=Date.now();
-      const add=(t,x,y)=>{if(B.length&&t<=B[B.length-1].t)return;x=(q.s==='h'||q.s==='o')?clamp(x,-200,400):clamp(x,-OX+14,CW+OX-14);y=clamp(y,0,600);
+      const add=(t,x,y)=>{if(B.length&&t<=B[B.length-1].t)return;x=(q.s==='h'||q.s==='o')?clamp(x,-200,400):q.s==='m'?clamp(x,0,4000):clamp(x,-OX+14,CW+OX-14);y=clamp(y,0,q.s==='m'?3000:600);
         B.push({t,x,y});if(B.length>60)B.shift();const d=wall-t;gh.off=gh.off===undefined||d<gh.off?d:gh.off+(d-gh.off)*.03;const late=d-gh.off;gh.jit=Math.max(late,(gh.jit||0)*.985);};
-      if(Array.isArray(q._h))q._h.forEach(e=>{if(Array.isArray(e)&&typeof e[0]==='number'&&typeof e[1]==='number'&&typeof e[2]==='number')add(e[0],e[1],e[2]);});
+      if(!fresh&&Array.isArray(q._h))q._h.forEach(e=>{if(Array.isArray(e)&&typeof e[0]==='number'&&typeof e[1]==='number'&&typeof e[2]==='number')add(e[0],e[1],e[2]);});
       add(q._t,tx,ty);
       // the playback delay grows with how bursty this friend's connection is (120 to 500 ms)
       const T=wall-gh.off-clamp(90+(gh.jit||0)*1.15,120,500);let px=B[B.length-1].x,py=B[B.length-1].y;
@@ -2080,12 +2098,13 @@ function livePeers(){
     gh.seen=now;
     {const swn=!!q.sw&&q.s!=='h';if(gh.swp===false&&swn&&scene==='garden')setTimeout(()=>Sfx.splash(false,.45),380);gh.swp=swn;}
     {const inh=q.s==='h'?1:0;if(gh.inh===0&&inh===1)Sfx.door(.4);gh.inh=inh;}
-    {const aln=q.al?1:0;if(gh.alp===0&&aln===1&&scene==='garden'&&q.s!=='h')Sfx.sit(.5);gh.alp=aln;}
+    {const aln=q.al?1:0;if(gh.alp===0&&aln===1&&scene==='garden'&&q.s!=='h')Sfx.sit(.5);if(gh.alp===1&&aln===0&&q.s==='g')alpDrop={x:gh.x,y:gh.y};gh.alp=aln;}
     {const sln=q.sl===1||q.sl===2?q.sl:0;if(scene==='garden'&&q.s!=='h'){if(gh.slp===1&&sln===2)Sfx.whee(.5);if(gh.slp===2&&sln===0)Sfx.yay(.55);}gh.slp=sln;}
     if(q.say&&typeof q.say.t==='string'&&q.say.n!==gh.sayN){if(gh.sayN!==undefined||now-roomT0>4000)logChat({t:Date.now(),n:str(q.n,14)||'Friend',text:q.say.t.slice(0,80)});gh.sayN=q.say.n;gh.sayT=q.say.t.slice(0,80);gh.sayUntil=now+6000+q.say.t.length*60;}
     const sgq=q.sg&&(q.sg.s===0||q.sg.s===1)?{s:q.sg.s,a:clamp(num(q.sg.a,0),-1.2,1.2)}:null;
     if(gh.pxx!==undefined&&Math.abs(gh.x-gh.pxx)>.02)gh.dir=gh.x>gh.pxx?1:-1;else if(gh.pxx===undefined&&Math.abs(tx-gh.x)>.6)gh.dir=tx>gh.x?1:-1;gh.pxx=gh.x;
-    out.push({nap:q.nap===1&&q.s==='h'?1:0,sl:q.sl===1||q.sl===2?q.sl:0,ride:!!q.al,sg:sgq,say:gh.sayUntil>now?gh.sayT:'',typing:!!q.ty&&!(gh.sayUntil>now),id:p.peer,by:p.by,x:gh.x,y:gh.y,scene:q.s==='h'?'house':q.s==='o'?'office':q.s==='m'?'city':'garden',back:!!q.b,moving:!!q.m||now-(gh.mvT||0)<150,run:!!q.r,swim:!!q.sw,water:!!q.w,name:str(q.n,14)||'Friend',look:cleanLook(q.l)});
+    const apq=Array.isArray(q.ap)&&q.ap.length===4&&q.ap.slice(0,2).every(v=>typeof v==='number')?[clamp(q.ap[0],-OX+14,CW+OX-14),clamp(q.ap[1],0,600),q.ap[2],q.ap[3]]:null;
+    out.push({ap:apq,nap:q.nap===1&&q.s==='h'?1:0,sl:q.sl===1||q.sl===2?q.sl:0,ride:!!q.al,sg:sgq,say:gh.sayUntil>now?gh.sayT:'',typing:!!q.ty&&!(gh.sayUntil>now),id:p.peer,by:p.by,x:gh.x,y:gh.y,scene:q.s==='h'?'house':q.s==='o'?'office':q.s==='m'?'city':'garden',back:!!q.b,moving:!!q.m||now-(gh.mvT||0)<150,run:!!q.r,swim:!!q.sw,water:!!q.w,name:str(q.n,14)||'Friend',look:cleanLook(q.l)});
   }
   return out;
 }
@@ -2940,6 +2959,7 @@ function processActs(){
   for(const p of ps){if(p.isMe)continue;const a=(p.presence||{}).act;if(!a||typeof a.n!=='number'||actSeen[p.peer]===a.n)continue;
     const first=actSeen[p.peer]===undefined;actSeen[p.peer]=a.n;if(first&&!(a.at&&Math.abs(now-a.at)<8000))continue;
     if(!['hug','kiss','push','balloon','swing'].includes(a.k))continue;
+    const ss=(p.presence||{}).s,myS=scene==='house'?'h':scene==='office'?'o':scene==='city'?'m':'g';if((ss||'g')!==myS)continue;
     const from=ghosts[p.peer];if(!from)continue;
     let bx,by,toMe=a.to===mine;
     const love=a.k==='hug'||a.k==='kiss';
@@ -3033,7 +3053,7 @@ function leaveSwing(tgt){
 /* ================= alpaca to ride ================= */
 const alp={x:164,y:240,hx:164,hy:240,tx:164,ty:240,next:performance.now()+9000,dir:-1,moving:false};
 let riding=false,pendRide=false;
-function alpIdle(){return !riding&&!livePeers().some(p=>p.ride&&p.scene==='garden');}
+function alpIdle(){return !riding&&!livePeers().some(p=>p.ride);}
 function drawAlpaca(x,y,dir,frame,t){
   x=Math.round(x);y=Math.round(y);const C='#f4ecdc',Cl='#fffaf0',Cs='#d8ccb2',H='#6b5a46',O='#2a2430';
   ell(x,y,11,2,'rgba(40,80,40,.28)');
@@ -3062,9 +3082,24 @@ function goRide(){if(av.swim||av.jump||knock||mySeat!==null)return;pendRide=true
 function mount(){pendRide=false;riding=true;Sfx.sit();av.target=null;av.x=alp.x;av.y=alp.y;av.dir=alp.dir;lastPres='';for(let i=0;i<5;i++)spawn({kind:'spark',x:av.x+(Math.random()*14-7),y:av.y-22-Math.random()*8,vy:-10,life:.5});}
 function dismount(){if(!riding)return;if(av.swim||av.jump)return;riding=false;alp.x=alp.hx=alp.tx=av.x;alp.y=alp.hy=alp.ty=av.y;alp.dir=av.dir||1;alp.next=performance.now()+4000;
   const nx=av.x-(av.dir||1)*11;if(!blocked(nx,av.y+2)&&!isWater(nx,av.y+2)){av.x=nx;av.y+=2;}lastPres='';}
+// one alpaca for everyone: the garden's owner (or, without them, the lowest peer id) moves it, the others follow
+var alpDrop=null;
+function alpLeader(){
+  if(scene!=='garden'||!roomLive())return {me:true};
+  const ps=livePeers().filter(p=>p.scene==='garden');if(!ps.length)return {me:true};
+  if(!visiting)return {me:true};
+  const h=ps.find(p=>p.by&&p.by===visiting.id);if(h)return {peer:h};
+  const mine=myPeer(),low=ps.reduce((a,p)=>String(p.id)<String(a.id)?p:a,ps[0]);
+  return String(mine)<String(low.id)?{me:true}:{peer:low};
+}
 function updateAlpaca(dt){
   if(scene!=='garden')return;
   if(riding){alp.x=av.x;alp.y=av.y;return;}
+  if(alpDrop){alp.x=alp.hx=alp.tx=alpDrop.x;alp.y=alp.hy=alp.ty=alpDrop.y;alp.next=performance.now()+4000;alpDrop=null;}
+  const L=alpLeader();
+  if(!L.me&&!pendRide){const a=L.peer.ap;
+    if(a){if(Math.hypot(a[0]-alp.x,a[1]-alp.y)>60){alp.x=a[0];alp.y=a[1];}else{const f=1-Math.exp(-dt*6);alp.x+=(a[0]-alp.x)*f;alp.y+=(a[1]-alp.y)*f;}
+      alp.dir=a[2]>0?1:-1;alp.moving=!!a[3];alp.hx=alp.tx=a[0];alp.hy=alp.ty=a[1];return;}}
   if(pendRide){if(!alpIdle()){pendRide=false;}else if(Math.hypot(av.x-alp.x,av.y-(alp.y+3))<11){mount();return;}else if(!av.target)pendRide=false;}
   const now=performance.now();
   if(now>alp.next&&!pendRide){alp.next=now+3500+Math.random()*4500;for(let k=0;k<6;k++){const tx=alp.hx+(Math.random()*36-18),ty=alp.hy+(Math.random()*20-10);
@@ -3603,7 +3638,7 @@ function renderCity(t){
   list.push({y:av.y,d:()=>{const rn=av.run&&av.moving,fr=av.moving?(rn?[1,2][Math.floor(t*10)%2]:[1,0,2,0][Math.floor(t*8)%4]):0;
     if(riding)drawRider(av.x-cx,av.y-cy,av.dir||1,myLook,av.moving,t,null);else drawAvatar(g,av.x-cx,av.y-cy-(rn&&fr===1?1:0),myLook,{run:rn,frame:fr,back:av.back,blink,t});}});
   const peers=livePeers().filter(p=>p.scene==='city');
-  peers.forEach(p=>list.push({y:p.y,d:()=>drawAvatar(g,p.x-cx,p.y-cy,p.look,{run:p.run&&p.moving,frame:p.moving?[1,0,2,0][Math.floor(t*8+p.x)%4]:0,back:p.back,blink:((t+p.x)%4)<.12,t})}));
+  peers.forEach(p=>list.push({y:p.y,d:()=>p.ride?drawRider(p.x-cx,p.y-cy,(ghosts[p.id]&&ghosts[p.id].dir)||1,p.look,p.moving,t,null):drawAvatar(g,p.x-cx,p.y-cy,p.look,{run:p.run&&p.moving,frame:p.moving?(p.run?[1,2][Math.floor(t*10)%2]:[1,0,2,0][Math.floor(t*8+p.x)%4]):0,back:p.back,blink:((t+p.x)%4)<.12,t})}));
     list.sort((a,b)=>a.y-b.y).forEach(o=>o.d());
   parts.forEach(q=>{const px=Math.round(q.x-cx),py=Math.round(q.y-cy);if(q.kind==='puff'){g.globalAlpha=1-q.age/q.life;R(px,py,2,2,'#e9e2d4');g.globalAlpha=1;}});
   const night=skyState().night;if(night>0){g.globalCompositeOperation='multiply';g.globalAlpha=night*.62;g.fillStyle='#4a55a0';g.fillRect(0,0,W,H);g.globalCompositeOperation='source-over';g.globalAlpha=1;
@@ -4063,7 +4098,7 @@ function maybeAutoVisit(){
 #gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
 #gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795186245"></script>
+<script src="config.js?v=1795246893"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -4093,7 +4128,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '20.11. 15:50';
+  const BUILD = '21.11. 08:41';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -4178,11 +4213,15 @@ function maybeAutoVisit(){
       if (u === uid) continue;
       if (!best[u] || (m.s || 0) > (best[u].m.s || 0)) best[u] = { k, m };
     }
+    // a friend whose movement already arrived but who is not in the presence list yet (it lags behind): show them now
+    const now = Date.now();
+    for (const k in live) { const lv = live[k]; if (st[k] || k === peerKey || !lv.u || lv.u === uid || now - lv.at > 10000) continue;
+      if (!best[lv.u] || lv.at > (best[lv.u].m.s || 0)) best[lv.u] = { k, m: { u: lv.u, s: lv.at, at: 0, p: {} } }; }
     const out = [Object.freeze({ peer: peerKey, by: uid, isMe: true, sameTab: true, kind: 'viewer', guest: false, presence: Object.freeze(Object.assign({}, mine)), updatedAt: Date.now() })];
     for (const u in best) { const { k, m } = best[u];
       const lv = live[k], p = lv && lv.at > (m.at || 0) ? Object.assign({}, lv.p, { _t: lv.at, _h: lv.h }) : Object.assign({}, m.p || {}, m.at ? { _t: m.at } : {});
       out.push(Object.freeze({ peer: k, by: m.u || null, isMe: false, sameTab: false, kind: 'viewer', guest: false, presence: Object.freeze(p), updatedAt: Date.now() })); }
-    for (const k in live) if (!st[k]) delete live[k];
+    for (const k in live) if (!st[k] && now - live[k].at > 10000) delete live[k];
     snap = Object.freeze(out);
   }
   function setConn(c) { if (c === connected) return; connected = c; connFns.forEach(f => { try { f(c); } catch (e) {} }); }
@@ -4213,16 +4252,22 @@ function maybeAutoVisit(){
     const c = sb.channel('garden-live', { config: { presence: { key: peerKey }, broadcast: { self: false, ack: false } } });
     ch = c;
     c.on('presence', { event: 'sync' }, () => { if (ch === c) rebuild(); })
+     .on('presence', { event: 'join' }, (e) => { const key = e && e.key; if (ch === c && key && key !== peerKey) { cast(); rebuild(); } })
+     .on('presence', { event: 'leave' }, (e) => { const key = e && e.key; if (ch === c && key && key !== peerKey) { const st = c.presenceState() || {}; if (!st[key]) { delete live[key]; rebuild(); } } })
      .on('broadcast', { event: 'p' }, ({ payload: q }) => {
         if (ch !== c || !q || !q.k || q.k === peerKey || q.u === uid || !q.p) return;
         if (live[q.k] && live[q.k].at >= q.at) return;
-        const h = (live[q.k] && live[q.k].h) || [];
+        // a new place starts a new path: never replay the walk from the cottage in the garden
+        const h = (live[q.k] && live[q.k].p && live[q.k].p.s === q.p.s && live[q.k].h) || [];
         if (typeof q.p.x === 'number' && typeof q.p.y === 'number') { h.push([q.at, q.p.x, q.p.y]); if (h.length > 30) h.shift(); }
-        live[q.k] = { at: q.at || Date.now(), p: q.p, h }; rebuild();
+        const fresh = !live[q.k] && !(ch.presenceState() || {})[q.k];
+        live[q.k] = { at: q.at || Date.now(), p: q.p, h, u: q.u || null }; rebuild();
+        // someone new is here: tell them where I am right away instead of at my next move
+        if (fresh) cast();
       })
      .subscribe(status => {
         if (ch !== c) return;
-        if (status === 'SUBSCRIBED') { setConn(true); flush(); rebuild(); }
+        if (status === 'SUBSCRIBED') { setConn(true); flush(); cast(); rebuild(); }
         else if (status === 'CLOSED' || status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           setConn(false); rebuild(); clearTimeout(retry); retry = setTimeout(connect, 2500);
         }
@@ -4280,6 +4325,15 @@ function maybeAutoVisit(){
   };
 
   /* ---------- AI agents in the office: one small round a day, limits are enforced on the server ---------- */
+  window.__quiz = {
+    async make(o) {
+      try {
+        const { data, error } = await sb.functions.invoke('agents', { body: { kind: 'quiz', topic: String(o.topic || '').slice(0, 40), level: o.level, n: o.n, avoid: (o.avoid || []).slice(-30) } });
+        if (error) return { error: 'net' };
+        return data || { error: 'net' };
+      } catch (e) { return { error: 'net' }; }
+    },
+  };
   window.__agents = {
     async ask(payload) {
       if (!uid) return null;
@@ -4315,7 +4369,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 20.11. 15:50';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 21.11. 08:41';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid').forEach(k => localStorage.removeItem(k)); } catch (e) {} location.reload(); };
