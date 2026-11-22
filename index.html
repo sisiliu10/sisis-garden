@@ -219,6 +219,8 @@
   .askp p{font-size:16px;margin-top:6px}
   .askb{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
   .gpick{margin-top:10px}
+  .stillsub{margin:6px 0 0;color:#6d6472;font-size:15px;line-height:1.4}
+  #stillGrass{display:block;width:calc(100% + 36px);margin:14px -18px 0;height:12px;image-rendering:pixelated}
   .gopt{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:2px dashed rgba(42,36,48,.25);padding:12px 2px;cursor:pointer;font:inherit;color:var(--ink)}
   .gopt:hover .gn,.gopt:focus-visible .gn{color:#e8506c}
   .gopt .gn{display:block;font-size:20px;font-weight:700}
@@ -232,7 +234,7 @@
   .c4who b{display:inline-block;width:12px;height:12px;border:2px solid var(--ink);vertical-align:-1px;margin-right:6px}
   .c4who .on{color:#fff;font-weight:700}.c4who .off{color:#9fb0dd}
   .c4st{margin-top:8px;min-height:24px;text-align:center;font-size:17px;font-weight:600}
-  .c4b{margin:10px auto 0;display:grid;grid-template-columns:repeat(7,1fr);gap:0;background:#3f6fe0;border:4px solid var(--ink);padding:5px;width:min(100%,420px);touch-action:manipulation}
+  .c4b{margin:10px auto 0;display:grid;grid-template-columns:repeat(7,1fr);gap:0;background:#3f6fe0;border:4px solid var(--ink);padding:5px;width:min(100%,420px,calc((100vh - 178px)*7/6));width:min(100%,420px,calc((100dvh - 178px)*7/6));min-width:min(100%,238px);touch-action:manipulation}
   .c4col{display:grid;grid-template-rows:repeat(6,1fr);cursor:pointer;padding:0 1px}
   .c4col.no{cursor:default}
   .c4col:not(.no):hover{background:rgba(255,255,255,.12)}
@@ -245,6 +247,9 @@
   .c4row{display:flex;justify-content:center;gap:18px;margin-top:12px;min-height:22px}
   .c4row button{background:none;border:0;font:inherit;font-size:16px;color:#ffd0dc;cursor:pointer;text-decoration:underline dotted 1px;text-underline-offset:3px}
   .c4row button:hover{color:#fff}
+  @media (max-width:360px){.c4p{padding:10px 8px}.c4b{padding:3px}.c4c{margin:1.5px}.qpanel{padding:10px 8px}.qopts{gap:6px;grid-template-columns:1fr}.qopt{font-size:16px;padding:8px 6px;min-height:42px}}
+  @media (max-height:500px){.c4p,.qpanel{padding:6px 12px}.c4p .qtop .btn{padding:2px 8px}.c4logo{font-size:16px}.c4who{margin-top:2px;font-size:13px}.c4b{width:min(100%,420px,calc((100vh - 128px)*7/6));width:min(100%,420px,calc((100dvh - 128px)*7/6))}.c4st{margin-top:2px;min-height:20px;font-size:15px}.c4b{margin-top:4px}.c4row{margin-top:4px}
+    .qboard{padding:8px 10px;min-height:0;font-size:16px;margin-top:6px}.qopt{min-height:40px;padding:6px}.qstagewrap{margin-top:6px}#qStage{max-height:22vh;width:auto;margin:0 auto}}
   .askb .btn{font-size:17px;padding:9px 0;text-align:center}
   #askYes{background:#7dc46c;color:#fff;text-shadow:0 1px 0 #3d7a35}
   #askGrass{display:block;width:calc(100% + 36px);margin:14px -18px 0;height:auto;image-rendering:pixelated}
@@ -255,9 +260,9 @@
   .qinfo{flex:1;font-family:Silkscreen,monospace;font-size:11px;color:#c9b8f0;text-align:right}
   #qClose{padding:2px 10px;font-size:18px}
   .qboard{margin-top:12px;background:#fffdf7;color:var(--ink);border:4px dotted #f2c94c;outline:3px solid #e8506c;padding:16px 14px;min-height:76px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:19px;font-weight:600;line-height:1.3;text-wrap:balance}
-  .qopts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+  .qopts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
   .qopts:empty{display:none}
-  .qopt{font-family:"Pixelify Sans",sans-serif;font-size:16px;font-weight:600;color:#fff;border:3px solid var(--ink);box-shadow:3px 3px 0 rgba(0,0,0,.4);padding:10px 8px;cursor:pointer;min-height:52px;line-height:1.2}
+  .qopt{font-family:"Pixelify Sans",sans-serif;font-size:16px;font-weight:600;color:#fff;border:3px solid var(--ink);box-shadow:3px 3px 0 rgba(0,0,0,.4);padding:10px 8px;cursor:pointer;min-height:52px;line-height:1.2;min-width:0;overflow-wrap:break-word;-webkit-hyphens:auto;hyphens:auto}
   .qopt.c0{background:#3f9a4a}.qopt.c1{background:#d94a7a}.qopt.c2{background:#3f7fd0}
   .qopt:hover:not([disabled]){filter:brightness(1.1)}
   .qopt[disabled]{cursor:default}
@@ -274,6 +279,7 @@
   .qlobby .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .qlobby .inp{flex:1;min-width:180px}
   .qlobby .btn{font-size:15px}
+  .qsugg{font-size:14px;color:#e3d8ff;margin:2px 0 8px;line-height:1.5}.qsugg button{background:none;border:0;padding:0 10px 0 0;font:inherit;color:#f2c94c;cursor:pointer;text-decoration:underline dotted 1px;text-underline-offset:3px}
   .qchips{display:flex;flex-wrap:wrap;gap:4px 12px;margin:2px 0 10px}.qchips button{background:none;border:0;padding:2px 0;font-family:"Pixelify Sans",sans-serif;font-size:14px;color:#c9b8f0;cursor:pointer;text-decoration:underline dotted 1px;text-underline-offset:3px}.qchips button:hover{color:#fff}.qchips .more{text-decoration:none;font-size:16px}
   .qlvl{gap:6px}
   .qlvl span{font-family:Silkscreen,monospace;font-size:11px;color:#c9b8f0;margin-right:4px}
@@ -472,6 +478,18 @@
   </div>
 </div>
 
+<div class="modal" id="stillM">
+  <div class="askp" role="dialog" aria-labelledby="stillT">
+    <div class="askt" id="stillT">Arbeitest du noch an …?</div>
+    <p class="stillsub" id="stillS"></p>
+    <div class="gpick">
+      <button class="gopt" id="stillYes" type="button"><span class="gn">Ja, weiter geht’s</span><span class="gs">Ich gieß sie gleich</span></button>
+      <button class="gopt" id="stillLater" type="button"><span class="gn">Gerade Pause</span><span class="gs">In zwei Wochen wieder fragen</span></button>
+      <button class="gopt" id="stillNo" type="button"><span class="gn">Nein, loslassen</span><span class="gs" id="stillNoS">Kommt auf den Kompost und bleibt dort sichtbar</span></button>
+    </div>
+    <canvas id="stillGrass" width="160" height="12" aria-hidden="true"></canvas>
+  </div>
+</div>
 <div class="modal" id="askM">
   <div class="askp" role="dialog" aria-labelledby="askT">
     <div class="askt" id="askT">Mini Games</div>
@@ -487,8 +505,8 @@
 <div class="modal" id="quizM">
   <div class="qpanel" role="dialog" aria-label="Quiz show">
     <div class="qtop"><div class="qlogo">QUIZ<span>SHOW</span></div><div class="qinfo" id="qInfo"></div><button class="btn" id="qClose" type="button" aria-label="Close">×</button></div>
-    <div class="qboard" id="qBoard"></div>
-    <div class="qopts" id="qOpts"></div>
+    <div class="qboard" id="qBoard" lang="de"></div>
+    <div class="qopts" id="qOpts" lang="de"></div>
     <div class="qstagewrap"><canvas id="qStage" width="240" height="80"></canvas><div class="qnames" id="qNames"></div></div>
     <div class="qlobby" id="qLobby"></div>
   </div>
@@ -617,7 +635,7 @@ function cleanGarden(g){
   rawS.slice(0,BED_SLOTS.length).forEach((p,i)=>{const c=cleanProject(p,i,true);if(!c)return;
     if(used2.has(c.slot)){for(let s=0;s<BED_SLOTS.length;s++)if(!used2.has(s)){c.slot=s;break;}}
     used2.add(c.slot);skills.push(c);});
-  return {v:2,name:str(g.name,14)||'Someone',look:cleanLook(g.look),projects,skills,saved:num(g.saved,0),owner:!!g.owner,cat:!!g.cat,sb:g.sb!==false,listed:g.listed===undefined?!!g.owner:!!g.listed,friends:Array.isArray(g.friends)?g.friends.filter(x=>typeof x==='string'&&x.length<64).slice(0,100):[],nb:Array.isArray(g.nb)?g.nb.filter(x=>x&&/^https:\/\//.test(x.u||'')).slice(0,10).map(x=>({n:str(x.n,30)||'Friend',u:str(x.u,300)})):[],created:g.created!==false,hs:!!g.hs,ai:!!g.ai,aiDay:str(g.aiDay,12),
+  return {v:2,name:str(g.name,14)||'Someone',look:cleanLook(g.look),projects,skills,saved:num(g.saved,0),owner:!!g.owner,cat:!!g.cat,sb:g.sb!==false,listed:g.listed===undefined?!!g.owner:!!g.listed,friends:Array.isArray(g.friends)?g.friends.filter(x=>typeof x==='string'&&x.length<64).slice(0,100):[],nb:Array.isArray(g.nb)?g.nb.filter(x=>x&&/^https:\/\//.test(x.u||'')).slice(0,10).map(x=>({n:str(x.n,30)||'Friend',u:str(x.u,300)})):[],created:g.created!==false,hs:!!g.hs,ask:(g.ask&&typeof g.ask==='object')?Object.fromEntries(Object.entries(g.ask).slice(0,40).map(([k,v])=>[str(k,24),num(v,0)])):{},askDay:str(g.askDay,12),ai:!!g.ai,aiDay:str(g.aiDay,12),
     aiRep:(g.aiRep&&typeof g.aiRep==='object'&&g.aiRep.lines&&typeof g.aiRep.lines==='object')?{d:str(g.aiRep.d,12),lines:Object.fromEntries(Object.entries(g.aiRep.lines).slice(0,8).map(([k,v])=>[str(k,24),str(v,140)]))}:null,
     od:(g.od&&typeof g.od==='object')?Object.fromEntries(Object.entries(g.od).slice(0,20).map(([k,v])=>[str(k,24),str(v,12)])):{},
     on:Array.isArray(g.on)?g.on.filter(x=>x&&typeof x.text==='string').slice(-8).map(x=>Object.assign({id:str(x.id,24),pid:str(x.pid,24),code:str(x.code,14),d:str(x.d,12),st:['new','done','gone'].includes(x.st)?x.st:'gone',text:str(x.text,60)},x.ai?{ai:true}:{})):[],
@@ -1940,7 +1958,23 @@ const quizSeen=(()=>{try{const a=JSON.parse(localStorage.getItem('garden-quiz-se
 function markSeen(q){if(!q)return;const h=qHash(q);if(quizSeen[quizSeen.length-1]===h||quizSeen.includes(h))return;quizSeen.push(h);if(quizSeen.length>300)quizSeen.splice(0,quizSeen.length-300);try{localStorage.setItem('garden-quiz-seen',JSON.stringify(quizSeen));}catch(e){}}
 function rememberAsked(){try{localStorage.setItem('garden-quiz-asked',JSON.stringify(askedQs.slice(-80)));}catch(e){}}
 const Q_TOPICS=['Philosophie','China','Robotik','Künstliche Intelligenz','München','Startups','Kunstgeschichte','Weltraum','Chinesische Küche','Psychologie','Bücher und Autoren','2000er Musik','Filme','Mode und Design','Architektur','Erfindungen','Antikes Griechenland','Japan','Tiere','Ozeane','Kaffee und Tee','Wirtschaft','Sprachen','Mythologie','Olympische Spiele','Pflanzen und Gärten','Deutsche Geschichte','Weltreligionen','Klassische Musik','Mathematik','Medizin','Videospiele','Seidenstraße','Berühmte Frauen','Farben','Schokolade','Reisen in Europa','Internet-Geschichte','Pixel Art','Chinesische Philosophie'];
-let qTopicPick=[];function pickTopics(){const fresh=shuffled(Q_TOPICS).slice(0,5);qTopicPick=fresh;}
+let qTopicPick=[],qTopicAt=0,qTopicBusy=false,qTopicSeen=[];
+function pickTopics(force){
+  if(!qTopicPick.length)qTopicPick=shuffled(Q_TOPICS).slice(0,5);
+  const f=window.__quiz&&window.__quiz.topics;if(!f||qTopicBusy)return;
+  if(!force&&Date.now()-qTopicAt<600000)return;
+  qTopicBusy=true;qTopicAt=Date.now();
+  f({avoid:qTopicSeen.slice(-24)}).then(r=>{qTopicBusy=false;const t=r&&Array.isArray(r.topics)?r.topics.filter(x=>typeof x==='string'&&x.trim()).map(x=>x.trim().slice(0,28)).slice(0,6):[];
+    if(t.length>=3){qTopicPick=t;t.forEach(x=>qTopicSeen.push(x));if(quizM.classList.contains('show'))renderQuiz();}
+    else if(force){qTopicPick=shuffled(Q_TOPICS).slice(0,5);if(quizM.classList.contains('show'))renderQuiz();}}).catch(()=>{qTopicBusy=false;});
+}
+// topics people in the room suggested for this show
+function quizSuggestions(st){
+  const out=[];if(!st||!room)return out;const seen=new Set();
+  roomPeers().forEach(p=>{if(p.isMe||!p.presence||p.presence.s!=='h')return;const q=p.presence.qt;if(!q||q.id!==st.id)return;const t=str(q.t,40).trim();if(!t||seen.has(t.toLowerCase()))return;seen.add(t.toLowerCase());out.push({t,n:str(p.presence.n,14)||'Friend'});});
+  return out.slice(0,6);
+}
+let mySugg='';function suggestTopic(st,t){t=String(t||'').trim().slice(0,40);if(!t||!st)return;mySugg=t;if(room)room.presence({qt:{id:st.id,t}}).catch(()=>{});renderQuiz();}
 function quizPrompt(topic,level){
   const avoid=askedQs.slice(-24);
   return `Du schreibst Fragen für eine Quiz-Show unter Freunden. Sprache: Deutsch.
@@ -2005,7 +2039,7 @@ function bankQuestions(level){
 }
 function seenForAi(){const out=askedQs.slice(-30);return out;}
 function newHost(){hostState={id:'q'+Date.now().toString(36),ph:'lobby',qi:0,qs:[],sc:{},left:0,ends:0,topic:''};joinQuiz(hostState.id);}
-function joinQuiz(id){quizJoined=id;myAns=null;if(room)room.presence({qz:{id},qh:quizSeen.slice(-150)}).catch(()=>{});}
+function joinQuiz(id){if(quizJoined!==id)mySugg='';quizJoined=id;myAns=null;if(room)room.presence({qz:{id},qh:quizSeen.slice(-150)}).catch(()=>{});}
 function leaveQuiz(){quizJoined=null;myAns=null;if(room)room.presence({qz:null}).catch(()=>{});}
 async function startQuiz(topic){
   const H=hostState; if(!H||H.ph!=='lobby') return;
@@ -2211,6 +2245,42 @@ function renderC4(){
   }
 }
 setInterval(c4Tick,200);
+/* ---------- "Arbeitest du noch an …?" ----------
+   Like Netflix asking if you are still watching: a project nobody watered for two weeks gets one friendly question.
+   At most one question a day, only in your own garden. */
+const stillM=document.getElementById('stillM');let stillP=null,stillArmed=false,stillDone=false;
+function lastTouch(p){const lg=(home&&home.logs&&home.logs[p.id])||[];return Math.max(p.t||0,p.last||0,lg.length?num(lg[lg.length-1].t,0):0);}
+function stillCandidate(){
+  if(!home||visiting||scene!=='garden'||home.askDay===ofToday())return null;
+  const now=Date.now(),ask=home.ask||{};
+  return home.projects.filter(p=>now-lastTouch(p)>14*864e5&&(ask[p.id]||0)<now).sort((a,b)=>lastTouch(a)-lastTouch(b))[0]||null;
+}
+function stillAsk(p){
+  stillP=p;stillArmed=false;
+  const days=Math.floor((Date.now()-lastTouch(p))/864e5);
+  document.getElementById('stillT').textContent=`Arbeitest du noch an ${p.code}?`;
+  document.getElementById('stillS').textContent=[p.name&&p.name!==p.code?p.name:'',`Seit ${days} Tagen nicht gegossen.`].filter(Boolean).join('. ').replace('..','.');
+  document.getElementById('stillNoS').textContent='Kommt auf den Kompost und bleibt dort sichtbar';
+  home.askDay=ofToday();persist();
+  stillM.classList.add('show');setTimeout(()=>document.getElementById('stillYes').focus(),30);
+}
+function stillClose(){stillM.classList.remove('show');stillP=null;}
+document.getElementById('stillYes').onclick=()=>{const p=stillP;if(!p)return;home.ask[p.id]=Date.now()+3*864e5;persist();stillClose();
+  const [x,y]=posOf(p);av.target={x,y:y+10};};
+document.getElementById('stillLater').onclick=()=>{const p=stillP;if(!p)return;home.ask[p.id]=Date.now()+14*864e5;persist();stillClose();toast(`Okay, ${p.code} macht Pause. Ich frag in zwei Wochen wieder.`,4000);};
+document.getElementById('stillNo').onclick=()=>{const p=stillP;if(!p)return;
+  if(!stillArmed){stillArmed=true;document.getElementById('stillNoS').textContent='Nochmal tippen zum Kompostieren';return;}
+  {const c=JSON.parse(JSON.stringify(p));c.ct=Date.now();c.note=home.notes[p.id]||'';c.lg=(home.logs&&home.logs[p.id])||[];delete c.pos;
+   home.compost=[c].concat(home.compost||[]).slice(0,30);compostFx(p.code);}
+  home.projects=home.projects.filter(x=>x!==p);delete home.notes[p.id];if(home.logs)delete home.logs[p.id];delete home.ask[p.id];
+  if(active===p){active=null;lastActive=undefined;dlg.classList.remove('show');}
+  persist();rebuildLabels();refreshChrome();stillClose();};
+(()=>{const c=document.getElementById('stillGrass').getContext('2d');c.fillStyle='#7dc46c';c.fillRect(0,4,160,8);c.fillStyle='#5aa84a';c.fillRect(0,4,160,1);
+  for(let x=1;x<160;x+=3){const h=2+((x*7)%4);c.fillStyle=x%2?'#6bb35c':'#8fd17c';c.fillRect(x,6-h+2,1,h);}})();
+setInterval(()=>{
+  if(stillDone||document.querySelector('.modal.show')||creator.classList.contains('show')||!document.getElementById('loading').hidden)return;
+  const p=stillCandidate();if(p){stillDone=true;setTimeout(()=>{if(!document.querySelector('.modal.show')&&stillCandidate()===p)stillAsk(p);else stillDone=false;},2500);}
+},4000);
 function askQuiz(){
   const st=quizState(),h=quizHost(),c=c4State(),L=c4Leader();
   const qS=document.getElementById('gQuizS'),cS=document.getElementById('gC4S');
@@ -2248,17 +2318,22 @@ function renderQuiz(){
   if(st.ph==='lobby'||st.ph==='gen'){
     setText(board,st.ph==='gen'?'Gleich geht’s los …':(players.length>1?`${players.length} Spieler sind bereit.`:'Warte auf Mitspieler oder spiel alleine.'));
     clearOpts();
-    if(isHost&&st.ph==='lobby'&&!qTopicPick.length) pickTopics();
-    setLobby(['L',st.id,st.ph,isHost?1:0,qGenErr,isHost?quizLevel:st.host,qTopicPick.join(',')].join('|'),(keep,focus)=>{
+    if(st&&st.ph==='lobby') pickTopics();
+    const sugg=quizSuggestions(st);
+    setLobby(['L',st.id,st.ph,isHost?1:0,qGenErr,isHost?quizLevel:st.host,qTopicPick.join(','),sugg.map(x=>x.t+'/'+x.n).join(','),mySugg].join('|'),(keep,focus)=>{
       if(isHost&&st.ph==='lobby'){
         const row=document.createElement('div');row.className='row';
-        const inp=document.createElement('input');inp.className='inp';inp.id='qTopic';inp.maxLength=40;inp.autocomplete='off';inp.placeholder='Thema (optional)';inp.value=keep;
-        const go=document.createElement('button');go.className='btn dark';go.type='button';go.textContent='▶ Start';go.onclick=()=>startQuiz(inp.value.trim());
+        const inp=document.createElement('input');inp.className='inp';inp.id='qTopic';inp.maxLength=80;inp.autocomplete='off';inp.placeholder=sugg.length?'Thema (sonst die Vorschläge)':'Thema (optional)';inp.value=keep;
+        const go=document.createElement('button');go.className='btn dark';go.type='button';go.textContent='▶ Start';
+        go.onclick=()=>{let t=inp.value.trim();if(!t&&sugg.length)t=sugg.slice(0,3).map(x=>x.t).join(', ');startQuiz(t.slice(0,80));};
         inp.addEventListener('keydown',e=>{if(e.key==='Enter')go.click();});
         row.appendChild(inp);row.appendChild(go);lobby.appendChild(row);
         const ch=document.createElement('div');ch.className='qchips';
+        if(sugg.length){const sl=document.createElement('div');sl.className='qsugg';sl.textContent='Vorschläge: ';
+          sugg.forEach(x=>{const b=document.createElement('button');b.type='button';b.textContent=`${x.t} (${x.n})`;b.onclick=()=>{const cur=inp.value.split(',').map(v=>v.trim()).filter(Boolean);if(!cur.includes(x.t))cur.push(x.t);inp.value=cur.slice(-3).join(', ');inp.focus();};sl.appendChild(b);});
+          lobby.appendChild(sl);}
         qTopicPick.forEach(t=>{const b=document.createElement('button');b.type='button';b.textContent=t;b.onclick=()=>{inp.value=t;inp.focus();};ch.appendChild(b);});
-        const more=document.createElement('button');more.type='button';more.className='more';more.textContent='↻';more.setAttribute('aria-label','Andere Themen');more.onclick=()=>{pickTopics();renderQuiz();};ch.appendChild(more);
+        const more=document.createElement('button');more.type='button';more.className='more';more.textContent='↻';more.setAttribute('aria-label','Andere Themen');more.onclick=()=>{pickTopics(true);renderQuiz();};ch.appendChild(more);
         lobby.appendChild(ch);
         const lv=document.createElement('div');lv.className='row qlvl';const lab=document.createElement('span');lab.textContent='NIVEAU';lv.appendChild(lab);
         Object.entries(Q_LEVELS).forEach(([k,label])=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.setAttribute('aria-pressed',k===quizLevel?'true':'false');if(k===quizLevel)b.classList.add('on');
@@ -2266,7 +2341,21 @@ function renderQuiz(){
         lobby.appendChild(lv);
 
         if(focus) inp.focus();
-      } else if(!isHost){const w=document.createElement('div');w.textContent=st.ph==='gen'?'Gleich geht’s los.':`${st.host} startet gleich die Show.`;lobby.appendChild(w);}
+      } else if(!isHost){const w=document.createElement('div');w.textContent=st.ph==='gen'?'Die KI schreibt gerade neue Fragen …':`${st.host} startet gleich die Show.`;lobby.appendChild(w);
+        if(st.ph==='lobby'&&quizJoined===st.id){
+          const row=document.createElement('div');row.className='row';
+          const inp=document.createElement('input');inp.className='inp';inp.maxLength=40;inp.autocomplete='off';inp.placeholder='Thema vorschlagen';inp.value=keep;
+          const go=document.createElement('button');go.className='btn dark';go.type='button';go.textContent='Vorschlagen';go.onclick=()=>{suggestTopic(st,inp.value);};
+          inp.addEventListener('keydown',e=>{if(e.key==='Enter')go.click();});
+          row.appendChild(inp);row.appendChild(go);lobby.appendChild(row);
+          const ch=document.createElement('div');ch.className='qchips';
+          qTopicPick.forEach(t=>{const b=document.createElement('button');b.type='button';b.textContent=t;b.onclick=()=>suggestTopic(st,t);ch.appendChild(b);});
+          lobby.appendChild(ch);
+          const all=sugg.map(x=>x.t);if(mySugg&&!all.includes(mySugg))all.unshift(mySugg);
+          if(all.length){const sl=document.createElement('div');sl.className='qsugg';sl.textContent='Vorschläge: '+all.join(', ');lobby.appendChild(sl);}
+          if(mySugg){const m=document.createElement('div');m.className='qsugg';m.textContent=`Dein Vorschlag „${mySugg}“ ist bei ${st.host}.`;lobby.appendChild(m);}
+          if(focus)inp.focus();
+        }}
       if(qGenErr&&isHost){const e=document.createElement('div');e.textContent=qGenErr;lobby.appendChild(e);}
     });
   } else if(st.ph==='end'){
@@ -3010,7 +3099,7 @@ const gardensM=document.getElementById('gardens');
 document.getElementById('bGardens').onclick=()=>{renderGardens();gardensM.classList.add('show');};
 document.getElementById('gClose').onclick=()=>gardensM.classList.remove('show');
 document.getElementById('bHome').onclick=()=>{hideHomeHint(true);goHome();};
-function closeModals(){compM.classList.remove('show');lineM.classList.remove('show');askM.classList.remove('show');if(quizM.classList.contains('show'))closeQuiz();if(c4M.classList.contains('show'))closeC4();dashM.classList.remove('show');booksM.classList.remove('show');if(creator.classList.contains('show'))closeCreator();help.classList.remove('show');gardensM.classList.remove('show');addM.classList.remove('show');}
+function closeModals(){compM.classList.remove('show');lineM.classList.remove('show');askM.classList.remove('show');if(quizM.classList.contains('show'))closeQuiz();if(c4M.classList.contains('show'))closeC4();stillM.classList.remove('show');dashM.classList.remove('show');booksM.classList.remove('show');if(creator.classList.contains('show'))closeCreator();help.classList.remove('show');gardensM.classList.remove('show');addM.classList.remove('show');}
 
 /* ================= gardens (visiting) ================= */
 function renderNeighbours(){
@@ -4389,7 +4478,7 @@ function maybeAutoVisit(){
 #gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
 #gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795378014"></script>
+<script src="config.js?v=1795381752"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -4419,7 +4508,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '22.11. 21:06';
+  const BUILD = '22.11. 22:09';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -4619,7 +4708,14 @@ function maybeAutoVisit(){
   window.__quiz = {
     async make(o) {
       try {
-        const { data, error } = await sb.functions.invoke('agents', { body: { kind: 'quiz', topic: String(o.topic || '').slice(0, 40), level: o.level, n: o.n, avoid: (o.avoid || []).slice(-30) } });
+        const { data, error } = await sb.functions.invoke('agents', { body: { kind: 'quiz', topic: String(o.topic || '').slice(0, 80), level: o.level, n: o.n, avoid: (o.avoid || []).slice(-30) } });
+        if (error) return { error: 'net' };
+        return data || { error: 'net' };
+      } catch (e) { return { error: 'net' }; }
+    },
+    async topics(o) {
+      try {
+        const { data, error } = await sb.functions.invoke('agents', { body: { kind: 'topics', avoid: ((o && o.avoid) || []).slice(-24) } });
         if (error) return { error: 'net' };
         return data || { error: 'net' };
       } catch (e) { return { error: 'net' }; }
@@ -4660,10 +4756,12 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 22.11. 21:06';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 22.11. 22:09';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
-    out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid').forEach(k => localStorage.removeItem(k)); } catch (e) {} location.reload(); };
+    out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid', 'garden-pending').forEach(k => localStorage.removeItem(k)); } catch (e) {}
+      // give the browser a moment to write the cleared storage before the page goes away
+      setTimeout(() => location.reload(), 250); };
     const box = left || help; if (left) { left.style.display = 'flex'; left.style.gap = '8px'; left.style.flexWrap = 'wrap'; }
     box.appendChild(out);
     if (isOwner) { const im = document.createElement('button'); im.type = 'button'; im.className = 'btn'; im.textContent = 'Import'; im.onclick = openImport; box.appendChild(im); }
