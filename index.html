@@ -1715,6 +1715,56 @@ function openDash(){
 
 /* ================= quiz show (multiplayer via presence) ================= */
 const QBANK=[
+ ['Wie viele Spieler einer Fußballmannschaft stehen auf dem Feld?',['11','10','12'],0],
+ ['Welche Farbe entsteht, wenn man Blau und Gelb mischt?',['Grün','Lila','Orange'],0],
+ ['Welcher Planet ist der Sonne am nächsten?',['Merkur','Venus','Mars'],0],
+ ['In welcher Stadt steht der Eiffelturm?',['Paris','Lyon','Brüssel'],0],
+ ['Welches Gas nehmen Pflanzen für die Photosynthese auf?',['Kohlendioxid','Sauerstoff','Stickstoff'],0],
+ ['Wie viele Beine hat eine Spinne?',['8','6','10'],0],
+ ['Was ist die Hauptstadt von Kanada?',['Toronto','Ottawa','Vancouver'],1],
+ ['Welcher Ozean ist der größte?',['Pazifik','Atlantik','Indischer Ozean'],0],
+ ['Wer malte die Mona Lisa?',['Leonardo da Vinci','Michelangelo','Raffael'],0],
+ ['Wie heißt der höchste Berg der Welt?',['Mount Everest','K2','Kilimandscharo'],0],
+ ['Welcher Fluss fließt durch Köln?',['Rhein','Elbe','Main'],0],
+ ['Wie viele Tage hat ein Schaltjahr?',['366','365','364'],0],
+ ['Welche Sprache spricht man in Brasilien?',['Portugiesisch','Spanisch','Französisch'],0],
+ ['Welches Instrument hat meistens 88 Tasten?',['Klavier','Orgel','Akkordeon'],0],
+ ['Wer schrieb „Romeo und Julia“?',['William Shakespeare','Johann Wolfgang von Goethe','Charles Dickens'],0],
+ ['Wofür steht die Formel H₂O?',['Wasser','Wasserstoffperoxid','Kochsalz'],0],
+ ['Welches dieser Tiere ist ein Säugetier?',['Delfin','Hai','Thunfisch'],0],
+ ['In welchem Land stehen die Pyramiden von Gizeh?',['Ägypten','Mexiko','Sudan'],0],
+ ['Wie viele Seiten hat ein Sechseck?',['6','5','8'],0],
+ ['Welcher Komponist wurde in Bonn geboren?',['Ludwig van Beethoven','Wolfgang Amadeus Mozart','Johann Sebastian Bach'],0],
+ ['Welche Farbe hat ein Smaragd?',['Grün','Rot','Blau'],0],
+ ['Welches Organ pumpt das Blut durch den Körper?',['Herz','Lunge','Leber'],0],
+ ['Wie viele Ringe zeigt die olympische Flagge?',['5','4','6'],0],
+ ['In welcher Stadt findet das Oktoberfest statt?',['München','Stuttgart','Nürnberg'],0],
+ ['Welcher Planet wird „der Rote Planet“ genannt?',['Mars','Venus','Jupiter'],0],
+ ['Welches Metall ist bei Raumtemperatur flüssig?',['Quecksilber','Blei','Zinn'],0],
+ ['Welches ist das flächenmäßig kleinste Bundesland?',['Bremen','Saarland','Hamburg'],0],
+ ['Wie heißt die Währung Japans?',['Yen','Won','Yuan'],0],
+ ['Was ist das chemische Symbol für Gold?',['Au','Ag','Go'],0],
+ ['Wie viele Kammern hat das menschliche Herz?',['4','2','3'],0],
+ ['Welches Land hat die Form eines Stiefels?',['Italien','Griechenland','Spanien'],0],
+ ['Wer erfand in Europa den Buchdruck mit beweglichen Lettern?',['Johannes Gutenberg','Martin Luther','Albrecht Dürer'],0],
+ ['Welcher Kontinent ist der größte?',['Asien','Afrika','Nordamerika'],0],
+ ['Welche Stadt wird „Big Apple“ genannt?',['New York','Chicago','Los Angeles'],0],
+ ['Welches ist das schnellste Landtier?',['Gepard','Löwe','Gazelle'],0],
+ ['Was ist die Hauptstadt von Österreich?',['Wien','Salzburg','Graz'],0],
+ ['Welches Vitamin bildet der Körper mithilfe von Sonnenlicht?',['Vitamin D','Vitamin C','Vitamin A'],0],
+ ['Wie viel Grad hat ein rechter Winkel?',['90','180','45'],0],
+ ['Welches Land wurde 2014 Fußball-Weltmeister?',['Deutschland','Argentinien','Brasilien'],0],
+ ['Wer betrat als erster Mensch den Mond?',['Neil Armstrong','Buzz Aldrin','Juri Gagarin'],0],
+ ['Was ist die Hauptstadt Chinas?',['Peking','Shanghai','Hongkong'],0],
+ ['Wie heißt das chinesische Neujahrsfest auch?',['Frühlingsfest','Laternenfest','Drachenbootfest'],0],
+ ['Was bedeutet „Nǐ hǎo“ auf Deutsch?',['Hallo','Danke','Tschüss'],0],
+ ['Wie heißt der höchste Berg Deutschlands?',['Zugspitze','Watzmann','Feldberg'],0],
+ ['Wie viele Felder hat ein Schachbrett?',['64','81','100'],0],
+ ['Wie viele Saiten hat eine klassische Gitarre?',['6','5','7'],0],
+ ['Wie viele Bundesländer hat Deutschland?',['16','15','17'],0],
+ ['Welches Tier ist auf der Flagge von Wales zu sehen?',['Drache','Löwe','Adler'],0],
+ ['Welches dieser Säugetiere legt Eier?',['Schnabeltier','Delfin','Fledermaus'],0],
+ ['Was ist die Hauptstadt von Spanien?',['Madrid','Barcelona','Sevilla'],0],
  ['Welches ist der größte Planet unseres Sonnensystems?',['Jupiter','Saturn','Neptun'],0],
  ['Wie viele Knochen hat ein erwachsener Mensch?',['206','156','306'],0],
  ['In welchem Jahr fiel die Berliner Mauer?',['1989','1991','1987'],0],
@@ -1753,6 +1803,51 @@ const QBANK=[
  ['Welche Stadt war Gastgeber der Olympischen Sommerspiele 2008?',['Tokio','Peking','Seoul'],1],
 ];
 const QBANK_HARD=[
+ ['In welchem Jahr wurde die Bundesrepublik Deutschland gegründet?',['1949','1945','1955'],0],
+ ['Wer schrieb „Also sprach Zarathustra“?',['Friedrich Nietzsche','Immanuel Kant','Arthur Schopenhauer'],0],
+ ['Wer schrieb die „Kritik der reinen Vernunft“?',['Immanuel Kant','Georg Wilhelm Friedrich Hegel','Johann Gottlieb Fichte'],0],
+ ['Wie heißt die Hauptstadt der Mongolei?',['Ulaanbaatar','Astana','Bischkek'],0],
+ ['Welches Element hat die Ordnungszahl 1?',['Wasserstoff','Helium','Lithium'],0],
+ ['In welchem Jahr landete Apollo 11 auf dem Mond?',['1969','1967','1971'],0],
+ ['Wer formulierte die Unschärferelation?',['Werner Heisenberg','Erwin Schrödinger','Niels Bohr'],0],
+ ['Welche Stadt war die Hauptstadt der Tang-Dynastie?',["Chang'an",'Peking','Nanjing'],0],
+ ['Wem wird „Die Kunst des Krieges“ zugeschrieben?',['Sunzi','Konfuzius','Laozi'],0],
+ ['Welches Werk wird Laozi zugeschrieben?',['Daodejing','Die Gespräche (Lunyu)','Das Buch der Wandlungen'],0],
+ ['Wie viele Herzen hat ein Oktopus?',['3','1','2'],0],
+ ['In welchem Ozean liegt der Marianengraben?',['Pazifik','Atlantik','Indischer Ozean'],0],
+ ['In welchem Jahr wurde die Bastille gestürmt?',['1789','1776','1799'],0],
+ ['Wer komponierte „Die Zauberflöte“?',['Wolfgang Amadeus Mozart','Joseph Haydn','Ludwig van Beethoven'],0],
+ ['Welches Land hat die meisten Zeitzonen, Überseegebiete mitgezählt?',['Frankreich','Russland','USA'],0],
+ ['Wie heißt der längste Fluss Chinas?',['Jangtse','Gelber Fluss','Mekong'],0],
+ ['Wer malte „Die Sternennacht“?',['Vincent van Gogh','Claude Monet','Paul Cézanne'],0],
+ ['Wer schrieb „Der Process“?',['Franz Kafka','Robert Musil','Thomas Mann'],0],
+ ['Welches Gas macht den größten Teil der Erdatmosphäre aus?',['Stickstoff','Sauerstoff','Argon'],0],
+ ['In welcher Stadt wurde Mozart geboren?',['Salzburg','Wien','Linz'],0],
+ ['Wie heißt die Hauptstadt von Neuseeland?',['Wellington','Auckland','Christchurch'],0],
+ ['Welches Jahr gilt als Ende des Weströmischen Reiches?',['476','410','1453'],0],
+ ['Wer begründete die Psychoanalyse?',['Sigmund Freud','Carl Gustav Jung','Alfred Adler'],0],
+ ['Welche Programmiersprache entwickelte Guido van Rossum?',['Python','Ruby','Perl'],0],
+ ['In welchem Jahr wurde das erste iPhone vorgestellt?',['2007','2005','2009'],0],
+ ['Welches Land hat eine nicht rechteckige Nationalflagge?',['Nepal','Bhutan','Schweiz'],0],
+ ['Wer schrieb „Hundert Jahre Einsamkeit“?',['Gabriel García Márquez','Jorge Luis Borges','Mario Vargas Llosa'],0],
+ ['In welchem heutigen Land steht der Hadrianswall?',['Großbritannien','Deutschland','Frankreich'],0],
+ ['Wofür bekam Wilhelm Conrad Röntgen 1901 den ersten Physik-Nobelpreis?',['Die Entdeckung einer neuen Strahlung','Die Entdeckung der Radioaktivität','Die Entdeckung des Elektrons'],0],
+ ['Welche Stadt richtete 1972 die Olympischen Sommerspiele aus?',['München','Montreal','Moskau'],0],
+ ['Welcher Fluss fließt mitten durch Shanghai?',['Huangpu','Perlfluss','Li-Fluss'],0],
+ ['Wer war der erste Bundeskanzler der Bundesrepublik?',['Konrad Adenauer','Willy Brandt','Ludwig Erhard'],0],
+ ['Welches Organ produziert Insulin?',['Bauchspeicheldrüse','Leber','Niere'],0],
+ ['In welcher Einheit misst man den elektrischen Widerstand?',['Ohm','Volt','Ampere'],0],
+ ['In welchem Jahr wurde Google gegründet?',['1998','1996','2000'],0],
+ ['Was ist die kleinste Primzahl?',['2','1','3'],0],
+ ['Welcher Kaiser ließ die Terrakotta-Armee anlegen?',['Qin Shi Huang','Kangxi','Han Wudi'],0],
+ ['Aus welcher Pflanze wird Tequila hergestellt?',['Agave','Kaktusfeige','Zuckerrohr'],0],
+ ['In welchem Jahr endete der Zweite Weltkrieg in Europa?',['1945','1944','1946'],0],
+ ['Welcher Philosoph sagte „Ich denke, also bin ich“?',['René Descartes','Blaise Pascal','Baruch de Spinoza'],0],
+ ['Wer schrieb „Der Steppenwolf“?',['Hermann Hesse','Thomas Mann','Erich Kästner'],0],
+ ['Welche Hauptstadt liegt am höchsten über dem Meer?',['La Paz','Quito','Bogotá'],0],
+ ['Welches chinesische Sternzeichen folgt auf die Ratte?',['Büffel','Tiger','Hase'],0],
+ ['Wie viele Elemente hatte das Periodensystem nach der Benennung von 2016?',['118','112','124'],0],
+ ['Welcher Architekt entwarf die Glaspyramide im Louvre?',['I. M. Pei','Frank Gehry','Renzo Piano'],0],
  ['Welches chemische Element hat das Symbol W?',['Wolfram','Wismut','Vanadium'],0],
  ['In welchem Jahr wurde die Volksrepublik China gegründet?',['1911','1949','1966'],1],
  ['Welche Dynastie regierte China als letzte?',['Ming','Qing','Song'],1],
@@ -1798,6 +1893,9 @@ const Q_LEVEL_TEXT={
 };
 let quizLevel='schwer'; try{const l=localStorage.getItem('garden-quiz-level');if(Q_LEVELS[l])quizLevel=l;}catch(e){}
 const askedQs=(()=>{try{const a=JSON.parse(localStorage.getItem('garden-quiz-asked')||'[]');return Array.isArray(a)?a.filter(x=>typeof x==='string').slice(-80):[];}catch(e){return [];}})();
+function qHash(t){let h=5381;t=String(t);for(let i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return (h>>>0).toString(36).slice(-6);}
+const quizSeen=(()=>{try{const a=JSON.parse(localStorage.getItem('garden-quiz-seen')||'[]');return Array.isArray(a)?a.filter(x=>typeof x==='string'&&x.length<=6).slice(-300):[];}catch(e){return [];}})();
+function markSeen(q){if(!q)return;const h=qHash(q);if(quizSeen[quizSeen.length-1]===h||quizSeen.includes(h))return;quizSeen.push(h);if(quizSeen.length>300)quizSeen.splice(0,quizSeen.length-300);try{localStorage.setItem('garden-quiz-seen',JSON.stringify(quizSeen));}catch(e){}}
 function rememberAsked(){try{localStorage.setItem('garden-quiz-asked',JSON.stringify(askedQs.slice(-80)));}catch(e){}}
 const Q_TOPICS=['Philosophie','China','Robotik','Künstliche Intelligenz','München','Startups','Kunstgeschichte','Weltraum','Chinesische Küche','Psychologie','Bücher und Autoren','2000er Musik','Filme','Mode und Design','Architektur','Erfindungen','Antikes Griechenland','Japan','Tiere','Ozeane','Kaffee und Tee','Wirtschaft','Sprachen','Mythologie','Olympische Spiele','Pflanzen und Gärten','Deutsche Geschichte','Weltreligionen','Klassische Musik','Mathematik','Medizin','Videospiele','Seidenstraße','Berühmte Frauen','Farben','Schokolade','Reisen in Europa','Internet-Geschichte','Pixel Art','Chinesische Philosophie'];
 let qTopicPick=[];function pickTopics(){const fresh=shuffled(Q_TOPICS).slice(0,5);qTopicPick=fresh;}
@@ -1848,7 +1946,7 @@ function quizPlayers(st){
   const list=[]; if(!st) return list;
   if(quizJoined===st.id) list.push({peer:myPeer(),name:me().name||'Me',look:me().look,ans:myAns&&myAns.id===st.id?myAns:null,me:true});
   if(room){const ps=roomPeers();
-    ps.forEach(p=>{if(p.isMe||p.kind!=='viewer')return;const z=p.presence&&p.presence.qz;if(!z||z.id!==st.id)return;
+    ps.forEach(p=>{if(p.isMe||p.kind!=='viewer'||!p.presence||p.presence.s!=='h')return;const z=p.presence.qz;if(!z||z.id!==st.id)return;
       list.push({peer:p.peer,name:str(p.presence.n,14)||'Friend',look:cleanLook(p.presence.l),ans:Number.isInteger(z.qi)?{qi:z.qi,c:z.c,t:num(z.t,0)}:null});});}
   return list.slice(0,6);
 }
@@ -1856,11 +1954,16 @@ function shuffled(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floo
 function mixQ([q,o,a]){const idx=shuffled([0,1,2]);return [q,idx.map(i=>o[i]),idx.indexOf(a)];}
 function bankQuestions(level){
   const pool=level==='leicht'?QBANK:level==='schwer'?QBANK_HARD:QBANK.concat(QBANK_HARD);
-  const fresh=pool.filter(x=>!askedQs.includes(x[0]));
-  return shuffled(fresh.length>=Q_COUNT?fresh:pool).slice(0,Q_COUNT).map(mixQ);
+  // fewest people in the room have seen it first; random among equals
+  const seenSets=[new Set(quizSeen.concat(askedQs.map(qHash)))];
+  if(room)roomPeers().forEach(p=>{if(p.isMe||!p.presence||p.presence.s!=='h')return;const a=p.presence.qh;if(Array.isArray(a))seenSets.push(new Set(a.filter(x=>typeof x==='string').slice(-300)));});
+  const scored=shuffled(pool).map(x=>{const h=qHash(x[0]);return {x,n:seenSets.reduce((k,S)=>k+(S.has(h)?1:0),0)};});
+  scored.sort((a,b)=>a.n-b.n);
+  return scored.slice(0,Q_COUNT).map(o=>mixQ(o.x));
 }
+function seenForAi(){const out=askedQs.slice(-30);return out;}
 function newHost(){hostState={id:'q'+Date.now().toString(36),ph:'lobby',qi:0,qs:[],sc:{},left:0,ends:0,topic:''};joinQuiz(hostState.id);}
-function joinQuiz(id){quizJoined=id;myAns=null;if(room)room.presence({qz:{id}}).catch(()=>{});}
+function joinQuiz(id){quizJoined=id;myAns=null;if(room)room.presence({qz:{id},qh:quizSeen.slice(-150)}).catch(()=>{});}
 function leaveQuiz(){quizJoined=null;myAns=null;if(room)room.presence({qz:null}).catch(()=>{});}
 async function startQuiz(topic){
   const H=hostState; if(!H||H.ph!=='lobby') return;
@@ -1940,6 +2043,7 @@ const qStage=document.getElementById('qStage'),qsx=qStage.getContext('2d');
 function renderQuiz(){
   if(!quizM.classList.contains('show')) return;
   const st=quizState(), h=quizHost(), isHost=!!hostState&&h.self;
+  if(st&&st.q&&(st.ph==='q'||st.ph==='reveal')&&quizJoined===st.id)markSeen(st.q);
   const board=document.getElementById('qBoard'),opts=document.getElementById('qOpts'),lobby=document.getElementById('qLobby'),info=document.getElementById('qInfo');
   const players=quizPlayers(st);
   // Rebuild a block only when what it shows has changed: this runs 4x a second, and
@@ -4098,7 +4202,7 @@ function maybeAutoVisit(){
 #gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
 #gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795246893"></script>
+<script src="config.js?v=1795344800"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -4128,7 +4232,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '21.11. 08:41';
+  const BUILD = '22.11. 11:53';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -4369,7 +4473,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 21.11. 08:41';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 22.11. 11:53';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid').forEach(k => localStorage.removeItem(k)); } catch (e) {} location.reload(); };
