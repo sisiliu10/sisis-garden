@@ -1,10 +1,10 @@
 /* ================= actions: hug, kiss, push ================= */
 let myAct=null,actN=0,myHeartUntil=0,myWetUntil=0,knock=null;const actSeen={};
 const actMenu=document.createElement('div');actMenu.id='actMenu';document.body.appendChild(actMenu);
-[['swing','🎐 Anschubsen'],['kiss','💋 Kiss'],['push','💨 Push'],['balloon','💦 Balloon']].forEach(([k,l])=>{const b=document.createElement('button');b.className='btn';b.type='button';b.textContent=l;b.dataset.k=k;
-  b.addEventListener('click',e=>{e.stopPropagation();const id=actMenu.dataset.p;closeActMenu();goAct(k,id);});actMenu.appendChild(b);});
+[['pill','🦙 Mitreiten'],['swing','🎐 Anschubsen'],['kiss','💋 Kiss'],['push','💨 Push'],['balloon','💦 Balloon']].forEach(([k,l])=>{const b=document.createElement('button');b.className='btn';b.type='button';b.textContent=l;b.dataset.k=k;
+  b.addEventListener('click',e=>{e.stopPropagation();const id=actMenu.dataset.p;closeActMenu();if(k==='pill')goPillion(id);else goAct(k,id);});actMenu.appendChild(b);});
 function closeActMenu(){actMenu.classList.remove('show');}
-function openActMenu(p,cx,cy){actMenu.dataset.p=p.id;actMenu.querySelectorAll('button').forEach(b=>{const k=b.dataset.k;b.hidden=p.sg?!(k==='swing'||k==='balloon'||k==='kiss'):k==='swing';});actMenu.classList.add('show');
+function openActMenu(p,cx,cy){actMenu.dataset.p=p.id;actMenu.querySelectorAll('button').forEach(b=>{const k=b.dataset.k;b.hidden=k==='pill'?!canPillion(p):p.sg?!(k==='swing'||k==='balloon'||k==='kiss'):k==='swing';});actMenu.classList.add('show');
   const w=actMenu.offsetWidth||220,h=actMenu.offsetHeight||40;actMenu.style.left=clamp(cx-w/2,6,innerWidth-w-6)+'px';actMenu.style.top=clamp(cy-h-14,6,innerHeight-h-6)+'px';}
 function peerAt(lx,ly){const ps=livePeers().filter(p=>p.scene==='garden'&&(!p.swim||p.sg));let best=null,bd=1e9;ps.forEach(p=>{const d=Math.hypot(lx-p.x,(ly-(p.y-11))*.6);if(Math.abs(lx-p.x)<10&&ly>p.y-28&&ly<p.y+4&&d<bd){bd=d;best=p;}});return best;}
 function peerById(id){return livePeers().find(p=>p.id===id);}
@@ -132,20 +132,38 @@ function drawAlpaca(x,y,dir,frame,t){
   R(dir>0?hx+2:hx-5,y-25,4,3,Cl);R(dir>0?hx+5:hx-5,y-25,1,1,O);R(hx+dir,y-26,1,1,O);R(dir>0?hx+3:hx-4,y-23,2,1,'#e9a0a8');
   R(x-4,y-16,8,3,'#e8506c');R(x-4,y-14,8,1,'#f2c94c');R(x-4,y-13,1,2,'#f2c94c');R(x+3,y-13,1,2,'#f2c94c');
 }
-function drawRiderSwim(x,y,dir,look,moving,t,heart){
+function drawRiderSwim(x,y,dir,look,moving,t,heart,pass){
   const wl=Math.round(y-7+Math.sin(t*3)*0.6);
   g.save();g.beginPath();g.rect(x-30,wl-60,60,60);g.clip();
-  drawRider(x,y+6,dir,look,false,t,heart);g.restore();
+  drawRider(x,y+6,dir,look,false,t,heart,pass);g.restore();
   const k=Math.floor(t*4)%2;ell(Math.round(x),wl,14+k,2,'#9fdcfa');ell(Math.round(x),wl,11,1,'#3f9ad8');
   if(moving){R(Math.round(x-dir*15),wl,3,1,'#cfeefc');R(Math.round(x-dir*18),wl+1,2,1,'#cfeefc');}
 }
-function drawRider(x,y,dir,look,moving,t,heart){
-  const fr=moving?Math.floor(t*7)%2+1:0,bob=moving&&fr===1?1:0;
+function drawRider(x,y,dir,look,moving,t,heart,pass){
+  const fr=moving?Math.floor(t*7)%2+1:0,bob=moving&&fr===1?1:0,front=pass?dir*2:-dir;
   drawAlpaca(x,y-bob,dir,fr,t);
-  drawAvatar(g,x-dir,y-9-bob,look,{sit:true,ride:true,shadow:false,blink:(t%4)<.12,heart,t});
-  R(Math.round(x-dir)-2,Math.round(y)-13-bob,4,2,'#e8506c');
+  if(pass)drawAvatar(g,x-dir*6,y-9-bob,pass.look,{sit:true,ride:true,shadow:false,blink:((t+1.3)%4)<.12,t});
+  drawAvatar(g,x+front,y-9-bob,look,{sit:true,ride:true,shadow:false,blink:(t%4)<.12,heart,t});
+  R(Math.round(x+front)-2,Math.round(y)-13-bob,4,2,'#e8506c');
 }
-function goRide(){if(av.swim||av.jump||knock||mySeat!==null)return;pendRide=true;av.run=false;av.target={x:alp.x,y:alp.y+3};}
+// riding together: tap someone on the alpaca, "Mitreiten", and you sit behind them; any tap or step gets you off again
+let passOf=null,pendPass=null;
+function passengerOf(id){return id===myPeer()?livePeers().find(p=>p.pl===id&&p.scene==='garden'):passOf===id?{me:true,look:me().look}:livePeers().find(p=>p.pl===id&&p.scene==='garden');}
+function canPillion(p){return !!p&&p.ride&&!p.swim&&p.scene==='garden'&&!riding&&!passOf&&mySeat===null&&!passengerOf(p.id);}
+function goPillion(id){const p=peerById(id);if(!canPillion(p)||av.swim||av.jump||knock)return;pendPass=id;av.run=false;av.target={x:p.x,y:p.y+3};}
+function hopOn(id){pendPass=null;passOf=id;av.target=null;Sfx.sit();lastPres='';for(let i=0;i<5;i++)spawn({kind:'spark',x:av.x+(Math.random()*14-7),y:av.y-22-Math.random()*8,vy:-10,life:.5});}
+function hopOff(){if(!passOf)return;const d=peerById(passOf),dir=(d&&ghosts[d.id]&&ghosts[d.id].dir)||1;passOf=null;
+  const nx=av.x-dir*13;if(scene==='garden'&&!blocked(nx,av.y+3)&&!isWater(nx,av.y+3)){av.x=nx;av.y+=3;}lastPres='';}
+function updatePillion(){
+  if(pendPass){const d=peerById(pendPass);if(!canPillion(d)||!av.target){pendPass=null;}else{av.target={x:d.x,y:d.y+3};if(Math.hypot(av.x-d.x,av.y-d.y)<14)hopOn(pendPass);}}
+  if(!passOf)return;
+  const d=peerById(passOf);
+  // off when the rider gets off or leaves, when two hop on at once (the lower id stays), or when I walk
+  const twin=livePeers().find(p=>p.pl===passOf&&String(p.id)<String(myPeer()));
+  if(scene!=='garden'||!d||!d.ride||d.scene!=='garden'||twin||['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d'].some(k=>keys[k])){hopOff();return;}
+  av.x=d.x;av.y=d.y;av.dir=(ghosts[d.id]&&ghosts[d.id].dir)||av.dir;av.moving=d.moving;av.target=null;av.swim=false;
+}
+function goRide(){if(av.swim||av.jump||knock||mySeat!==null||passOf)return;pendRide=true;av.run=false;av.target={x:alp.x,y:alp.y+3};}
 function mount(){pendRide=false;riding=true;Sfx.sit();av.target=null;av.x=alp.x;av.y=alp.y;av.dir=alp.dir;lastPres='';for(let i=0;i<5;i++)spawn({kind:'spark',x:av.x+(Math.random()*14-7),y:av.y-22-Math.random()*8,vy:-10,life:.5});}
 function dismount(){if(!riding)return;if(av.swim||av.jump)return;riding=false;alp.x=alp.hx=alp.tx=av.x;alp.y=alp.hy=alp.ty=av.y;alp.dir=av.dir||1;alp.next=performance.now()+4000;
   const nx=av.x-(av.dir||1)*11;if(!blocked(nx,av.y+2)&&!isWater(nx,av.y+2)){av.x=nx;av.y+=2;}lastPres='';}
@@ -160,6 +178,7 @@ function alpLeader(){
   return String(mine)<String(low.id)?{me:true}:{peer:low};
 }
 function updateAlpaca(dt){
+  updatePillion();
   if(scene!=='garden')return;
   if(riding){alp.x=av.x;alp.y=av.y;return;}
   if(alpDrop){alp.x=alp.hx=alp.tx=alpDrop.x;alp.y=alp.hy=alp.ty=alpDrop.y;alp.next=performance.now()+4000;alpDrop=null;}

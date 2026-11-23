@@ -220,7 +220,7 @@ Antworte nur mit JSON, ohne Markdown und ohne Erklärung:
 }
 const Q_TIME=15000, Q_REVEAL=4200, Q_COUNT=8;
 const quizM=document.getElementById('quizM'), qJoin=document.getElementById('qJoin');
-let hostState=null, quizJoined=null, myAns=null, qLastPub='', qLastPubT=0, qGenBusy=false, qGenErr='';
+let hostState=null, quizJoined=null, myAns=null, qLastPub='', qLastPubT=0, qGenBusy=false, qGenErr='', qBackTopic='';
 function myPeer(){try{const m=room&&room.peers().find(p=>p.isMe&&p.sameTab);return m?m.peer:'me';}catch(e){return 'me';}}
 function quizRank(id,ph,key){const t=parseInt(String(id).slice(1),36)||0;return [ph&&ph!=='lobby'?0:1,t,String(key)];}
 function rankLess(a,b){for(let i=0;i<3;i++){if(a[i]<b[i])return true;if(a[i]>b[i])return false;}return false;}
@@ -284,12 +284,14 @@ async function startQuiz(topic){
         &&x.o.every(v=>(typeof v==='string'||typeof v==='number')&&String(v).trim())
         &&new Set(x.o.map(v=>String(v).trim().toLowerCase())).size===3&&Number.isInteger(x.a)&&x.a>=0&&x.a<3;
       qs=(Array.isArray(arr)?arr:[]).filter(ok).slice(0,Q_COUNT).map(x=>mixQ([x.q.trim().slice(0,200),x.o.map(v=>String(v).trim().slice(0,60)),x.a]));
-      if(qs.length<4){qs=null;qGenErr='Zum Thema kamen keine passenden Fragen. Es geht mit gemischten Fragen weiter.';}
+      if(qs.length<4){qs=null;qGenErr='Zum Thema kamen keine passenden Fragen.';}
     }catch(e){qs=null;const m=String(e&&e.message||'');
-      qGenErr=m==='off'?'Fragen zum Thema gehen erst, wenn die KI eingerichtet ist. Es geht mit gemischten Fragen weiter.':m==='limit'?'Für heute sind alle Themen-Quizze aufgebraucht. Es geht mit gemischten Fragen weiter.':'Die Fragen konnten gerade nicht erstellt werden. Es geht mit gemischten Fragen weiter.';}
+      qGenErr=m==='off'?'Fragen zum Thema gehen erst, wenn die KI eingerichtet ist.':m==='limit'?'Für heute sind alle Themen-Quizze aufgebraucht.':'Die KI hat gerade nicht geantwortet.';}
     clearTimeout(to);
   }
   if(hostState!==H) return;
+  // a chosen topic never turns into random questions without asking: back to the lobby
+  if(!qs&&H.topic){qGenErr+=` Nochmal ▶ Start für „${H.topic}“, oder gemischte Fragen spielen.`;qBackTopic=H.topic;H.ph='lobby';renderQuiz();return;}
   if(!qs){qs=bankQuestions(level);H.topic='';}
   H.qs=qs; qs.forEach(q=>askedQs.push(q[0])); if(askedQs.length>80)askedQs.splice(0,askedQs.length-80); rememberAsked();
   H.ph='q'; H.ends=Date.now()+Q_TIME; H.left=Q_TIME/1000; myAns=null; renderQuiz();
@@ -547,7 +549,7 @@ function renderQuiz(){
     setLobby(['L',st.id,st.ph,isHost?1:0,qGenErr,isHost?quizLevel:st.host,qTopicPick.join(','),sugg.map(x=>x.t+'/'+x.n).join(','),mySugg].join('|'),(keep,focus)=>{
       if(isHost&&st.ph==='lobby'){
         const row=document.createElement('div');row.className='row';
-        const inp=document.createElement('input');inp.className='inp';inp.id='qTopic';inp.maxLength=80;inp.autocomplete='off';inp.placeholder=sugg.length?'Thema (sonst die Vorschläge)':'Thema (optional)';inp.value=keep;
+        const inp=document.createElement('input');inp.className='inp';inp.id='qTopic';inp.maxLength=80;inp.autocomplete='off';inp.placeholder=sugg.length?'Thema (sonst die Vorschläge)':'Thema (optional)';inp.value=keep||qBackTopic;qBackTopic='';
         const go=document.createElement('button');go.className='btn dark';go.type='button';go.textContent='▶ Start';
         go.onclick=()=>{let t=inp.value.trim();if(!t&&sugg.length)t=sugg.slice(0,3).map(x=>x.t).join(', ');startQuiz(t.slice(0,80));};
         inp.addEventListener('keydown',e=>{if(e.key==='Enter')go.click();});
@@ -580,7 +582,8 @@ function renderQuiz(){
           if(mySugg){const m=document.createElement('div');m.className='qsugg';m.textContent=`Dein Vorschlag „${mySugg}“ ist bei ${st.host}.`;lobby.appendChild(m);}
           if(focus)inp.focus();
         }}
-      if(qGenErr&&isHost){const e=document.createElement('div');e.textContent=qGenErr;lobby.appendChild(e);}
+      if(qGenErr&&isHost){const e=document.createElement('div');e.textContent=qGenErr;lobby.appendChild(e);
+        if(st.ph==='lobby'){const mx=document.createElement('div');mx.className='qchips';const b=document.createElement('button');b.type='button';b.textContent='Gemischte Fragen spielen';b.onclick=()=>startQuiz('');mx.appendChild(b);lobby.appendChild(mx);}}
     });
   } else if(st.ph==='end'){
     setText(board,'Die Show ist vorbei!');clearOpts();

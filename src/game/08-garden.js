@@ -215,6 +215,7 @@ cvs.addEventListener('pointerdown',e=>{
   if(scene==='island'){islePointer(e.clientX/S-IX,e.clientY/S-IY);return;}
   const lx=e.clientX/S-OX,ly=e.clientY/S+camR-OY;
   if(moving){av.run=false;placeAt(lx,ly);return;}
+  if(passOf){hopOff();return;}
   if(lx>=BOARD.x0-4&&lx<=BOARD.x1+2&&Math.abs(ly-BOARD.y)<8&&!av.swim){av.run=false;av.target={x:BOARD.x1-3,y:BOARD.y,onArrive:()=>{av.target={x:BOARD.x0+2,y:BOARD.y,onArrive:()=>startJump(BOARD.x0-20,BOARD.y+4,true)};}};return;}
   if(lx>40&&lx<92&&ly>HB-46&&ly<HB+2){goToDoor();return;}
   let hit=null;
