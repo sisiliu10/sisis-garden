@@ -1,0 +1,240 @@
+{
+ "app/owner": {
+  "path": "app/owner",
+  "data": {
+   "id": "b813b566-08f0-40c8-b392-6cc38a770940"
+  }
+ },
+ "gardens/b813b566-08f0-40c8-b392-6cc38a770940": {
+  "path": "gardens/b813b566-08f0-40c8-b392-6cc38a770940",
+  "data": {
+   "v": 2,
+   "name": "Sisi",
+   "owner": true,
+   "listed": true,
+   "created": true,
+   "saved": 1795453066773,
+   "look": {
+    "skin": "#f3c9a5",
+    "hair": "long",
+    "hairColor": "#1d1a22",
+    "top": "#e8c15a",
+    "bottom": "skirt",
+    "bottomColor": "#f1ead9",
+    "acc": "none"
+   },
+   "projects": [
+    {
+     "id": "p0",
+     "slot": 0,
+     "code": "HIPPOCRATES",
+     "name": "Hippocrates",
+     "progress": 40,
+     "why": "",
+     "sub": "",
+     "w": 80,
+     "t": 1795449466773.0
+    },
+    {
+     "id": "p1",
+     "slot": 1,
+     "code": "PLATO",
+     "name": "Plato",
+     "progress": 40,
+     "why": "",
+     "sub": "",
+     "w": 80,
+     "t": 1795449466773.0
+    },
+    {
+     "id": "p2",
+     "slot": 2,
+     "code": "SOCRATES",
+     "name": "Socrates",
+     "progress": 40,
+     "why": "",
+     "sub": "",
+     "w": 80,
+     "t": 1795449466773.0
+    },
+    {
+     "id": "p3",
+     "slot": 3,
+     "code": "EPICURUS",
+     "name": "Epicurus",
+     "progress": 40,
+     "why": "",
+     "sub": "",
+     "w": 80,
+     "t": 1795449466773.0
+    }
+   ],
+   "skills": [
+    {
+     "id": "s1",
+     "slot": 0,
+     "code": "CONFUCIUS",
+     "name": "Confucius",
+     "progress": 55,
+     "bed": true
+    }
+   ],
+   "todos": [
+    {
+     "id": "t1",
+     "text": "private",
+     "t": 1795453066773,
+     "k": 1,
+     "c": 0
+    }
+   ],
+   "notes": {},
+   "logs": {}
+  }
+ },
+ "data/users/b813b566-08f0-40c8-b392-6cc38a770940/garden": {
+  "path": "x",
+  "data": {
+   "v": 2,
+   "name": "Sisi",
+   "owner": true,
+   "listed": true,
+   "created": true,
+   "saved": 1795453066773,
+   "look": {
+    "skin": "#f3c9a5",
+    "hair": "long",
+    "hairColor": "#1d1a22",
+    "top": "#e8c15a",
+    "bottom": "skirt",
+    "bottomColor": "#f1ead9",
+    "acc": "none"
+   },
+   "projects": [
+    {
+     "id": "p0",
+     "slot": 0,
+     "code": "HIPPOCRATES",
+     "name": "Hippocrates",
+     "progress": 40,
+     "why": "",
+     "sub": "",
+     "w": 80,
+     "t": 1795449466773.0
+    },
+    {
+     "id": "p1",
+     "slot": 1,
+     "code": "PLATO",
+     "name": "Plato",
+     "progress": 40,
+     "why": "",
+     "sub": "",
+     "w": 80,
+     "t": 1795449466773.0
+    },
+    {
+     "id": "p2",
+     "slot": 2,
+     "code": "SOCRATES",
+     "name": "Socrates",
+     "progress": 40,
+     "why": "",
+     "sub": "",
+     "w": 80,
+     "t": 1795449466773.0
+    },
+    {
+     "id": "p3",
+     "slot": 3,
+     "code": "EPICURUS",
+     "name": "Epicurus",
+     "progress": 40,
+     "why": "",
+     "sub": "",
+     "w": 80,
+     "t": 1795449466773.0
+    }
+   ],
+   "skills": [
+    {
+     "id": "s1",
+     "slot": 0,
+     "code": "CONFUCIUS",
+     "name": "Confucius",
+     "progress": 55,
+     "bed": true
+    }
+   ],
+   "todos": [
+    {
+     "id": "t1",
+     "text": "SECRET TODO",
+     "t": 1795453066773,
+     "k": 1,
+     "c": 0
+    }
+   ],
+   "notes": {
+    "p0": "SECRET NOTE"
+   },
+   "logs": {}
+  }
+ },
+ "gardens/b813b566-08f0-40c8-b392-6cc38a770940/x/books": {
+  "path": "x",
+  "data": {
+   "saved": 5,
+   "list": [
+    {
+     "ti": "Über Frauen",
+     "au": "Susan Sontag",
+     "sh": "currently-reading",
+     "id": "",
+     "ra": 0,
+     "dr": 0,
+     "da": 1,
+     "m": true
+    }
+   ]
+  }
+ },
+ "gardens/uid-andre": {
+  "path": "gardens/uid-andre",
+  "data": {
+   "v": 2,
+   "name": "André",
+   "owner": false,
+   "listed": false,
+   "created": true,
+   "saved": 1795453066773,
+   "look": {
+    "skin": "#f3c9a5",
+    "hair": "long",
+    "hairColor": "#1d1a22",
+    "top": "#e8c15a",
+    "bottom": "skirt",
+    "bottomColor": "#f1ead9",
+    "acc": "none"
+   },
+   "projects": [
+    {
+     "id": "p0",
+     "slot": 0,
+     "code": "BIKE",
+     "name": "Bike",
+     "progress": 30,
+     "why": "",
+     "sub": "",
+     "w": 80,
+     "t": 1795449466773.0
+    }
+   ],
+   "skills": [],
+   "todos": [],
+   "notes": {},
+   "logs": {}
+  }
+ },
+ "_now": 1795453066773
+}

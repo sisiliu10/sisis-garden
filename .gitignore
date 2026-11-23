@@ -1,0 +1,3 @@
+__pycache__/
+# never commit database setup with personal data
+*.sql
