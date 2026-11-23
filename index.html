@@ -355,7 +355,7 @@
   @media (max-width:420px){.isl canvas{width:66px;height:45px}.isl.big canvas{width:104px;height:65px}.isl .in{font-size:12px;max-width:84px}}
   .modal{position:fixed;inset:0;background:rgba(42,36,48,.45);display:none;align-items:center;justify-content:center;z-index:10;padding:14px}
   .modal.show{display:flex}
-  body:has(.modal.show) #homeHint,body:has(.modal.show) .qjoin{display:none!important}
+  body:has(.modal.show) #homeHint,body:has(#dlg.show) #homeHint,body:has(.modal.show) .qjoin{display:none!important}
   .panel{background:var(--paper);border:3px solid var(--ink);box-shadow:6px 6px 0 rgba(0,0,0,.25);width:min(560px,100%);max-height:100%;overflow:auto;padding:18px}
   .panel h2{font-size:24px;font-weight:700}
   .panel .lead{font-size:14px;color:var(--muted);margin-top:2px;line-height:1.35}
@@ -427,8 +427,8 @@
     <div class="dbtns" id="dBtns"><button class="btn" id="dWater">Water <kbd>E</kbd></button><button class="btn" id="dEdit">Edit</button><button class="btn" id="dMove">Move</button><button class="btn trashb" type="button" id="fKill" title="Delete" aria-label="Delete"><svg viewBox="0 0 9 10" fill="currentColor" aria-hidden="true"><rect x="3" y="0" width="3" height="1"/><rect x="0" y="1" width="9" height="2"/><rect x="1" y="3" width="7" height="7"/><rect x="2" y="4" width="1" height="5" fill="var(--paper)"/><rect x="4" y="4" width="1" height="5" fill="var(--paper)"/><rect x="6" y="4" width="1" height="5" fill="var(--paper)"/></svg></button></div>
     <div class="killbar" id="dKillBar" hidden><span id="dKillTxt"></span><button class="btn" type="button" id="dKillNo">Keep</button><button class="btn red" type="button" id="dKillYes">Delete</button></div>
     <form id="dDidForm" hidden autocomplete="off">
-      <div class="fl" id="dDidQ">WHAT DID YOU DO?</div>
-      <input class="inp" id="dDidIn" name="what-i-did" type="text" autocomplete="off" autocorrect="on" spellcheck="true" data-1p-ignore data-lpignore="true" enterkeyhint="done" maxlength="140" placeholder="One line, e.g. sent the pitch deck to 3 founders">
+      <div class="fl" id="dDidQ">WHAT DID YOU DO? (OPTIONAL)</div>
+      <input class="inp" id="dDidIn" name="what-i-did" type="text" autocomplete="off" autocorrect="on" spellcheck="true" data-1p-ignore data-lpignore="true" enterkeyhint="done" maxlength="140" placeholder="Optional, e.g. sent the pitch deck">
       <div class="dbtns"><button class="btn" id="dDidOk" type="submit">Water it</button><button class="btn" type="button" id="dDidCancel">Cancel</button></div>
     </form>
     <div id="dMsg"></div>
@@ -1794,12 +1794,12 @@ function openDash(){
       const src=V(); const note=src&&src.notes&&src.notes[p.id];
       if(note){const ns=document.createElement('div');ns.className='ns';ns.textContent='Next: '+note;row.appendChild(ns);}
       const L=(src&&src.logs&&src.logs[p.id])||[];
-      if(L.length){const d=document.createElement('details');const sm=document.createElement('summary');sm.textContent=`Log (${L.length}), last: ${L[L.length-1].text}`;d.appendChild(sm);logRows(L.slice().reverse(),d);row.appendChild(d);}
+      if(L.length){const d=document.createElement('details');const sm=document.createElement('summary');sm.textContent=`Log (${L.length}), last: ${L[L.length-1].text||'watered'}`;d.appendChild(sm);logRows(L.slice().reverse(),d);row.appendChild(d);}
       list.appendChild(row);
     });
   };
   if(V()){
-    const recent=[];all.forEach(p=>((V().logs||{})[p.id]||[]).forEach(e=>recent.push({t:e.t,text:p.code+': '+e.text})));
+    const recent=[];all.forEach(p=>((V().logs||{})[p.id]||[]).forEach(e=>recent.push({t:e.t,text:p.code+': '+(e.text||'watered')})));
     recent.sort((a,b)=>b.t-a.t);
     const wk=recent.filter(e=>Date.now()-e.t<7*DAY).length;
     if(recent.length){const h=document.createElement('div');h.className='dsec';h.textContent=`RECENT ACTIVITY (${wk} THIS WEEK)`;list.appendChild(h);const box=document.createElement('div');box.className='drow';logRows(recent.slice(0,6),box);list.appendChild(box);}
@@ -3154,7 +3154,7 @@ function drawCat(t){
 /* ================= work log ================= */
 const dDidForm=document.getElementById('dDidForm'), dDidIn=document.getElementById('dDidIn'), dBtns=document.getElementById('dBtns');
 function shortAgo(ts){const m=Math.floor((Date.now()-ts)/60000);if(m<1)return'now';if(m<60)return m+' min';const h=Math.floor(m/60);if(h<24)return h+' h';const d=Math.floor(h/24);if(d<7)return d+'d ago';return new Date(ts).toLocaleDateString(undefined,{day:'numeric',month:'short'});}
-function logRows(entries,box){entries.forEach(e=>{const r=document.createElement('div');r.className='lrow';const w=document.createElement('span');w.className='when';w.textContent=shortAgo(e.t);const tx=document.createElement('span');tx.textContent=e.text;r.appendChild(w);r.appendChild(tx);box.appendChild(r);});}
+function logRows(entries,box){entries.forEach(e=>{const r=document.createElement('div');r.className='lrow';const w=document.createElement('span');w.className='when';w.textContent=shortAgo(e.t);const tx=document.createElement('span');tx.textContent=e.text||'Watered';r.appendChild(w);r.appendChild(tx);box.appendChild(r);});}
 let logAll=false,logEdit=null,logSure=false;
 const PENCIL='<svg viewBox="0 0 14 5" aria-hidden="true"><rect x="3" y="0" width="1" height="1" fill="#2a2430"/><rect x="4" y="0" width="1" height="1" fill="#2a2430"/><rect x="5" y="0" width="1" height="1" fill="#2a2430"/><rect x="6" y="0" width="1" height="1" fill="#2a2430"/><rect x="7" y="0" width="1" height="1" fill="#2a2430"/><rect x="8" y="0" width="1" height="1" fill="#2a2430"/><rect x="9" y="0" width="1" height="1" fill="#2a2430"/><rect x="10" y="0" width="1" height="1" fill="#2a2430"/><rect x="11" y="0" width="1" height="1" fill="#2a2430"/><rect x="12" y="0" width="1" height="1" fill="#2a2430"/><rect x="1" y="1" width="1" height="1" fill="#2a2430"/><rect x="2" y="1" width="1" height="1" fill="#f1d3a0"/><rect x="3" y="1" width="1" height="1" fill="#f6c533"/><rect x="4" y="1" width="1" height="1" fill="#f6c533"/><rect x="5" y="1" width="1" height="1" fill="#f6c533"/><rect x="6" y="1" width="1" height="1" fill="#f6c533"/><rect x="7" y="1" width="1" height="1" fill="#f6c533"/><rect x="8" y="1" width="1" height="1" fill="#f6c533"/><rect x="9" y="1" width="1" height="1" fill="#f6c533"/><rect x="10" y="1" width="1" height="1" fill="#b9bccb"/><rect x="11" y="1" width="1" height="1" fill="#f28aa3"/><rect x="12" y="1" width="1" height="1" fill="#f28aa3"/><rect x="13" y="1" width="1" height="1" fill="#2a2430"/><rect x="0" y="2" width="1" height="1" fill="#2a2430"/><rect x="1" y="2" width="1" height="1" fill="#2a2430"/><rect x="2" y="2" width="1" height="1" fill="#f1d3a0"/><rect x="3" y="2" width="1" height="1" fill="#f6c533"/><rect x="4" y="2" width="1" height="1" fill="#f6c533"/><rect x="5" y="2" width="1" height="1" fill="#f6c533"/><rect x="6" y="2" width="1" height="1" fill="#f6c533"/><rect x="7" y="2" width="1" height="1" fill="#f6c533"/><rect x="8" y="2" width="1" height="1" fill="#f6c533"/><rect x="9" y="2" width="1" height="1" fill="#f6c533"/><rect x="10" y="2" width="1" height="1" fill="#b9bccb"/><rect x="11" y="2" width="1" height="1" fill="#f28aa3"/><rect x="12" y="2" width="1" height="1" fill="#f28aa3"/><rect x="13" y="2" width="1" height="1" fill="#2a2430"/><rect x="1" y="3" width="1" height="1" fill="#2a2430"/><rect x="2" y="3" width="1" height="1" fill="#f1d3a0"/><rect x="3" y="3" width="1" height="1" fill="#d9952a"/><rect x="4" y="3" width="1" height="1" fill="#d9952a"/><rect x="5" y="3" width="1" height="1" fill="#d9952a"/><rect x="6" y="3" width="1" height="1" fill="#d9952a"/><rect x="7" y="3" width="1" height="1" fill="#d9952a"/><rect x="8" y="3" width="1" height="1" fill="#d9952a"/><rect x="9" y="3" width="1" height="1" fill="#d9952a"/><rect x="10" y="3" width="1" height="1" fill="#b9bccb"/><rect x="11" y="3" width="1" height="1" fill="#f28aa3"/><rect x="12" y="3" width="1" height="1" fill="#f28aa3"/><rect x="13" y="3" width="1" height="1" fill="#2a2430"/><rect x="3" y="4" width="1" height="1" fill="#2a2430"/><rect x="4" y="4" width="1" height="1" fill="#2a2430"/><rect x="5" y="4" width="1" height="1" fill="#2a2430"/><rect x="6" y="4" width="1" height="1" fill="#2a2430"/><rect x="7" y="4" width="1" height="1" fill="#2a2430"/><rect x="8" y="4" width="1" height="1" fill="#2a2430"/><rect x="9" y="4" width="1" height="1" fill="#2a2430"/><rect x="10" y="4" width="1" height="1" fill="#2a2430"/><rect x="11" y="4" width="1" height="1" fill="#2a2430"/><rect x="12" y="4" width="1" height="1" fill="#2a2430"/><rect x="4" y="1" width="6" height="1" fill="#fbe08a"/></svg>';
 function renderLog(p){
@@ -3172,7 +3172,7 @@ function renderLog(p){
     if(own&&logEdit===e){list.appendChild(logEditor(p,L,e));return;}
     const r=document.createElement('div');r.className='lrow';
     const w=document.createElement('span');w.className='when';w.textContent=shortAgo(e.t);
-    const tx=document.createElement('span');tx.className='tx';tx.textContent=e.text;
+    const tx=document.createElement('span');tx.className='tx';tx.textContent=e.text||'Watered';if(!e.text)tx.style.color='var(--muted)';
     r.appendChild(w);r.appendChild(tx);
     if(own){const b=document.createElement('button');b.type='button';b.className='led';b.title='Edit or delete';b.setAttribute('aria-label','Edit or delete this entry');b.innerHTML=PENCIL;
       b.onclick=ev=>{ev.stopPropagation();logEdit=e;logSure=false;editing=true;renderLog(p);};r.appendChild(b);}
@@ -3206,8 +3206,8 @@ function openLog(p){
   logPlant=p; try{dDidIn.focus();}catch(e){}
 }
 function closeLog(){ dDidIn.value=''; editing=false; const p=active;
-  if(p){document.getElementById('dDidQ').textContent=p.bed?'WHAT DID YOU PRACTISE?':'WHAT DID YOU DO?';
-    dDidIn.placeholder=p.bed?'e.g. 20 min of reading a news article':'e.g. sent the pitch deck to 3 founders';} }
+  if(p){document.getElementById('dDidQ').textContent=p.bed?'WHAT DID YOU PRACTISE? (OPTIONAL)':'WHAT DID YOU DO? (OPTIONAL)';
+    dDidIn.placeholder=p.bed?'Optional, e.g. 20 min of reading':'Optional, e.g. sent the pitch deck';} }
 dDidIn.addEventListener('focus',()=>{editing=true;logPlant=active;});
 dDidIn.addEventListener('input',()=>{logPlant=active;});
 dDidIn.addEventListener('blur',()=>{if(dForm.hidden)editing=false;});
@@ -3215,7 +3215,6 @@ let lastSubmit=0;
 function submitLog(){
   const p=logPlant||active; if(!p) return;
   const text=dDidIn.value.trim();
-  if(text.length<2){dDidIn.classList.remove('shake');void dDidIn.offsetWidth;dDidIn.classList.add('shake');dDidIn.focus();msgEl.textContent='Write a few words about what you did.';return;}
   const now=performance.now(); if(now-lastSubmit<400) return; lastSubmit=now;
   dDidIn.value=''; dDidIn.blur(); closeLog(); logPlant=null;
   if(av.water>0){if(waterFx&&waterFx.grow>waterFx.p.progress)waterFx.p.progress=waterFx.grow;av.water=0;waterFx=null;dlg.classList.remove('pouring');}   // a pour still running never blocks the next one
@@ -3231,7 +3230,8 @@ dDidIn.addEventListener('keydown',e=>{
 
 /* ================= watering ================= */
 function doWater(p,text){
-  if(av.water>0||visiting||!home||!text) return;
+  if(av.water>0||visiting||!home) return;
+  text=String(text||'').trim();
   const L=home.logs[p.id]||(home.logs[p.id]=[]); L.push({t:Date.now(),text:text.slice(0,140)}); if(L.length>LOG_MAX) L.splice(0,L.length-LOG_MAX);
   let catNews=false; if(!home.cat&&streakDays()>=7){home.cat=true;catNews=true;cat.x=av.x-30;cat.y=av.y+6;}
   av.water=WATER_T; av.pourFor=p; av.back=posOf(p)[1]<av.y-6;
@@ -3318,7 +3318,7 @@ addEventListener('keydown',e=>{
     else if(scene==='office'){if(ofNear){av.back=true;ofTalk(ofNear);} else if(Math.hypot(av.x-OF_DESK.x,av.y-216)<20)openDesk(); else if(Math.hypot(av.x-253,av.y-134)<16)openStandup(); e.preventDefault();}
     else if(scene==='city'){if(cityNearHole())exitCity();e.preventDefault();}
     else if(scene==='island'){isleAct();e.preventDefault();}
-    else if(active&&!editing){openLog(active);e.preventDefault();}
+    else if(active&&!editing){logPlant=active;submitLog();e.preventDefault();}
     else if(promptEl.dataset.on){goToDoor();e.preventDefault();}
   }
 });
@@ -4795,7 +4795,7 @@ function maybeAutoVisit(){
 #gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
 #gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795436248"></script>
+<script src="config.js?v=1795444167"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -4825,7 +4825,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '23.11. 13:17';
+  const BUILD = '23.11. 15:29';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -5086,7 +5086,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 23.11. 13:17';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 23.11. 15:29';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid', 'garden-pending').forEach(k => localStorage.removeItem(k)); } catch (e) {}
