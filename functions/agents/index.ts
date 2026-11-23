@@ -75,7 +75,7 @@ async function ask(prompt: string, maxTokens: number, system?: string): Promise<
       generationConfig: { maxOutputTokens: Math.max(4096, maxTokens * 4), responseMimeType: 'application/json' },
     }),
   });
-  if (!r.ok) return null;
+  if (!r.ok) { console.error('gemini', r.status, (await r.text()).slice(0, 300)); return null; }
   const j: any = await r.json();
   return (j?.candidates?.[0]?.content?.parts || []).map((p: any) => p?.text || '').join('');
 }
