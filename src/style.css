@@ -131,6 +131,10 @@
   #dlg.dock.show{transform:none}#dlg.dock.show.pouring{transform:translate(0,-16px)}
   #dlg.dock.dl{left:14px}#dlg.dock.dr{right:14px}
   #dlg.low{top:auto!important;bottom:66px;max-height:calc(52vh - 40px)}
+  /* editing a plant needs the whole form: let the panel grow up to the top buttons */
+  #dlg.low:has(#dForm:not([hidden])){max-height:calc(100vh - 122px);max-height:calc(100dvh - 122px)}
+  /* phones: the map button sits where the panel ends, so it steps aside while a panel is open */
+  @media (max-width:560px){body:has(#dlg.show) #mapBtn,body:has(#dlg.show) #mapMenu{display:none}}
   .dh{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
   #dCode{font-size:22px;font-weight:700;letter-spacing:1px}
   #dLv{display:none}

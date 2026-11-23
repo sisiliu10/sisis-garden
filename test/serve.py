@@ -13,7 +13,7 @@ boot = ("<script>(function(){var u=new URLSearchParams(location.search).get('u')
 open(OUT + '/index.html', 'w').write(page.replace('<head>', '<head>' + boot, 1))
 open(OUT + '/supabase.js', 'w').write(open(T + '/mock-supabase.js').read())
 open(OUT + '/config.js', 'w').write("window.GARDEN_CONFIG={url:'https://x.supabase.co',key:'k'};")
-port = int(sys.argv[1]) if len(sys.argv) > 1 else 8766
+port = next((int(a) for a in sys.argv[1:] if a.isdigit()), 8766)
 if '--write-only' in sys.argv: sys.exit(print('written', OUT))
 H = functools.partial(http.server.SimpleHTTPRequestHandler, directory=OUT)
 H.log_message = lambda *a: None

@@ -146,6 +146,10 @@
   #dlg.dock.show{transform:none}#dlg.dock.show.pouring{transform:translate(0,-16px)}
   #dlg.dock.dl{left:14px}#dlg.dock.dr{right:14px}
   #dlg.low{top:auto!important;bottom:66px;max-height:calc(52vh - 40px)}
+  /* editing a plant needs the whole form: let the panel grow up to the top buttons */
+  #dlg.low:has(#dForm:not([hidden])){max-height:calc(100vh - 122px);max-height:calc(100dvh - 122px)}
+  /* phones: the map button sits where the panel ends, so it steps aside while a panel is open */
+  @media (max-width:560px){body:has(#dlg.show) #mapBtn,body:has(#dlg.show) #mapMenu{display:none}}
   .dh{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
   #dCode{font-size:22px;font-weight:700;letter-spacing:1px}
   #dLv{display:none}
@@ -4057,7 +4061,7 @@ function maybeAutoVisit(){
 #gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
 #gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795455637"></script>
+<script src="config.js?v=1795466472"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -4087,7 +4091,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '23.11. 18:40';
+  const BUILD = '23.11. 21:41';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -4341,7 +4345,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 23.11. 18:40';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 23.11. 21:41';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid', 'garden-pending').forEach(k => localStorage.removeItem(k)); } catch (e) {}
