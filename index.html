@@ -325,6 +325,34 @@
   .fl{font-family:Silkscreen,monospace;font-size:10px;color:var(--muted);margin:8px 0 3px}
   #dForm h3{font-size:18px}
 
+  .title .wx{font-family:Silkscreen,monospace;font-size:4.5px;letter-spacing:1px;margin-top:4px;opacity:.85;text-shadow:0 1px 0 #4f86c9}
+  .title .wx:empty{display:none}
+  #live .all{color:var(--muted,#8a8378);font-weight:500;margin-left:8px}
+  #isleHud{position:fixed;left:50%;top:54px;transform:translate(-50%,-100%);z-index:4;text-align:center;color:#fff;pointer-events:none;text-shadow:0 2px 0 #2f6ea8;white-space:nowrap}
+  #isleHud[hidden]{display:none}
+  #isleHud .ih1{font-family:Silkscreen,monospace;font-size:11px;letter-spacing:1px;opacity:.9}
+  #isleHud .ih2{font-family:"Pixelify Sans",sans-serif;font-size:20px;font-weight:700;margin-top:1px}
+  .ipanel{width:min(360px,100%);text-align:center;padding:16px 14px 10px}
+  .ipick{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:12px}
+  .ipick button{background:none;border:0;font:inherit;font-size:14px;color:var(--ink);cursor:pointer;padding:8px 2px 6px;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .ipick button:hover,.ipick button:focus-visible{background:#efe7d6;outline:none}
+  .ipick canvas{width:48px;height:42px;image-rendering:pixelated}
+  .ileft{font-size:13px;color:var(--muted);margin-top:6px}
+  .mapp{width:min(620px,100%);padding:14px 14px 16px}
+  .maph{display:flex;align-items:center;gap:10px}
+  .maph h2{flex:0 0 auto}.maph .mapon{flex:1;font-size:14px;color:#2f8a3a;font-weight:600}.maph .btn{padding:2px 10px}
+  .sea{position:relative;margin-top:10px;background:#4b9bd6;background-image:radial-gradient(#6fb5e6 1px,transparent 1.5px);background-size:14px 11px;border:3px solid var(--ink);overflow:hidden}
+  .isl{position:absolute;transform:translate(-50%,-50%);background:none;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;padding:2px;font:inherit;color:#fff;transition:transform .15s}
+  .isl:hover,.isl:focus-visible{transform:translate(-50%,-52%);outline:none}
+  .isl canvas{width:88px;height:60px;image-rendering:pixelated}
+  .isl.big canvas{width:128px;height:80px}
+  .isl .in{font-family:"Pixelify Sans",sans-serif;font-size:13px;font-weight:600;text-shadow:0 1px 0 #1e4e7a,1px 0 0 #1e4e7a,-1px 0 0 #1e4e7a,0 -1px 0 #1e4e7a;white-space:nowrap;max-width:110px;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:4px}
+  .isl.here .in{color:#ffe08a}
+  .isl.big .in{max-width:none}
+  .isl .io{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:#d8ffd8}
+  .isl .io::before{content:"";width:7px;height:7px;background:#3fb45e;box-shadow:0 0 0 1px #1e4e7a;animation:livep 2.4s steps(2) infinite}
+  .isl .is{font-size:11px;color:#e3f2ff;text-shadow:0 1px 0 #1e4e7a}
+  @media (max-width:420px){.isl canvas{width:66px;height:45px}.isl.big canvas{width:104px;height:65px}.isl .in{font-size:12px;max-width:84px}}
   .modal{position:fixed;inset:0;background:rgba(42,36,48,.45);display:none;align-items:center;justify-content:center;z-index:10;padding:14px}
   .modal.show{display:flex}
   body:has(.modal.show) #homeHint,body:has(.modal.show) .qjoin{display:none!important}
@@ -373,7 +401,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="world"><div class="title" id="title"><div class="t1" id="tName">Sisi's</div><div class="t2">Garden</div><div class="sub" id="tSub">keep your projects watered</div></div></div>
+<div id="world"><div class="title" id="title"><div class="t1" id="tName">Sisi's</div><div class="t2">Garden</div><div class="sub" id="tSub">keep your projects watered</div><div class="wx" id="tWx"></div></div></div>
 
 <div class="hud l"><div class="chip" id="mood" hidden><span class="h">♥</span> <span id="moodTxt"></span></div><button class="btn dark" id="bHome" hidden>← Home</button><button type="button" id="live" class="live" aria-label="Who is here">···</button></div>
 <div class="hud r"><button class="btn" id="bGardens">Friends</button><button class="btn" id="bAdd" title="Add a project or skill">+ Add</button><button class="btn" id="bJump" hidden>Skills ↓</button><button class="btn" id="bAv">Avatar</button><button class="btn" id="bMusic" type="button">♪</button><button class="btn" id="bHelp">?</button></div>
@@ -1488,13 +1516,15 @@ function renderOffice(t){
 const mapBtn=document.createElement('button');mapBtn.id='mapBtn';mapBtn.type='button';mapBtn.setAttribute('aria-label','Map');
 mapBtn.innerHTML='<svg viewBox="0 0 16 16" width="22" height="22" shape-rendering="crispEdges"><path d="M1 3h4v11H1zM6 2h4v11H6zM11 3h4v11h-4z" fill="#fffdf6" stroke="#2a2430" stroke-width="1"/><path d="M3 5h1v1H3zM8 6h1v1H8zM12 9h2v1h-2zM7 9h2v1H7z" fill="#58a84a"/><path d="M12 5h1v2h-1z" fill="#e8506c"/></svg>';
 const mapMenu=document.createElement('div');mapMenu.id='mapMenu';mapMenu.hidden=true;
-[['garden','Garden'],['house','Cottage']].forEach(([k,l])=>{const b=document.createElement('button');b.type='button';b.dataset.k=k;b.textContent=l;b.onclick=()=>{mapMenu.hidden=true;goScene(k);};mapMenu.appendChild(b);});
+[['garden','Garden'],['house','Cottage'],['island','Island'],['map','Map']].forEach(([k,l])=>{const b=document.createElement('button');b.type='button';b.dataset.k=k;b.textContent=l;b.onclick=()=>{mapMenu.hidden=true;goScene(k);};mapMenu.appendChild(b);});
 document.body.appendChild(mapMenu);document.body.appendChild(mapBtn);
 mapBtn.onclick=e=>{e.stopPropagation();mapMenu.querySelectorAll('button').forEach(b=>b.classList.toggle('here',b.dataset.k===scene));mapMenu.hidden=!mapMenu.hidden;};
 document.addEventListener('pointerdown',e=>{if(!mapMenu.hidden&&!mapMenu.contains(e.target)&&e.target!==mapBtn&&!mapBtn.contains(e.target))mapMenu.hidden=true;});
 function goScene(k){
+  if(k==='map'){openMap();return;}
   if(k===scene||!started)return;
-  if(scene==='house')exitHouse(true);else if(scene==='office')exitOffice(true);else if(scene==='city')exitCity(true);
+  if(k==='island'){enterIsland();return;}
+  if(scene==='house')exitHouse(true);else if(scene==='office')exitOffice(true);else if(scene==='city')exitCity(true);else if(scene==='island')exitIsland(true);
   if(k==='house')enterHouse();
 }
 const promptEl=document.getElementById('prompt');
@@ -1504,12 +1534,17 @@ function setPrompt(txt,key){
   promptEl.dataset.on=v; promptEl.hidden=false; promptEl.textContent=txt;
   const k=document.createElement('kbd'); k.textContent=key; promptEl.appendChild(k);
 }
-promptEl.onclick=()=>{
+// phones: act on lifting the finger (some phones never turn a tap on this bar into a click)
+let promptUp=0;
+promptEl.addEventListener('pointerup',e=>{if(e.pointerType==='mouse')return;promptUp=performance.now();promptAct();});
+promptEl.onclick=()=>{if(performance.now()-promptUp<900)return;promptAct();};
+function promptAct(){
   if(scene==='house'){ if(houseNear) houseNear.act(); else av.target={x:RW/2,y:RH+4}; }
   else if(scene==='city'){ if(cityNearHole())exitCity(); else av.target={x:CITY.sx,y:CITY.sy+4}; }
+  else if(scene==='island') isleAct();
   else if(scene==='office'){ if(ofNear){av.back=true;ofTalk(ofNear);} else if(Math.hypot(av.x-OF_DESK.x,av.y-216)<20)openDesk(); else if(Math.hypot(av.x-253,av.y-134)<16)openStandup(); else av.target={x:OFW/2,y:OFH+4}; }
   else goToDoor();
-};
+}
 function renderHouse(t){
   setTimeout(()=>{const bs=bedSleepers();placeTags(livePeers().filter(p=>p.scene==='house').map(p=>{const z=p.nap&&bs.find(b=>b.id===p.id);return z?Object.assign({},p,{x:z.x,y:66}):p;}),(x,y)=>[(RX+x)*S,(RY+y)*S]);},0);
   g.fillStyle='#1d1924'; g.fillRect(0,0,W,H);
@@ -2418,7 +2453,7 @@ setInterval(()=>{
 /* ================= live: see friends walking around ================= */
 let lobby=null, room=null, roomInit=false, roomDead=false, roomUp=false, roomT0=0, roomErr='', lastPres='', lastPresT=0;
 const ghosts={}, tagBox=document.createElement('div'); document.body.appendChild(tagBox);
-function gardenKey(){const id=visiting?visiting.id:myId;return id?'g-'+hashStr(id).toString(36):null;}
+function gardenKey(){if(scene==='island')return 'isle';const id=visiting?visiting.id:myId;return id?'g-'+hashStr(id).toString(36):null;}
 async function initRoom(){
   if(roomInit) return; roomInit=true; roomT0=performance.now();
   try{
@@ -2438,7 +2473,8 @@ function roomPeers(){
 function isHostPeer(p){ return !p.isMe&&!!visiting&&((!!p.by&&p.by===visiting.id)||(!!p.presence&&p.presence.u===visiting.id)); }
 function sendPresence(now){
   if(!room||now-lastPresT<60) return;
-  const st={g:gardenKey(),u:myId||null,sw:av.swim||av.jump?1:0,say:(mySay&&mySay.until>performance.now())?{n:mySay.n,t:mySay.t}:null,ty:(document.activeElement===chatIn&&chatIn.value.trim()&&now-typingAt<5000)?1:0,x:Math.round(av.x*2)/2,y:Math.round((av.y-(av.kh||0))*2)/2,act:myAct,al:riding?1:0,sl:slide?(slide.ph==='climb'?1:2):0,sg:mySeat===null?null:{s:mySeat,a:Math.round(swA*100)/100},s:scene==='house'?'h':scene==='office'?'o':scene==='city'?'m':'g',b:av.back?1:0,m:av.moving?1:0,r:av.run&&av.moving?1:0,n:(me().name||'Friend').slice(0,14),l:me().look,w:av.water>0?1:0,nap:napping&&scene==='house'?1:0};
+  const st={g:gardenKey(),u:myId||null,sw:av.swim||av.jump?1:0,say:(mySay&&mySay.until>performance.now())?{n:mySay.n,t:mySay.t}:null,ty:(document.activeElement===chatIn&&chatIn.value.trim()&&now-typingAt<5000)?1:0,x:Math.round(av.x*2)/2,y:Math.round((av.y-(av.kh||0))*2)/2,act:myAct,al:riding?1:0,sl:slide?(slide.ph==='climb'?1:2):0,sg:mySeat===null?null:{s:mySeat,a:Math.round(swA*100)/100},s:scene==='house'?'h':scene==='office'?'o':scene==='city'?'m':scene==='island'?'i':'g',b:av.back?1:0,m:av.moving?1:0,r:av.run&&av.moving?1:0,n:(me().name||'Friend').slice(0,14),l:me().look,w:av.water>0?1:0,nap:napping&&scene==='house'?1:0};
+  if(scene==='island')st.il=isleMine.length;
   if(scene==='garden'&&alpIdle()&&alpLeader().me)st.ap=[Math.round(alp.x),Math.round(alp.y),alp.dir>0?1:-1,alp.moving?1:0];
   const k=JSON.stringify(st); if(k===lastPres&&now-lastPresT<2500) return;
   lastPres=k; lastPresT=now; try{const pr=room.presence(st);if(pr&&pr.catch)pr.catch(()=>{});}catch(e){}
@@ -2458,14 +2494,14 @@ function livePeers(){
   for(const p of ps){
     if(p.isMe||p.kind!=='viewer') continue;
     const q=p.presence||{}; if(typeof q.x!=='number'||typeof q.y!=='number') continue;
-    const tx=(q.s==='h'||q.s==='o')?clamp(q.x,-200,400):q.s==='m'?clamp(q.x,0,4000):clamp(q.x,-OX+14,CW+OX-14), ty=clamp(q.y,0,q.s==='m'?3000:600);
+    const tx=(q.s==='h'||q.s==='o'||q.s==='i')?clamp(q.x,-200,400):q.s==='m'?clamp(q.x,0,4000):clamp(q.x,-OX+14,CW+OX-14), ty=clamp(q.y,0,q.s==='m'?3000:600);
     let gh=ghosts[p.peer]; if(!gh){ gh=ghosts[p.peer]={x:tx,y:ty,sc:q.s}; if(now-roomT0>4000){try{Sfx.join();}catch(e){}} }
     let fresh=false;if(gh.sc!==q.s){gh.sc=q.s;gh.buf=[];gh.off=undefined;gh.jit=0;gh.x=tx;gh.y=ty;gh.pxx=undefined;fresh=true;}
     if(typeof q._t==='number'){
       // smooth playback: keep the last positions with the sender's timestamps and replay them ~140 ms behind, interpolating in between,
       // so a friend's walk looks continuous even when network packets arrive in bursts
       const B=gh.buf||(gh.buf=[]),wall=Date.now();
-      const add=(t,x,y)=>{if(B.length&&t<=B[B.length-1].t)return;x=(q.s==='h'||q.s==='o')?clamp(x,-200,400):q.s==='m'?clamp(x,0,4000):clamp(x,-OX+14,CW+OX-14);y=clamp(y,0,q.s==='m'?3000:600);
+      const add=(t,x,y)=>{if(B.length&&t<=B[B.length-1].t)return;x=(q.s==='h'||q.s==='o'||q.s==='i')?clamp(x,-200,400):q.s==='m'?clamp(x,0,4000):clamp(x,-OX+14,CW+OX-14);y=clamp(y,0,q.s==='m'?3000:600);
         B.push({t,x,y});if(B.length>60)B.shift();const d=wall-t;gh.off=gh.off===undefined||d<gh.off?d:gh.off+(d-gh.off)*.03;const late=d-gh.off;gh.jit=Math.max(late,(gh.jit||0)*.985);};
       if(!fresh&&Array.isArray(q._h))q._h.forEach(e=>{if(Array.isArray(e)&&typeof e[0]==='number'&&typeof e[1]==='number'&&typeof e[2]==='number')add(e[0],e[1],e[2]);});
       add(q._t,tx,ty);
@@ -2484,7 +2520,7 @@ function livePeers(){
     const sgq=q.sg&&(q.sg.s===0||q.sg.s===1)?{s:q.sg.s,a:clamp(num(q.sg.a,0),-1.2,1.2)}:null;
     if(gh.pxx!==undefined&&Math.abs(gh.x-gh.pxx)>.02)gh.dir=gh.x>gh.pxx?1:-1;else if(gh.pxx===undefined&&Math.abs(tx-gh.x)>.6)gh.dir=tx>gh.x?1:-1;gh.pxx=gh.x;
     const apq=Array.isArray(q.ap)&&q.ap.length===4&&q.ap.slice(0,2).every(v=>typeof v==='number')?[clamp(q.ap[0],-OX+14,CW+OX-14),clamp(q.ap[1],0,600),q.ap[2],q.ap[3]]:null;
-    out.push({ap:apq,nap:q.nap===1&&q.s==='h'?1:0,sl:q.sl===1||q.sl===2?q.sl:0,ride:!!q.al,sg:sgq,say:gh.sayUntil>now?gh.sayT:'',typing:!!q.ty&&!(gh.sayUntil>now),id:p.peer,by:p.by,x:gh.x,y:gh.y,scene:q.s==='h'?'house':q.s==='o'?'office':q.s==='m'?'city':'garden',back:!!q.b,moving:!!q.m||now-(gh.mvT||0)<150,run:!!q.r,swim:!!q.sw,water:!!q.w,name:str(q.n,14)||'Friend',look:cleanLook(q.l)});
+    out.push({ap:apq,nap:q.nap===1&&q.s==='h'?1:0,sl:q.sl===1||q.sl===2?q.sl:0,ride:!!q.al,sg:sgq,say:gh.sayUntil>now?gh.sayT:'',typing:!!q.ty&&!(gh.sayUntil>now),id:p.peer,by:p.by,x:gh.x,y:gh.y,scene:q.s==='h'?'house':q.s==='o'?'office':q.s==='m'?'city':q.s==='i'?'island':'garden',back:!!q.b,moving:!!q.m||now-(gh.mvT||0)<150,run:!!q.r,swim:!!q.sw,water:!!q.w,name:str(q.n,14)||'Friend',look:cleanLook(q.l)});
   }
   return out;
 }
@@ -2503,7 +2539,7 @@ function placeTags(list,toScreen){
   [...tagBox.children].forEach(el=>{if(!keep.has(el.dataset.p))el.remove();});
 }
 function hostLive(){ if(!visiting||!room) return false; return roomPeers().some(isHostPeer); }
-function onlineIds(){ const set=new Set(); if(!lobby) return set; try{lobby.peers().forEach(p=>{if(p.by)set.add(p.by);else if(p.presence&&typeof p.presence.u==='string')set.add(p.presence.u);});}catch(e){} return set; }
+function onlineIds(){ const set=new Set(); if(!room) return set; try{room.peers().forEach(p=>{if(p.by)set.add(p.by);else if(p.presence&&typeof p.presence.u==='string')set.add(p.presence.u);});}catch(e){} return set; }
 
 /* ================= world UI ================= */
 const labelsEl=document.createElement('div'); worldEl.appendChild(labelsEl);
@@ -2762,9 +2798,10 @@ function skyState(){const h=hourNow(),{rise,set}=sunTimes();
   return {night,warm};}
 function gardenHealthy(gd){const it=gd?gd.projects.concat(gd.skills||[]):[];return it.length>0&&it.every(p=>waterOf(p)>=60);}
 function weather(t){
-  if(!gardenHealthy(V())) return {rain:0,rainbow:0};
-  const c=(t+140)%150;
-  return {rain:sstep(0,3,c)*(1-sstep(32,35,c)),rainbow:sstep(34,38,c)*(1-sstep(54,60,c))};
+  const k=wxKind(WX.c),c=(t+140)%150,healthy=gardenHealthy(V()),bow=sstep(34,38,c)*(1-sstep(54,60,c));
+  if(!k) return healthy?{rain:sstep(0,3,c)*(1-sstep(32,35,c)),rainbow:bow,snow:0,fog:0,grey:0,storm:0}:{rain:0,rainbow:0,snow:0,fog:0,grey:0,storm:0};
+  const rain=(k==='rain'||k==='storm')?wxRainAmt(WX.c):0,snow=k==='snow'?1:0;
+  return {rain,snow,rainbow:healthy&&!rain&&!snow&&k!=='fog'?bow:0,fog:k==='fog'?1:0,grey:k==='cloud'||rain||snow?1:0,storm:k==='storm'?1:0};
 }
 function drawRainbow(t,night){
   const wx=weather(t); if(wx.rainbow<=0||night>.5) return;
@@ -2775,6 +2812,7 @@ function drawRainbow(t,night){
 }
 function drawAtmosphere(t){
   const {night,warm}=skyState(), wx=weather(t);
+  wxTint(t,wx);
   if(wx.rain>0){g.globalCompositeOperation='multiply';g.globalAlpha=wx.rain*.32;g.fillStyle='#8f9cbc';g.fillRect(0,0,W,H);}
   if(night>0){g.globalCompositeOperation='multiply';g.globalAlpha=night*.78;g.fillStyle='#3a4590';g.fillRect(0,0,W,H);}
   g.globalCompositeOperation='source-over';
@@ -2785,7 +2823,7 @@ function drawAtmosphere(t){
     if(skyB>4){
       for(let i=0;i<W/3;i++){const x=(i*73+11)%W,y=(i*131+7)%Math.max(8,Math.floor(skyB));if((i+Math.floor(t*1.5))%9===0)continue;g.globalAlpha=night*(i%3?.6:1);R(x,y,1,1,'#ffffff');}
       g.globalAlpha=night;const mx=Math.round(W*.83),my=Math.round(clamp(OY*.35+26-camR,9,skyB-14));
-      if(my>-8){disc(mx,my,6,'#fff3c8');R(mx-2,my-1,2,2,'#e9dcae');R(mx+2,my+2,2,1,'#e9dcae');R(mx+1,my-3,1,1,'#e9dcae');}
+      if(my>-8)drawMoon(mx,my,6);
       g.globalAlpha=1;
     }
     // warm light from the cottage window
@@ -2793,12 +2831,283 @@ function drawAtmosphere(t){
     const wxp=OX+HC+8,wyp=OY+HB-13-camR;disc(wxp,wyp,9,'#3a2a08');disc(wxp,wyp,5,'#7a5a14');
     g.globalCompositeOperation='source-over';g.globalAlpha=1;
   }
+  wxParticles(t,wx,OY+142-camR);wxOver(t,wx);
+}
+
+/* ================= real weather in Munich, the real moon ================= */
+const WX={c:-1,temp:null,at:0};
+function wxKind(c){if(typeof c!=='number'||c<0)return '';if([71,73,75,77,85,86].includes(c))return 'snow';if(c>=95)return 'storm';if((c>=51&&c<=67)||(c>=80&&c<=82))return 'rain';if(c===45||c===48)return 'fog';if(c===3)return 'cloud';return 'clear';}
+function wxRainAmt(c){return (c>=51&&c<=57)?.45:(c===61||c===80)?.7:1;}
+function applyWx(o){if(!o||typeof o.c!=='number')return;WX.c=o.c;WX.temp=typeof o.t==='number'?o.t:null;WX.at=o.at||Date.now();
+  const el=document.getElementById('tWx');if(el)el.textContent=WX.temp===null?'':'München '+Math.round(WX.temp)+'°C';}
+async function loadWx(){
+  try{const f=localStorage.getItem('garden-wx-test');if(f){applyWx(JSON.parse(f));return;}}catch(e){}
+  let old=null;try{old=JSON.parse(localStorage.getItem('garden-wx')||'null');}catch(e){}
+  if(old){applyWx(old);if(Date.now()-old.at<15*60e3)return;}
+  try{const ctl=new AbortController();setTimeout(()=>ctl.abort(),8000);
+    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=48.14&longitude=11.58&current=temperature_2m,weather_code&timezone=Europe%2FBerlin',{signal:ctl.signal});
+    const j=await r.json(),cur=j&&j.current;if(!cur||typeof cur.weather_code!=='number')return;
+    const o={c:cur.weather_code,t:typeof cur.temperature_2m==='number'?cur.temperature_2m:null,at:Date.now()};applyWx(o);
+    try{localStorage.setItem('garden-wx',JSON.stringify(o));}catch(e){}
+  }catch(e){}
+}
+loadWx();setInterval(()=>{if(!document.hidden)loadWx();},15*60e3);
+// 0 = new moon, .5 = full moon
+function moonPhase(){let f=NaN;try{const o=localStorage.getItem('garden-moon');if(o)f=+o;}catch(e){}if(!isNaN(f))return f;
+  const p=(Date.now()-Date.UTC(2000,0,6,18,14))/864e5/29.530588853;return p-Math.floor(p);}
+function drawMoon(mx,my,r){
+  const p=moonPhase(),k=Math.cos(2*Math.PI*(p<.5?p:p-.5)),cr=[[-2,-1],[-1,-1],[-2,0],[-1,0],[2,2],[3,2],[1,-3]];
+  for(let dy=-r;dy<=r;dy++){const hw=Math.sqrt(Math.max(0,r*r-dy*dy+r*.6)),w=Math.round(hw);
+    for(let dx=-w;dx<=w;dx++){const xn=hw?dx/hw:0,lit=p<.5?xn>k:xn<k;
+      if(lit){R(mx+dx,my+dy,1,1,cr.some(c=>c[0]===dx&&c[1]===dy)?'#e9dcae':'#fff3c8');}
+      else{const a=X.globalAlpha;X.globalAlpha=a*.28;R(mx+dx,my+dy,1,1,'#aab4d8');X.globalAlpha=a;}}}
+}
+// falling rain or snow over the whole screen (garden and island share it)
+function wxParticles(t,wx,groundY){
   if(wx.rain>0){
-    g.globalAlpha=wx.rain*.65;const n=Math.floor(W*H/300);
+    g.globalAlpha=wx.rain*.65;const n=Math.floor(W*H/300*Math.max(.5,wx.rain));
     for(let i=0;i<n;i++){const y=Math.floor((i*97.3+t*230+i*i*.37)%(H+12))-6,x=Math.floor((i*53.7+t*20+y*.25)%(W+20))-10;R(x,y,1,3,'#dcefff');}
-    const gt=OY+142-camR;for(let k=0;k<10;k++){const x=Math.floor(Math.random()*W),y=Math.floor(gt+Math.random()*(H-gt));if(y>0)R(x,y,2,1,'#e6f4ff');}
+    for(let k=0;k<10;k++){const x=Math.floor(Math.random()*W),y=Math.floor(groundY+Math.random()*(H-groundY));if(y>0)R(x,y,2,1,'#e6f4ff');}
     g.globalAlpha=1;
   }
+  if(wx.snow>0){
+    const n=Math.floor(W*H/380);
+    for(let i=0;i<n;i++){const sp=10+(i%5)*4,y=Math.floor((i*91.7+t*sp)%(H+8))-4,x=Math.floor((i*57.3+Math.sin(t*.9+i)*5+t*4)%(W+10))-5;
+      g.globalAlpha=i%3?.75:.95;R(x,y,i%4?1:2,i%4?1:2,'#ffffff');}
+    g.globalAlpha=1;
+  }
+}
+function wxTint(t,wx){
+  if(wx.grey>0){g.globalCompositeOperation='multiply';g.globalAlpha=.16;g.fillStyle='#b6bccb';g.fillRect(0,0,W,H);g.globalCompositeOperation='source-over';g.globalAlpha=1;}
+  if(wx.snow>0){g.globalCompositeOperation='multiply';g.globalAlpha=.12;g.fillStyle='#c6cfe0';g.fillRect(0,0,W,H);g.globalCompositeOperation='source-over';g.globalAlpha=1;}
+}
+function wxOver(t,wx){
+  if(wx.fog>0){g.globalAlpha=.26;g.fillStyle='#e9eef2';g.fillRect(0,0,W,H);g.globalAlpha=.12;for(let y=0;y<H;y+=14){const o=Math.round(Math.sin(t*.2+y)*20);g.fillRect(o-20,y,W+40,5);}g.globalAlpha=1;}
+  if(wx.storm>0){const f=t%11;if(f<.1||(f>.22&&f<.28)){g.globalAlpha=.32;g.fillStyle='#ffffff';g.fillRect(0,0,W,H);g.globalAlpha=1;}}
+}
+
+/* ================= who is online, everywhere ================= */
+function allPeers(){if(!room)return [];try{return room.peers();}catch(e){return [];}}
+function globalOnline(){return roomLive()?allPeers().length:0;}
+function keyOf(id){return 'g-'+hashStr(id).toString(36);}
+function peopleAt(key){return allPeers().filter(p=>!p.isMe&&p.presence&&p.presence.g===key);}
+
+/* ================= the community island: everyone leaves one small thing ================= */
+const IW=232,IH=200,ISL={cx:116,cy:92,rx:98,ry:62},JET={x0:108,x1:124,y0:146,y1:196},LH={x:188,y:58};
+let IX=0,IY=0,isleItems=[],isleMine=[],isleLoaded=0,isleBusy=false,isleSig='',isleBg=null,isleBgW=0,isleT=0;
+const ISLE_K=[['flower','Blume'],['tulip','Tulpe'],['stone','Steine'],['lantern','Laterne'],['shell','Muschel'],['mushroom','Pilz']];
+const ISLE_DAY=3;
+function isleOrigin(){IX=Math.floor((W-IW)/2);IY=Math.max(46,Math.floor((H-IH)/2));}
+function isleShape(x,y,f){const dx=x-ISL.cx,dy=y-ISL.cy,a=Math.atan2(dy/ISL.ry,dx/ISL.rx),m=1+.06*Math.sin(3*a+1)+.04*Math.sin(5*a+2);const ex=dx/(ISL.rx*f*m),ey=dy/(ISL.ry*f*m);return ex*ex+ey*ey<1;}
+function onJetty(x,y){return x>JET.x0+1&&x<JET.x1-1&&y>JET.y0-4&&y<JET.y1;}
+function isleBlocked(x,y){
+  if(Math.abs(x-LH.x)<9&&y>LH.y-4&&y<LH.y+5)return true;
+  return !(isleShape(x,y,.96)||onJetty(x,y));
+}
+function isleFree(x,y){
+  if(!isleShape(x,y,.9)||onJetty(x,y+6)||Math.abs(x-LH.x)<12&&Math.abs(y-LH.y)<10)return false;
+  return !isleItems.some(it=>Math.abs(it.x-x)<6&&Math.abs(it.y-y)<5);
+}
+function cleanIsle(it,n,mine){if(!it||typeof it!=='object')return null;const k=ISLE_K.some(q=>q[0]===it.k)?it.k:null;if(!k)return null;
+  const x=Math.round(num(it.x,-1)),y=Math.round(num(it.y,-1));if(!isleShape(x,y,.95))return null;
+  return {k,x,y,t:num(it.t,0),n:str(it.n,14)||n||'Jemand',c:Math.abs(Math.round(num(it.c,0)))%4,mine:!!mine};}
+async function loadIsle(){
+  if(isleBusy||!window.__isle)return;isleBusy=true;
+  try{const rows=await window.__isle.load();if(Array.isArray(rows)){const out=[],mine=[];
+      rows.forEach(r=>{(Array.isArray(r.list)?r.list:[]).slice(-60).forEach(x=>{const c=cleanIsle(x,'',r.me);if(c){out.push(c);if(r.me)mine.push(c);}});});
+      isleItems=out.sort((a,b)=>a.t-b.t);isleMine=mine;isleLoaded=Date.now();isleHudTxt();if(mapM.classList.contains('show'))renderMap();}}
+  catch(e){}
+  isleBusy=false;
+}
+function isleToday(){const d=new Date().toDateString();return isleMine.filter(i=>new Date(i.t).toDateString()===d).length;}
+function isleLeft(){return Math.max(0,ISLE_DAY-isleToday());}
+function isleSpot(){
+  const d=av.dir||1;for(const [ox,oy] of [[d*8,0],[-d*8,0],[0,7],[0,-7],[d*7,6],[-d*7,6]]){const x=Math.round(av.x+ox),y=Math.round(av.y+oy);if(isleFree(x,y))return [x,y];}
+  return null;
+}
+async function isleDrop(k){
+  isleM.classList.remove('show');
+  if(!myId||!window.__isle){toast('Melde dich an, dann kannst du etwas hinlegen.',2600);return;}
+  if(!isleLeft()){toast('Für heute hast du genug hingelegt. Morgen wieder.',2600);return;}
+  const sp=isleSpot();if(!sp){toast('Hier ist kein Platz. Geh ein Stück weiter.',2400);return;}
+  const it={k,x:sp[0],y:sp[1],t:Date.now(),n:(me().name||'Jemand').slice(0,14),c:Math.floor(Math.random()*4)};
+  const c=cleanIsle(it,'',true);if(!c)return;
+  isleItems.push(c);isleMine.push(c);isleHudTxt();
+  for(let i=0;i<8;i++)spawn({kind:'spark',x:c.x+(Math.random()*10-5),y:c.y-2-Math.random()*6,vy:-8-Math.random()*6,life:.6});
+  try{Sfx.grow();}catch(e){}
+  const ok=await window.__isle.save(isleMine.slice(-60).map(i=>({k:i.k,x:i.x,y:i.y,t:i.t,n:i.n,c:i.c})));
+  if(!ok){toast('Konnte nicht speichern. Prüf deine Verbindung.',3000);isleItems=isleItems.filter(i=>i!==c);isleMine=isleMine.filter(i=>i!==c);isleHudTxt();return;}
+  syncRoom();
+}
+function enterIsland(){
+  if(!started)return;
+  if(scene==='house')exitHouse(true);else if(scene==='office')exitOffice(true);else if(scene==='city')exitCity(true);
+  if(mySeat!==null)standUp();
+  if(riding)dismount();riding=false;pendRide=false;slide=null;pendSlide=false;av.swim=false;av.jump=null;if(moving)endMove();
+  scene='island';isleOrigin();try{Sfx.door(.5);}catch(e){}
+  av.x=116;av.y=188;av.back=true;av.target={x:116,y:150};av.water=0;
+  active=null;lastActive=undefined;dlg.classList.remove('show');editing=false;
+  worldEl.style.visibility='hidden';bJump.hidden=true;setPrompt(null);isleHud.hidden=false;
+  cat.x=av.x+12;cat.y=av.y;syncRoom();if(Date.now()-isleLoaded>4000)loadIsle();isleHudTxt();
+}
+function exitIsland(silent){
+  scene='garden';worldEl.style.visibility='';isleHud.hidden=true;isleM.classList.remove('show');
+  av.x=120;av.y=216;av.back=false;av.target=null;camY=clamp(av.y+OY-H*.55,0,Math.max(0,TH-H));camR=-1;setPrompt(null);
+  cat.x=av.x+14;cat.y=av.y+4;syncRoom();rebuildLabels();refreshChrome();
+}
+function isleNearExit(){return onJetty(av.x,av.y)&&av.y>180;}
+function isleUpdate(dt,t){
+  if(av.y>JET.y1-3&&onJetty(av.x,av.y-2)){exitIsland();return;}
+  const canDrop=!av.moving&&!av.target&&isleShape(av.x,av.y,.96)&&!!isleSpot()&&isleLeft()>0&&!!myId;
+  if(isleNearExit())setPrompt('Zurück zum Garten','↓');else if(canDrop)setPrompt('Etwas hinlegen','E');else setPrompt(null);
+  // someone placed something: fetch the new state right away; otherwise look again every 20 s
+  let sig='';roomPeers().forEach(p=>{if(!p.isMe&&p.presence&&p.presence.s==='i')sig+=p.peer+':'+(p.presence.il||0)+',';});
+  if(sig!==isleSig){const grew=isleSig&&sig.length>=isleSig.length;isleSig=sig;if(grew)loadIsle();}
+  isleT+=dt;if(isleT>20){isleT=0;loadIsle();}
+}
+function islePointer(lx,ly){
+  const it=isleItems.slice().reverse().find(i=>Math.abs(i.x-lx)<6&&ly>i.y-10&&ly<i.y+3);
+  if(it){const nm=(ISLE_K.find(q=>q[0]===it.k)||['',''])[1],d=new Date(it.t);toast(nm+' von '+(it.mine?'dir':it.n)+', '+d.getDate()+'.'+(d.getMonth()+1)+'.',2600);return;}
+  if(onJetty(lx,ly)&&ly>176){av.target={x:116,y:JET.y1};return;}
+  let tx=lx,ty=ly;if(isleBlocked(tx,ty)){for(let k=1;k<=12;k++){const x=ISL.cx+(lx-ISL.cx)*(1-k/14),y=ISL.cy+(ly-ISL.cy)*(1-k/14);if(!isleBlocked(x,y)){tx=x;ty=y;break;}}}
+  av.target={x:tx,y:ty};
+}
+function isleAct(){if(isleNearExit()){av.target={x:116,y:JET.y1};return;}openIslePick();}
+// small pixel things; also drawn big as icons in the picker
+const ISLE_COL=[['#e8506c','#ffb3c4'],['#f2c94c','#fff0a8'],['#ffffff','#f4e9ff'],['#7f8cff','#c8cfff']];
+function drawIsleThing(k,x,y,c,t,night){
+  const [a,b]=ISLE_COL[c||0];
+  if(k==='flower'){R(x,y-5,1,5,'#4f9e3f');R(x+1,y-3,1,1,'#6fc25a');R(x-1,y-8,3,1,a);R(x-1,y-6,3,1,a);R(x-2,y-7,1,1,a);R(x+2,y-7,1,1,a);R(x,y-7,1,1,'#f2c94c');}
+  else if(k==='tulip'){R(x,y-5,1,5,'#4f9e3f');R(x-1,y-3,1,2,'#6fc25a');R(x-1,y-8,3,3,a);R(x-1,y-9,1,1,a);R(x+1,y-9,1,1,a);R(x,y-8,1,1,b);}
+  else if(k==='stone'){R(x-3,y-2,6,2,'#8f939c');R(x-2,y-3,4,1,'#a7abb3');R(x-1,y-5,3,2,'#b9bdc4');R(x,y-6,1,1,'#cfd2d8');R(x-3,y-1,6,1,'#6f737c');}
+  else if(k==='lantern'){R(x,y-7,1,7,'#5a4636');R(x-2,y-11,5,1,'#3a2f38');R(x-2,y-10,1,3,'#3a2f38');R(x+2,y-10,1,3,'#3a2f38');R(x-1,y-10,3,3,night>.15?'#ffe08a':'#f6d77a');R(x-1,y-7,3,1,'#3a2f38');
+    if(night>.15){g.globalCompositeOperation='lighter';g.globalAlpha=night*.55*(.85+.15*Math.sin(t*3+x));disc(x,y-9,6,'#3a2a08');disc(x,y-9,3,'#7a5a14');g.globalCompositeOperation='source-over';g.globalAlpha=1;}}
+  else if(k==='shell'){R(x-2,y-2,5,2,'#f6d3c4');R(x-1,y-3,3,1,'#f9e2d8');R(x-2,y-1,5,1,'#e0a994');R(x-1,y-3,1,2,'#e0a994');R(x+1,y-3,1,2,'#e0a994');}
+  else if(k==='mushroom'){R(x,y-3,2,3,'#f4ead8');R(x-2,y-5,6,2,'#d84a4a');R(x-1,y-6,4,1,'#d84a4a');R(x-1,y-5,1,1,'#ffffff');R(x+2,y-6,1,1,'#ffffff');}
+}
+function buildIsleBg(){
+  isleBg=document.createElement('canvas');isleBg.width=IW;isleBg.height=IH;const c=isleBg.getContext('2d'),keep=X;X=c;const r=rng(31);
+  for(let y=0;y<IH;y++)for(let x=0;x<IW;x++){
+    if(isleShape(x,y,1)){R(x,y,1,1,'#86c96f');}
+    else if(isleShape(x,y,1.1)){R(x,y,1,1,isleShape(x,y-2,1)?'#6fb35c':'#f0d8a0');}
+    else if(isleShape(x,y,1.2)){R(x,y,1,1,'#7cc4ea');}
+  }
+  for(let i=0;i<260;i++){const x=Math.floor(r()*IW),y=Math.floor(r()*IH);if(isleShape(x,y,.97)&&isleShape(x+2,y,.97)){R(x,y,1,2,'#73b85e');R(x+2,y,1,2,'#73b85e');R(x+1,y+1,1,1,'#73b85e');}}
+  for(let i=0;i<70;i++){const x=Math.floor(r()*IW),y=Math.floor(r()*IH);if(!isleShape(x,y,1.01)&&isleShape(x,y,1.09))R(x,y,1,1,'#e2c588');}
+  // jetty
+  R(JET.x0,JET.y0,JET.x1-JET.x0,JET.y1-JET.y0,'#b98a5a');for(let y=JET.y0+3;y<JET.y1;y+=4)R(JET.x0,y,JET.x1-JET.x0,1,'#93673f');
+  R(JET.x0-1,JET.y0,1,JET.y1-JET.y0,'#7a5434');R(JET.x1,JET.y0,1,JET.y1-JET.y0,'#7a5434');
+  [[JET.x0-2,JET.y1-6],[JET.x1,JET.y1-6],[JET.x0-2,JET.y0+18],[JET.x1,JET.y0+18]].forEach(([x,y])=>{R(x,y,3,6,'#6b4a2e');R(x,y,3,1,'#8f6a46');});
+  // lighthouse, top right
+  const lx=LH.x,ly=LH.y;R(lx-6,ly-1,13,3,'#9aa0a8');R(lx-5,ly-24,11,23,'#fdfaf2');
+  for(let y=ly-21;y<ly-1;y+=8)R(lx-5,y,11,4,'#e8506c');R(lx+3,ly-24,2,23,'rgba(0,0,0,.12)');
+  R(lx-6,ly-28,13,4,'#3a2f38');R(lx-4,ly-27,9,2,'#ffe08a');R(lx-5,ly-31,11,3,'#e8506c');R(lx-3,ly-33,7,2,'#e8506c');R(lx,ly-35,1,2,'#3a2f38');
+  R(lx-1,ly-9,3,5,'#5a4636');
+  X=keep;isleBgW=W;
+}
+function renderIsland(t){
+  isleOrigin();if(!isleBg)buildIsleBg();
+  const {night}=skyState(),wx=weather(t);
+  g.fillStyle='#4b9bd6';g.fillRect(0,0,W,H);
+  for(let i=0;i<Math.floor(W*H/450);i++){const x=Math.floor((i*61.3+t*(3+i%3))%(W+8))-4,y=Math.floor((i*37.9)%H),ph=Math.sin(t*1.3+i);if(ph>.2)R(x,y,3,1,'#6fb5e6');}
+  g.save();g.translate(IX,IY);
+  g.drawImage(isleBg,0,0);
+  for(let i=0;i<40;i++){const a=i/40*6.283+t*.05,f=1.105+.012*Math.sin(t*1.7+i*2.1);
+    const dx=Math.cos(a)*ISL.rx*f,dy=Math.sin(a)*ISL.ry*f;let fx=ISL.cx+dx,fy=ISL.cy+dy;
+    const m=1+.06*Math.sin(3*a+1)+.04*Math.sin(5*a+2);fx=ISL.cx+dx*m;fy=ISL.cy+dy*m;if(!onJetty(fx,fy))R(Math.round(fx),Math.round(fy),2,1,'#eaf6ff');}
+  if(av.target){const tx=Math.round(av.target.x),ty=Math.round(av.target.y);R(tx-2,ty,1,1,'#fff');R(tx+2,ty,1,1,'#fff');R(tx,ty-1,1,1,'#fff');R(tx,ty+1,1,1,'#fff');}
+  const list=isleItems.map(it=>({y:it.y,d:()=>drawIsleThing(it.k,it.x,it.y,it.c,t,night)}));
+  list.push({y:av.y,d:()=>{const rn=av.run&&av.moving,fr=av.moving?(rn?[1,2][Math.floor(t*10)%2]:[1,0,2,0][Math.floor(t*8)%4]):0;drawAvatar(g,av.x,av.y,me().look,{run:rn,frame:fr,back:av.back,blink:(t%4)<.12,t});}});
+  livePeers().filter(p=>p.scene==='island').forEach(p=>list.push({y:p.y,d:()=>drawAvatar(g,p.x,p.y,p.look,{run:p.run&&p.moving,frame:p.moving?(p.run?[1,2][Math.floor(t*10)%2]:[1,0,2,0][Math.floor(t*8+p.x)%4]):0,back:p.back,blink:((t+p.x)%4)<.12,t})}));
+  list.sort((a,b)=>a.y-b.y).forEach(o=>o.d());
+  parts.forEach(q=>{if(q.kind==='spark'){const x=Math.round(q.x),y=Math.round(q.y);g.globalAlpha=1-q.age/q.life;R(x,y-1,1,3,'#fff6b0');R(x-1,y,3,1,'#fff6b0');g.globalAlpha=1;}});
+  g.restore();
+  wxTint(t,wx);
+  if(wx.rain>0){g.globalCompositeOperation='multiply';g.globalAlpha=wx.rain*.28;g.fillStyle='#8f9cbc';g.fillRect(0,0,W,H);g.globalCompositeOperation='source-over';g.globalAlpha=1;}
+  if(night>0){g.globalCompositeOperation='multiply';g.globalAlpha=night*.72;g.fillStyle='#3a4590';g.fillRect(0,0,W,H);g.globalCompositeOperation='source-over';g.globalAlpha=1;
+    if(night>.15){g.globalCompositeOperation='lighter';
+      isleItems.forEach(it=>{if(it.k==='lantern'){g.globalAlpha=night*.5;disc(IX+it.x,IY+it.y-9,6,'#3a2a08');disc(IX+it.x,IY+it.y-9,3,'#7a5a14');}});
+      const bx=IX+LH.x,by=IY+LH.y-26,sw=Math.sin(t*.9);g.globalAlpha=night*.35;for(let i=1;i<26;i++)R(Math.round(bx+sw*i*2.2),by+Math.round(i*.15),2,1,'#ffe9a8');
+      g.globalAlpha=night*.6;disc(bx,by,5,'#3a2a08');g.globalCompositeOperation='source-over';g.globalAlpha=1;
+      isleItems.forEach(it=>{if(it.k==='lantern')R(IX+it.x-1,IY+it.y-10,3,3,'#ffe08a');});R(IX+LH.x-4,IY+LH.y-27,9,2,'#ffe08a');}}
+  wxParticles(t,wx,IY+30);wxOver(t,wx);
+  placeTags(livePeers().filter(p=>p.scene==='island'),(x,y)=>[(IX+x)*S,(IY+y)*S]);
+  {const ty=Math.round((IY+20)*S)+'px';if(isleHud.style.top!==ty)isleHud.style.top=ty;}
+}
+function islandSparkTick(dt){parts.forEach(q=>{if(q.kind==='spark'){q.age+=dt;q.y+=q.vy*dt;}});parts=parts.filter(q=>q.age<q.life);}
+
+/* counter on the island */
+const isleHud=document.createElement('div');isleHud.id='isleHud';isleHud.hidden=true;isleHud.innerHTML='<div class="ih1">Gemeinschafts-Insel</div><div class="ih2" id="isleN"></div>';document.body.appendChild(isleHud);
+function isleHudTxt(){const el=document.getElementById('isleN');if(!el)return;const n=isleItems.length;el.textContent=n===1?'1 Beitrag':n?n+' Beiträge':isleLoaded?'Noch keine Beiträge':'';}
+
+/* picker: what to leave here */
+const isleM=document.createElement('div');isleM.className='modal';isleM.id='isleM';
+isleM.innerHTML='<div class="panel ipanel"><div class="askt">Was legst du hier hin?</div><div class="ipick" id="iPick"></div><p class="ileft" id="iLeft"></p><button class="gclose" id="iNo" type="button">Abbrechen</button></div>';
+document.body.appendChild(isleM);
+(function(){const box=isleM.querySelector('#iPick');ISLE_K.forEach(([k,l],i)=>{const b=document.createElement('button');b.type='button';b.dataset.k=k;
+  const c=document.createElement('canvas');c.width=16;c.height=14;const keep=X;X=c.getContext('2d');drawIsleThing(k,8,13,i%4===0?0:i%4,0,0);X=keep;
+  const s=document.createElement('span');s.textContent=l;b.appendChild(c);b.appendChild(s);b.onclick=()=>isleDrop(k);box.appendChild(b);});})();
+isleM.querySelector('#iNo').onclick=()=>isleM.classList.remove('show');
+let isleOpenT=0;
+isleM.addEventListener('click',e=>{if(e.target===isleM&&performance.now()-isleOpenT>600)isleM.classList.remove('show');});
+function openIslePick(){
+  if(!myId){toast('Melde dich an, dann kannst du etwas hinlegen.',2600);return;}
+  const left=isleLeft();if(!left){toast('Für heute hast du genug hingelegt. Morgen wieder.',2600);return;}
+  if(!isleSpot()){toast('Hier ist kein Platz. Geh ein Stück weiter.',2400);return;}
+  document.getElementById('iLeft').textContent=left===1?'Heute geht noch eins.':'Heute gehen noch '+left+'.';
+  isleOpenT=performance.now();isleM.classList.add('show');
+}
+
+/* ================= the map: every garden as a small island ================= */
+const mapM=document.createElement('div');mapM.className='modal';mapM.id='mapM';
+mapM.innerHTML='<div class="panel mapp"><div class="maph"><h2>Map</h2><span class="mapon" id="mapOn"></span><button class="btn" id="mapClose" type="button" aria-label="Close">×</button></div><div class="sea" id="mapSea"></div></div>';
+document.body.appendChild(mapM);
+mapM.querySelector('#mapClose').onclick=()=>mapM.classList.remove('show');
+mapM.addEventListener('click',e=>{if(e.target===mapM)mapM.classList.remove('show');});
+let mapTimer=null;
+function openMap(){mapM.classList.add('show');renderMap();if(Date.now()-isleLoaded>30000)loadIsle();clearInterval(mapTimer);mapTimer=setInterval(()=>{if(!mapM.classList.contains('show')){clearInterval(mapTimer);return;}renderMap(true);},2000);}
+function mapGardens(){const fr=(home&&home.friends)||[];
+  return gardensList.filter(gd=>gd.id===myId||gd.data.owner||gd.data.listed||fr.includes(gd.id)||(visiting&&visiting.id===gd.id))
+    .sort((a,b)=>(b.data.owner-a.data.owner)||((b.id===myId)-(a.id===myId))||a.data.name.localeCompare(b.data.name));}
+function islandSprite(gd,big){
+  const w=big?64:44,h=big?40:30,c=document.createElement('canvas');c.width=w;c.height=h;const keep=X;X=c.getContext('2d');
+  const cx=w/2,cy=h/2+1,rx=w/2-3,ry=h/2-5;
+  ell(cx,cy+2,rx+2,ry+2,'#7cc4ea');ell(cx,cy+1,rx,ry,'#f0d8a0');
+  const dry=gd&&gardenAvg(gd.data)<35;ell(cx,cy-1,rx-3,ry-3,dry?'#b7b46a':'#86c96f');ell(cx,cy+ry-4,rx-6,1,dry?'#a3a05c':'#6fb35c');
+  if(big){R(cx-1,cy-14,3,12,'#fdfaf2');R(cx-1,cy-10,3,3,'#e8506c');R(cx-2,cy-16,5,2,'#3a2f38');R(cx-1,cy-15,3,1,'#ffe08a');R(cx-2,cy-18,5,2,'#e8506c');
+    const pick=isleItems.slice(-40);pick.forEach((it,i)=>{const r=rng(i*7+3);const x=Math.round(cx+(it.x-ISL.cx)/ISL.rx*(rx-5)),y=Math.round(cy-1+(it.y-ISL.cy)/ISL.ry*(ry-4));
+      if(Math.abs(x-cx)<3&&y<cy)return;R(x,y,1,1,it.k==='stone'?'#9aa0a8':it.k==='lantern'?'#ffe08a':it.k==='mushroom'?'#d84a4a':it.k==='shell'?'#f6d3c4':ISLE_COL[it.c||0][0]);});}
+  else if(gd){const ps=(gd.data.projects||[]).slice(0,6),r=rng(hashStr(gd.id));
+    ps.forEach((p,i)=>{const x=Math.round(cx-12+i*5+r()*2),y=Math.round(cy-2+(i%2?2:-1));const tall=p.progress>60;R(x,y-(tall?5:3),1,tall?5:3,'#4f9e3f');R(x-1,y-(tall?7:4),3,2,p.kind==='tree'||p.kind==='plum'?'#3f8f44':ISLE_COL[i%4][0]);});
+    R(cx+10,cy-6,6,4,'#f6ead2');R(cx+9,cy-8,8,2,'#c55a3c');R(cx+12,cy-4,2,2,'#7a5434');}
+  X=keep;return c;
+}
+function renderMap(soft){
+  const sea=document.getElementById('mapSea');if(!sea)return;
+  const gs=mapGardens(),on=globalOnline();
+  document.getElementById('mapOn').textContent=on>1?on+' online':roomLive()?'Nur du online':'';
+  const sig=gs.map(gd=>gd.id+':'+peopleAt(keyOf(gd.id)).length+':'+Math.round(gardenAvg(gd.data)/10)).join('|')+'#'+peopleAt('isle').length+':'+isleItems.length+':'+(visiting?visiting.id:'')+scene+':'+sea.clientWidth;
+  if(soft&&sea.dataset.sig===sig)return;sea.dataset.sig=sig;sea.innerHTML='';
+  const Wd=sea.clientWidth||340,rings=[];let left=gs.length,ri=0;while(left>0){const cap=6+ri*5;rings.push(Math.min(cap,left));left-=cap;ri++;}
+  const narrow=Wd<420,sx=Wd/2,ringX=Wd*(narrow?.255:.235),ringY=narrow?96:88,top=narrow?92:84;
+  const Hd=Math.max(narrow?300:320,top*2+ringY*2*Math.max(1,rings.length)-ringY*.6);sea.style.height=Math.round(Hd)+'px';const sy=Hd/2;
+  const place=(el,x,y)=>{el.style.left=Math.round(x)+'px';el.style.top=Math.round(y)+'px';sea.appendChild(el);};
+  const mk=(name,sprite,count,cls,onTap,sub)=>{const b=document.createElement('button');b.type='button';b.className='isl '+(cls||'');b.appendChild(sprite);
+    const n=document.createElement('span');n.className='in';n.textContent=name;b.appendChild(n);
+    if(count>0){const o=document.createElement('span');o.className='io';o.textContent=count;o.title=count+' gerade da';n.appendChild(o);}
+    if(sub){const s=document.createElement('span');s.className='is';s.textContent=sub;b.appendChild(s);}
+    b.onclick=onTap;return b;};
+  const isleN=peopleAt('isle').length+(scene==='island'?1:0);
+  place(mk('Gemeinschafts-Insel',islandSprite(null,true),isleN,'big'+(scene==='island'?' here':''),()=>{mapM.classList.remove('show');if(scene!=='island')enterIsland();},isleItems.length?(isleItems.length===1?'1 Beitrag':isleItems.length+' Beiträge'):''),sx,sy);
+  let idx=0;rings.forEach((cnt,r)=>{for(let j=0;j<cnt;j++,idx++){const gd=gs[idx],h=hashStr(gd.id);
+      const a=-Math.PI/2+2*Math.PI*(j+.5)/cnt+r*.45+((h%100)/100-.5)*.22,rx=ringX*(1+r*.78),ry=ringY*(1+r*.92);
+      const x=clamp(sx+Math.cos(a)*rx,46,Wd-46),y=sy+Math.sin(a)*ry;
+      const mine=gd.id===myId,here=scene!=='island'&&((mine&&!visiting)||(visiting&&visiting.id===gd.id));
+      const cnt2=peopleAt(keyOf(gd.id)).length+(here?1:0);
+      place(mk(mine?'Du':gd.data.name,islandSprite(gd,false),cnt2,here?'here':'',()=>{mapM.classList.remove('show');
+        if(mine){if(visiting)goHome();else if(scene!=='garden')goScene('garden');}
+        else if(visiting&&visiting.id===gd.id){if(scene!=='garden')goScene('garden');}
+        else{visit(gd);toast('Welcome to '+gd.data.name+"'s garden 🌱",2600);}}),x,y);}});
 }
 
 /* ================= the cat ================= */
@@ -2984,6 +3293,7 @@ function blocked(x,y){
   if(scene==='house') return houseBlocked(x,y);
   if(scene==='office') return officeBlocked(x,y);
   if(scene==='city') return cityBlocked(x,y);
+  if(scene==='island') return isleBlocked(x,y);
   {const fx=(x-FOUNT.x)/27,fy=(y-(FOUNT.y-1))/11; if(fx*fx+fy*fy<1) return true;}
   if(y<144||y>WORLD_H-5||x<-OX+6||x>CW+OX-6) return true;
   if(x>46&&x<86&&y<159&&!(x>55&&x<65)) return true;
@@ -3007,6 +3317,7 @@ addEventListener('keydown',e=>{
     if(scene==='house'){if(houseNear)houseNear.act();e.preventDefault();}
     else if(scene==='office'){if(ofNear){av.back=true;ofTalk(ofNear);} else if(Math.hypot(av.x-OF_DESK.x,av.y-216)<20)openDesk(); else if(Math.hypot(av.x-253,av.y-134)<16)openStandup(); e.preventDefault();}
     else if(scene==='city'){if(cityNearHole())exitCity();e.preventDefault();}
+    else if(scene==='island'){isleAct();e.preventDefault();}
     else if(active&&!editing){openLog(active);e.preventDefault();}
     else if(promptEl.dataset.on){goToDoor();e.preventDefault();}
   }
@@ -3024,6 +3335,7 @@ cvs.addEventListener('pointerdown',e=>{
   if(scene==='house'){housePointer(e.clientX/S-RX,e.clientY/S-RY);return;}
   if(scene==='office'){officePointer(e.clientX/S-ORX,e.clientY/S-ORY);return;}
   if(scene==='city'){cityPointer(e.clientX/S,e.clientY/S);return;}
+  if(scene==='island'){islePointer(e.clientX/S-IX,e.clientY/S-IY);return;}
   const lx=e.clientX/S-OX,ly=e.clientY/S+camR-OY;
   if(moving){av.run=false;placeAt(lx,ly);return;}
   if(HOLE_ON&&Math.hypot(lx-HOLE.x,(ly-HOLE.y)*1.6)<13&&!av.swim&&mySeat===null){av.run=false;av.target={x:HOLE.x,y:HOLE.y-1,onArrive:enterCity};return;}
@@ -3099,7 +3411,7 @@ const gardensM=document.getElementById('gardens');
 document.getElementById('bGardens').onclick=()=>{renderGardens();gardensM.classList.add('show');};
 document.getElementById('gClose').onclick=()=>gardensM.classList.remove('show');
 document.getElementById('bHome').onclick=()=>{hideHomeHint(true);goHome();};
-function closeModals(){compM.classList.remove('show');lineM.classList.remove('show');askM.classList.remove('show');if(quizM.classList.contains('show'))closeQuiz();if(c4M.classList.contains('show'))closeC4();stillM.classList.remove('show');dashM.classList.remove('show');booksM.classList.remove('show');if(creator.classList.contains('show'))closeCreator();help.classList.remove('show');gardensM.classList.remove('show');addM.classList.remove('show');}
+function closeModals(){compM.classList.remove('show');mapM.classList.remove('show');isleM.classList.remove('show');lineM.classList.remove('show');askM.classList.remove('show');if(quizM.classList.contains('show'))closeQuiz();if(c4M.classList.contains('show'))closeC4();stillM.classList.remove('show');dashM.classList.remove('show');booksM.classList.remove('show');if(creator.classList.contains('show'))closeCreator();help.classList.remove('show');gardensM.classList.remove('show');addM.classList.remove('show');}
 
 /* ================= gardens (visiting) ================= */
 function renderNeighbours(){
@@ -3178,6 +3490,7 @@ function enterGarden(){
   if(scene==='house')exitHouse(true);
   if(scene==='office')exitOffice(true);
   if(scene==='city')exitCity(true);
+  if(scene==='island')exitIsland(true);
   syncRoom();
   camY=0;
   av.x=120;av.y=216;av.target=null;av.water=0;active=null;lastActive=undefined;dlg.classList.remove('show');
@@ -3339,7 +3652,7 @@ function processActs(){
   for(const p of ps){if(p.isMe)continue;const a=(p.presence||{}).act;if(!a||typeof a.n!=='number'||actSeen[p.peer]===a.n)continue;
     const first=actSeen[p.peer]===undefined;actSeen[p.peer]=a.n;if(first&&!(a.at&&Math.abs(now-a.at)<8000))continue;
     if(!['hug','kiss','push','balloon','swing'].includes(a.k))continue;
-    const ss=(p.presence||{}).s,myS=scene==='house'?'h':scene==='office'?'o':scene==='city'?'m':'g';if((ss||'g')!==myS)continue;
+    const ss=(p.presence||{}).s,myS=scene==='house'?'h':scene==='office'?'o':scene==='city'?'m':scene==='island'?'i':'g';if((ss||'g')!==myS)continue;
     const from=ghosts[p.peer];if(!from)continue;
     let bx,by,toMe=a.to===mine;
     const love=a.k==='hug'||a.k==='kiss';
@@ -3356,15 +3669,17 @@ function toast(msg,ms){toastEl.textContent=msg;toastEl.hidden=false;clearTimeout
 function liveInfo(){const on=roomLive();return {on,n:on?1+roomPeers().filter(p=>!p.isMe&&p.kind==='viewer').length:0};}
 function tickLive(now){
   if(now-liveT<500) return; liveT=now;
-  const i=liveInfo(),k=i.on+':'+i.n;
-  if(k!==liveKey){liveKey=k;liveEl.classList.toggle('on',i.on);liveEl.textContent=i.on?(i.n>1?i.n+' here':'Only you'):'Connecting';liveEl.title=i.on?i.n+' here now':'Connecting';}
+  const i=liveInfo(),all=i.on?Math.max(i.n,globalOnline()):0,k=i.on+':'+i.n+':'+all;
+  if(k!==liveKey){liveKey=k;liveEl.classList.toggle('on',i.on);
+    liveEl.innerHTML=!i.on?'Connecting':all<=1?'Only you':i.n>1&&all>i.n?'<span>'+i.n+' here</span><span class="all">'+all+' online</span>':i.n>1?i.n+' here':all+' online';
+    liveEl.title=i.on?(i.n+' here, '+all+' online'):'Connecting';}
   if(!i.on&&roomInit&&now-roomT0>7000&&!liveHinted){liveHinted=true;try{console.info('[garden] live status'+liveDiag());}catch(e){}}
 }
 function liveDiag(){let all=0,mine=null;try{const ps=room?room.peers():[];all=ps.length;mine=ps.find(p=>p.isMe&&p.sameTab)||null;}catch(e){}
   return ' ['+(room?'room':'no room')+(roomErr?' '+roomErr:'')+', all '+all+', here '+roomPeers().length+', '+(gardenKey()||'no key')+(mine?(mine.guest?', guest':', member')+(mine.by?', id':', no id'):'')+(visiting?', visit':', home')+(myId?'':', signed out')+']';}
-liveEl.addEventListener('click',()=>{const i=liveInfo();try{console.info('[garden] live status'+liveDiag());}catch(e){}
-  const names=livePeers().map(p=>p.name).filter(Boolean);
-  toast(i.on?(names.length?'🌱 Here now: you, '+names.join(', ')+'.':'🌱 You are live. Nobody else is here yet.'):'🌙 Connecting… this usually takes a few seconds.',3500);});
+liveEl.addEventListener('click',()=>{try{console.info('[garden] live status'+liveDiag());}catch(e){}
+  if(!liveInfo().on){toast('🌙 Connecting… this usually takes a few seconds.',3500);return;}
+  openMap();});
 
 /* ================= double swing (seen at an angle) ================= */
 const SW={x:194,y:170,top:138,L:21};
@@ -4207,8 +4522,8 @@ document.getElementById('chatbar').addEventListener('submit',e=>{e.preventDefaul
   try{if(window.__chatlog&&gardenKey())window.__chatlog.add({g:gardenKey(),n:(me().name||'Me').slice(0,14),text:t});}catch(e){}});
 function drawBubbles(){
   const now=performance.now(), items=[];
-  const sc=scene==='house'?'house':scene==='office'?'office':scene==='city'?'city':'garden';
-  const toS=(x,y)=>sc==='house'?[(RX+x)*S,(RY+y)*S]:sc==='office'?[(ORX+x)*S,(ORY+y)*S]:sc==='city'?[(x-CITY.cx)*S,(y-CITY.cy)*S]:[(OX+x)*S,(OY+y-camR)*S];
+  const sc=scene==='house'?'house':scene==='office'?'office':scene==='city'?'city':scene==='island'?'island':'garden';
+  const toS=(x,y)=>sc==='island'?[(IX+x)*S,(IY+y)*S]:sc==='house'?[(RX+x)*S,(RY+y)*S]:sc==='office'?[(ORX+x)*S,(ORY+y)*S]:sc==='city'?[(x-CITY.cx)*S,(y-CITY.cy)*S]:[(OX+x)*S,(OY+y-camR)*S];
   if(mySay&&mySay.until>now) items.push({id:'me',x:av.x,y:av.y,t:mySay.t});
   else if(document.activeElement===chatIn&&chatIn.value.trim()&&now-typingAt<5000) items.push({id:'me~ty',x:av.x,y:av.y,ty:true});
   livePeers().forEach(p=>{if(p.scene!==sc)return;if(p.say)items.push({id:p.id,x:p.x,y:p.y,t:p.say});else if(p.typing)items.push({id:p.id+'~ty',x:p.x,y:p.y,ty:true});});
@@ -4263,6 +4578,7 @@ function updateRest(dt,t){
   if(scene==='house'){houseUpdate(dt,t);return;}
   if(scene==='office'){officeUpdate(dt,t);return;}
   if(scene==='city'){cityUpdate(dt,t);return;}
+  if(scene==='island'){isleUpdate(dt,t);islandSparkTick(dt);return;}
   if(av.x>55&&av.x<65&&av.y<150.5){if(riding)dismount();enterHouse();return;}
   setPrompt(av.x>46&&av.x<74&&av.y<172&&!editing?'Go inside':null,'↑');
   smokeT+=dt;if(smokeT>.45){smokeT=0;spawn({kind:'smoke',x:HC+10+Math.random()*2,y:HB-42,vx:3+Math.random()*3,vy:-6-Math.random()*3,life:2.2});}
@@ -4320,6 +4636,7 @@ function render(t){
   if(scene==='office'){renderOffice(t);return;}
   if(ofLayer.firstChild)ofDom([]);
   if(scene==='city'){renderCity(t);return;}
+  if(scene==='island'){renderIsland(t);return;}
   const cr=Math.round(camY); if(cr!==camR){camR=cr;worldEl.style.transform=`scale(${S}) translateY(${-camR}px)`;updateJump();}
   g.drawImage(bg,0,-camR);
   clouds.forEach(cl=>drawCloud(cl.x,cl.y-camR,cl.s));
@@ -4478,7 +4795,7 @@ function maybeAutoVisit(){
 #gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
 #gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795432167"></script>
+<script src="config.js?v=1795436248"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -4508,7 +4825,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '23.11. 12:09';
+  const BUILD = '23.11. 13:17';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -4704,6 +5021,19 @@ function maybeAutoVisit(){
     },
   };
 
+  /* ---------- community island: everyone keeps their own little things, the island shows all of them ---------- */
+  window.__isle = {
+    async load() {
+      const { data, error } = await sb.from('docs').select('path,data').like('path', 'gardens/%/x/isle');
+      if (error || !Array.isArray(data)) return null;
+      return data.map(r => ({ me: r.path === 'gardens/' + uid + '/x/isle', list: (r.data && Array.isArray(r.data.list)) ? r.data.list.slice(-60) : [] }));
+    },
+    async save(list) {
+      if (!uid) return false;
+      try { await setDoc('gardens/' + uid + '/x/isle', { list: (list || []).slice(-60) }); return true; } catch (e) { return false; }
+    },
+  };
+
   /* ---------- AI agents in the office: one small round a day, limits are enforced on the server ---------- */
   window.__quiz = {
     async make(o) {
@@ -4756,7 +5086,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 23.11. 12:09';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 23.11. 13:17';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid', 'garden-pending').forEach(k => localStorage.removeItem(k)); } catch (e) {}
