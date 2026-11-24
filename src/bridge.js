@@ -238,11 +238,17 @@
   /* ---------- AI quiz questions and topic ideas (limits are enforced on the server) ---------- */
   window.__quiz = {
     async make(o) {
-      try {
-        const { data, error } = await sb.functions.invoke('agents', { body: { kind: 'quiz', topic: String(o.topic || '').slice(0, 80), level: o.level, n: o.n, avoid: (o.avoid || []).slice(-30) } });
-        if (error) return { error: 'net' };
-        return data || { error: 'net' };
-      } catch (e) { return { error: 'net' }; }
+      const once = async () => {
+        try {
+          const { data, error } = await sb.functions.invoke('agents', { body: { kind: 'quiz', topic: String(o.topic || '').slice(0, 80), level: o.level, n: o.n, avoid: (o.avoid || []).slice(-30) } });
+          if (error) return { error: 'net' };
+          return data || { error: 'net' };
+        } catch (e) { return { error: 'net' }; }
+      };
+      // the free AI is sometimes busy for a moment: one quiet second try before giving up
+      let r = await once();
+      if (r && r.error && r.error !== 'off' && r.error !== 'limit') { await new Promise(f => setTimeout(f, 1200)); r = await once(); }
+      return r;
     },
     async topics(o) {
       try {

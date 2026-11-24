@@ -61,23 +61,42 @@ async function ask(prompt: string, maxTokens: number, system?: string): Promise<
       headers: { 'x-api-key': KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
       body: JSON.stringify({ model: MODEL, max_tokens: maxTokens, temperature: 1, ...(system ? { system } : {}), messages: [{ role: 'user', content: prompt }] }),
     });
-    if (!r.ok) return null;
+    if (!r.ok) { console.error('anthropic', r.status, (await r.text()).slice(0, 300)); return null; }
     const j: any = await r.json();
     return (j?.content || []).map((c: any) => c?.text || '').join('');
   }
-  const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + GMODEL + ':generateContent', {
-    method: 'POST',
-    headers: { 'x-goog-api-key': GKEY!, 'content-type': 'application/json' },
-    body: JSON.stringify({
-      ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      // newer Gemini models no longer accept temperature, so it is left out here
-      generationConfig: { maxOutputTokens: Math.max(4096, maxTokens * 4), responseMimeType: 'application/json' },
-    }),
-  });
-  if (!r.ok) { console.error('gemini', r.status, (await r.text()).slice(0, 300)); return null; }
-  const j: any = await r.json();
-  return (j?.candidates?.[0]?.content?.parts || []).map((p: any) => p?.text || '').join('');
+  // Free Gemini models get overloaded (503) or hit their daily quota (429) often, and a model name can disappear (404).
+  // So: try a few models in turn, with thinking off (thinking can use up the whole output budget and leave no answer).
+  const models = [...new Set([GMODEL, 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-lite-latest'])];
+  for (const model of models) {
+    for (const think of [false, true]) {
+      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent', {
+        method: 'POST',
+        headers: { 'x-goog-api-key': GKEY!, 'content-type': 'application/json' },
+        body: JSON.stringify({
+          ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          // newer Gemini models no longer accept temperature, so it is left out here
+          generationConfig: {
+            maxOutputTokens: Math.max(4096, maxTokens * 4), responseMimeType: 'application/json',
+            ...(think ? {} : { thinkingConfig: { thinkingBudget: 0 } }),
+          },
+        }),
+      });
+      if (!r.ok) {
+        const t = (await r.text()).slice(0, 300);
+        console.error('gemini', model, think ? 'thinking' : 'no-thinking', r.status, t);
+        if (r.status === 400 && !think) continue;   // this model may not accept thinkingBudget 0: try again without it
+        break;                                      // 429, 503, 404 ...: next model
+      }
+      const j: any = await r.json();
+      const text = (j?.candidates?.[0]?.content?.parts || []).filter((p: any) => !p?.thought).map((p: any) => p?.text || '').join('');
+      if (text.trim()) return text;
+      console.error('gemini', model, 'empty answer', j?.candidates?.[0]?.finishReason, JSON.stringify(j?.promptFeedback || {}).slice(0, 200));
+      break;
+    }
+  }
+  return null;
 }
 
 Deno.serve(async (req) => {
@@ -136,7 +155,11 @@ if (isQuiz) {
     const tq = await ask(QUIZ(s(body?.topic, 80).trim(), level, n, avoid), 1600);
     if (tq === null) return out({ error: 'ai' });
     const mq = tq.match(/\[[\s\S]*\]/);
-    let arr: any; try { arr = JSON.parse(mq ? mq[0] : ''); } catch { return out({ error: 'parse' }); }
+    let arr: any; try { arr = JSON.parse(mq ? mq[0] : ''); } catch {
+      // a cut-off answer: keep every question that arrived complete
+      arr = (tq.match(/\{[^{}]*\}/g) || []).map((x) => { try { return JSON.parse(x); } catch { return null; } }).filter(Boolean);
+      if (!arr.length) { console.error('quiz parse', tq.slice(0, 300)); return out({ error: 'parse' }); }
+    }
     const qs = (Array.isArray(arr) ? arr : []).filter((x: any) => x && typeof x.q === 'string' && Array.isArray(x.o) && x.o.length === 3 && Number.isInteger(x.a) && x.a >= 0 && x.a < 3)
       .slice(0, n).map((x: any) => ({ q: s(x.q, 200), o: x.o.map((v: unknown) => String(v).slice(0, 60)), a: x.a }));
     return out({ qs });
