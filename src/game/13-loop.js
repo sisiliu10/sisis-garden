@@ -82,7 +82,7 @@ function updateRest(dt,t){
     av.water-=dt;const p=av.pourFor;
     if(p&&waterFx&&waterFx.p===p){const c=canPose(waterFx);
       if(c.pouring){let n=dt*75;while(n>0){if(Math.random()<n)spawn({kind:'drop',x:c.tip[0]+(Math.random()*2-1),y:c.tip[1]+Math.random()*2,vx:c.m*(6+Math.random()*10)+(Math.random()*8-4),vy:6+Math.random()*14,floor:c.py-1+Math.round(Math.random()*3-1),life:2});n-=1;}}
-      if(!waterFx.done&&c.e>=1.9){waterFx.done=true;if(waterFx.grow>p.progress){p.progress=waterFx.grow;burst(p,grewBurst(p));persist();}bounceAt[p.id]=performance.now();Sfx.grow();
+      if(!waterFx.done&&c.e>=1.9){waterFx.done=true;if(waterFx.grow>p.progress){p.progress=waterFx.grow;burst(p,8);persist();}bounceAt[p.id]=performance.now();Sfx.grow();
         const base=p.bed?c.py+BED_H/2-2:c.py;
         spawn({kind:'ring',x:c.px,y:base,r:p.bed?16:11,life:.7});spawn({kind:'ring',x:c.px,y:base,r:p.bed?10:7,life:.5});
         for(let i=0;i<14;i++)spawn({kind:'spark',x:c.px+(Math.random()*26-13),y:c.top+Math.random()*(base-c.top)-2,vy:-10-Math.random()*10,life:.8+Math.random()*.5});
@@ -193,7 +193,7 @@ function start(){
 addEventListener('resize',()=>{if(started)resize();});
 function adoptHome(h){
   home=h; localSave();
-  if(started){ if(!visiting){active=null;lastActive=undefined;dlg.classList.remove('show');} rebuildLabels(); refreshChrome(); if(!home.created)openCreator(); }
+  if(started){ if(!visiting)closePanel(); rebuildLabels(); refreshChrome(); if(!home.created)openCreator(); }
 }
 const OWNER_ID=window.__OWNER_ID||'__none__';
 let ownerVisited=false;

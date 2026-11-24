@@ -68,8 +68,6 @@ const QBANK=[
  ['Wie viele Tage hat ein Schaltjahr?',['365','366','364'],1],
  ['Welche Sprache hat die meisten Muttersprachler?',['Englisch','Mandarin','Spanisch'],1],
  ['Welcher Planet wird „Roter Planet“ genannt?',['Venus','Mars','Merkur'],1],
- ['Wie viele Spieler einer Fußballmannschaft stehen auf dem Feld?',['11','10','12'],0],
- ['Welches ist das flächenmäßig kleinste Bundesland?',['Bremen','Saarland','Hamburg'],0],
  ['Wer schrieb „Der Steppenwolf“?',['Thomas Mann','Hermann Hesse','Franz Kafka'],1],
  ['Wem wird der Satz „Ich weiß, dass ich nichts weiß“ zugeschrieben?',['Sokrates','Platon','Aristoteles'],0],
  ['Wie heißt das chinesische Neujahrsfest noch?',['Frühlingsfest','Laternenfest','Mondfest'],0],
@@ -220,7 +218,7 @@ Antworte nur mit JSON, ohne Markdown und ohne Erklärung:
 }
 const Q_TIME=15000, Q_REVEAL=4200, Q_COUNT=8;
 const quizM=document.getElementById('quizM'), qJoin=document.getElementById('qJoin');
-let hostState=null, quizJoined=null, myAns=null, qLastPub='', qLastPubT=0, qGenBusy=false, qGenErr='', qBackTopic='';
+let hostState=null, quizJoined=null, myAns=null, qLastPub='', qLastPubT=0, qGenErr='', qBackTopic='';
 function myPeer(){try{const m=room&&room.peers().find(p=>p.isMe&&p.sameTab);return m?m.peer:'me';}catch(e){return 'me';}}
 function quizRank(id,ph,key){const t=parseInt(String(id).slice(1),36)||0;return [ph&&ph!=='lobby'?0:1,t,String(key)];}
 function rankLess(a,b){for(let i=0;i<3;i++){if(a[i]<b[i])return true;if(a[i]>b[i])return false;}return false;}
@@ -337,7 +335,7 @@ const askM=document.getElementById('askM');
    Alone? Play against the computer. */
 const c4M=document.getElementById('c4M'),c4JoinB=document.getElementById('c4Join');
 const C4W=7,C4H=6;
-let c4H=null, c4Mine=null, c4LastPub='', c4LastPubT=0, c4Seen={}, c4Drop=-1, c4BotAt=0, c4ReqN=0;
+let c4H=null, c4LastPub='', c4LastPubT=0, c4Seen={}, c4BotAt=0;
 function c4Rank(id,ph,key){const t=parseInt(String(id).slice(1),36)||0;return [ph==='wait'?1:0,t,String(key)];}
 function c4Leader(){
   if(!room) return {self:true};
@@ -439,7 +437,7 @@ function renderC4(){
     stE.textContent='Das Spiel wurde beendet.';who.innerHTML='';B.innerHTML='';row.innerHTML='';return;
   }
   const role=c4MyRole(st), isHost=!!c4H&&L.self;
-  const nm=(p,me)=>p?(p[0]===myPeer()?'Du':p[1]):'…';
+  const nm=p=>p?(p[0]===myPeer()?'Du':p[1]):'…';
   const whoK=[st.id,st.t,st.ph,nm(st.p1),nm(st.p2)].join('|');
   if(who.dataset.k!==whoK){who.dataset.k=whoK;who.innerHTML='';
     [[st.p1,1,'#e8506c'],[st.p2,2,'#f2c94c']].forEach(([p,v,col])=>{const d=document.createElement('div');d.className=st.ph==='play'&&st.t===v?'on':'off';
@@ -499,7 +497,7 @@ document.getElementById('stillNo').onclick=()=>{const p=stillP;if(!p)return;
   {const c=JSON.parse(JSON.stringify(p));c.ct=Date.now();c.note=home.notes[p.id]||'';c.lg=(home.logs&&home.logs[p.id])||[];delete c.pos;
    home.compost=[c].concat(home.compost||[]).slice(0,30);compostFx(p.code);}
   home.projects=home.projects.filter(x=>x!==p);delete home.notes[p.id];if(home.logs)delete home.logs[p.id];delete home.ask[p.id];
-  if(active===p){active=null;lastActive=undefined;dlg.classList.remove('show');}
+  if(active===p)closePanel();
   persist();rebuildLabels();refreshChrome();stillClose();};
 (()=>{const c=document.getElementById('stillGrass').getContext('2d');c.fillStyle='#7dc46c';c.fillRect(0,4,160,8);c.fillStyle='#5aa84a';c.fillRect(0,4,160,1);
   for(let x=1;x<160;x+=3){const h=2+((x*7)%4);c.fillStyle=x%2?'#6bb35c':'#8fd17c';c.fillRect(x,6-h+2,1,h);}})();

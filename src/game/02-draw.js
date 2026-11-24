@@ -101,7 +101,6 @@ function drawAvatar(ctx,fx,fy,look,o){
     const A=f!==2, up=A?4:8, dn=A?8:4, so=A?-1:1;
     r(up,20,2,1,legC);r(up+(A?-1:1),21,2,1,legC);r(up+(A?-2:1),21,3,2,O);
     r(dn,20,2,4,legC);r(dn+so*-1,23,3,2,O);
-    const L=A?-2:2;
     r(1,12+(A?-1:2),1,4,O);r(2,12+(A?-1:2),2,4,tc);r(2,15+(A?-1:2),2,1,sk);
     r(12,12+(A?2:-1),1,4,O);r(10,12+(A?2:-1),2,4,tc);r(10,15+(A?2:-1),2,1,sk);
   }else{

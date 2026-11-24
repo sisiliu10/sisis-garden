@@ -871,7 +871,6 @@ function drawAvatar(ctx,fx,fy,look,o){
     const A=f!==2, up=A?4:8, dn=A?8:4, so=A?-1:1;
     r(up,20,2,1,legC);r(up+(A?-1:1),21,2,1,legC);r(up+(A?-2:1),21,3,2,O);
     r(dn,20,2,4,legC);r(dn+so*-1,23,3,2,O);
-    const L=A?-2:2;
     r(1,12+(A?-1:2),1,4,O);r(2,12+(A?-1:2),2,4,tc);r(2,15+(A?-1:2),2,1,sk);
     r(12,12+(A?2:-1),1,4,O);r(10,12+(A?2:-1),2,4,tc);r(10,15+(A?2:-1),2,1,sk);
   }else{
@@ -1156,11 +1155,11 @@ function enterHouse(){hideHomeHint(false);
   av.swim=false;av.jump=null;
   scene='house'; roomOrigin(); try{Sfx.door();}catch(e){}
   av.x=RW/2; av.y=RH-6; av.back=true; av.target=null; av.water=0;
-  active=null; lastActive=undefined; dlg.classList.remove('show'); editing=false;
+  closePanel(); editing=false;
   worldEl.style.visibility='hidden'; bJump.hidden=true; setPrompt(null);
   cat.x=RW/2+14; cat.y=RH-10;
 }
-function exitHouse(silent){
+function exitHouse(){
   scene='garden'; worldEl.style.visibility='';
   av.x=HX; av.y=HB+8; av.back=false; av.target=null; napT=0; napping=false;
   camY=clamp(av.y+OY-H*.55,0,Math.max(0,TH-H)); camR=-1; setPrompt(null);
@@ -1197,7 +1196,7 @@ function goScene(k){
   if(k==='map'){openMap();return;}
   if(k===scene||!started)return;
   if(k==='island'){enterIsland();return;}
-  if(scene==='house')exitHouse(true);else if(scene==='island')exitIsland(true);
+  if(scene==='house')exitHouse();else if(scene==='island')exitIsland();
   if(k==='house')enterHouse();
 }
 const promptEl=document.getElementById('prompt');
@@ -1336,7 +1335,6 @@ function seedBooks(){
 // everyone else: take the keeper's books back off the shelf if an older version put them there
 function unseedBooks(){
  if(!books||(!Array.isArray(books.seeds)&&!books.seeded))return false;
- const n=books.list.length;
  books.list=books.list.filter(b=>!(SEEDS.some(x=>x.ti===b.ti&&x.au===b.au)&&!b.ra&&!b.dr&&!b.id));
  delete books.seeds;delete books.seeded;return true;
 }
@@ -1545,8 +1543,6 @@ const QBANK=[
  ['Wie viele Tage hat ein Schaltjahr?',['365','366','364'],1],
  ['Welche Sprache hat die meisten Muttersprachler?',['Englisch','Mandarin','Spanisch'],1],
  ['Welcher Planet wird „Roter Planet“ genannt?',['Venus','Mars','Merkur'],1],
- ['Wie viele Spieler einer Fußballmannschaft stehen auf dem Feld?',['11','10','12'],0],
- ['Welches ist das flächenmäßig kleinste Bundesland?',['Bremen','Saarland','Hamburg'],0],
  ['Wer schrieb „Der Steppenwolf“?',['Thomas Mann','Hermann Hesse','Franz Kafka'],1],
  ['Wem wird der Satz „Ich weiß, dass ich nichts weiß“ zugeschrieben?',['Sokrates','Platon','Aristoteles'],0],
  ['Wie heißt das chinesische Neujahrsfest noch?',['Frühlingsfest','Laternenfest','Mondfest'],0],
@@ -1697,7 +1693,7 @@ Antworte nur mit JSON, ohne Markdown und ohne Erklärung:
 }
 const Q_TIME=15000, Q_REVEAL=4200, Q_COUNT=8;
 const quizM=document.getElementById('quizM'), qJoin=document.getElementById('qJoin');
-let hostState=null, quizJoined=null, myAns=null, qLastPub='', qLastPubT=0, qGenBusy=false, qGenErr='', qBackTopic='';
+let hostState=null, quizJoined=null, myAns=null, qLastPub='', qLastPubT=0, qGenErr='', qBackTopic='';
 function myPeer(){try{const m=room&&room.peers().find(p=>p.isMe&&p.sameTab);return m?m.peer:'me';}catch(e){return 'me';}}
 function quizRank(id,ph,key){const t=parseInt(String(id).slice(1),36)||0;return [ph&&ph!=='lobby'?0:1,t,String(key)];}
 function rankLess(a,b){for(let i=0;i<3;i++){if(a[i]<b[i])return true;if(a[i]>b[i])return false;}return false;}
@@ -1814,7 +1810,7 @@ const askM=document.getElementById('askM');
    Alone? Play against the computer. */
 const c4M=document.getElementById('c4M'),c4JoinB=document.getElementById('c4Join');
 const C4W=7,C4H=6;
-let c4H=null, c4Mine=null, c4LastPub='', c4LastPubT=0, c4Seen={}, c4Drop=-1, c4BotAt=0, c4ReqN=0;
+let c4H=null, c4LastPub='', c4LastPubT=0, c4Seen={}, c4BotAt=0;
 function c4Rank(id,ph,key){const t=parseInt(String(id).slice(1),36)||0;return [ph==='wait'?1:0,t,String(key)];}
 function c4Leader(){
   if(!room) return {self:true};
@@ -1916,7 +1912,7 @@ function renderC4(){
     stE.textContent='Das Spiel wurde beendet.';who.innerHTML='';B.innerHTML='';row.innerHTML='';return;
   }
   const role=c4MyRole(st), isHost=!!c4H&&L.self;
-  const nm=(p,me)=>p?(p[0]===myPeer()?'Du':p[1]):'…';
+  const nm=p=>p?(p[0]===myPeer()?'Du':p[1]):'…';
   const whoK=[st.id,st.t,st.ph,nm(st.p1),nm(st.p2)].join('|');
   if(who.dataset.k!==whoK){who.dataset.k=whoK;who.innerHTML='';
     [[st.p1,1,'#e8506c'],[st.p2,2,'#f2c94c']].forEach(([p,v,col])=>{const d=document.createElement('div');d.className=st.ph==='play'&&st.t===v?'on':'off';
@@ -1976,7 +1972,7 @@ document.getElementById('stillNo').onclick=()=>{const p=stillP;if(!p)return;
   {const c=JSON.parse(JSON.stringify(p));c.ct=Date.now();c.note=home.notes[p.id]||'';c.lg=(home.logs&&home.logs[p.id])||[];delete c.pos;
    home.compost=[c].concat(home.compost||[]).slice(0,30);compostFx(p.code);}
   home.projects=home.projects.filter(x=>x!==p);delete home.notes[p.id];if(home.logs)delete home.logs[p.id];delete home.ask[p.id];
-  if(active===p){active=null;lastActive=undefined;dlg.classList.remove('show');}
+  if(active===p)closePanel();
   persist();rebuildLabels();refreshChrome();stillClose();};
 (()=>{const c=document.getElementById('stillGrass').getContext('2d');c.fillStyle='#7dc46c';c.fillRect(0,4,160,8);c.fillStyle='#5aa84a';c.fillRect(0,4,160,1);
   for(let x=1;x<160;x+=3){const h=2+((x*7)%4);c.fillStyle=x%2?'#6bb35c':'#8fd17c';c.fillRect(x,6-h+2,1,h);}})();
@@ -2163,14 +2159,14 @@ function livePeers(){
   for(const p of ps){
     if(p.isMe||p.kind!=='viewer') continue;
     const q=p.presence||{}; if(typeof q.x!=='number'||typeof q.y!=='number') continue;
-    const tx=(q.s==='h'||q.s==='o'||q.s==='i')?clamp(q.x,-200,400):q.s==='m'?clamp(q.x,0,4000):clamp(q.x,-OX+14,CW+OX-14), ty=clamp(q.y,0,q.s==='m'?3000:600);
+    const inside=q.s==='h'||q.s==='i', cx=x=>inside?clamp(x,-200,400):clamp(x,-OX+14,CW+OX-14), tx=cx(q.x), ty=clamp(q.y,0,600);
     let gh=ghosts[p.peer]; if(!gh){ gh=ghosts[p.peer]={x:tx,y:ty,sc:q.s}; if(now-roomT0>4000){try{Sfx.join();}catch(e){}} }
     let fresh=false;if(gh.sc!==q.s){gh.sc=q.s;gh.buf=[];gh.off=undefined;gh.jit=0;gh.x=tx;gh.y=ty;gh.pxx=undefined;fresh=true;}
     if(typeof q._t==='number'){
       // smooth playback: keep the last positions with the sender's timestamps and replay them ~140 ms behind, interpolating in between,
       // so a friend's walk looks continuous even when network packets arrive in bursts
       const B=gh.buf||(gh.buf=[]),wall=Date.now();
-      const add=(t,x,y)=>{if(B.length&&t<=B[B.length-1].t)return;x=(q.s==='h'||q.s==='o'||q.s==='i')?clamp(x,-200,400):q.s==='m'?clamp(x,0,4000):clamp(x,-OX+14,CW+OX-14);y=clamp(y,0,q.s==='m'?3000:600);
+      const add=(t,x,y)=>{if(B.length&&t<=B[B.length-1].t)return;x=cx(x);y=clamp(y,0,600);
         B.push({t,x,y});if(B.length>60)B.shift();const d=wall-t;gh.off=gh.off===undefined||d<gh.off?d:gh.off+(d-gh.off)*.03;const late=d-gh.off;gh.jit=Math.max(late,(gh.jit||0)*.985);};
       if(!fresh&&Array.isArray(q._h))q._h.forEach(e=>{if(Array.isArray(e)&&typeof e[0]==='number'&&typeof e[1]==='number'&&typeof e[2]==='number')add(e[0],e[1],e[2]);});
       add(q._t,tx,ty);
@@ -2189,7 +2185,7 @@ function livePeers(){
     const sgq=q.sg&&(q.sg.s===0||q.sg.s===1)?{s:q.sg.s,a:clamp(num(q.sg.a,0),-1.2,1.2)}:null;
     if(gh.pxx!==undefined&&Math.abs(gh.x-gh.pxx)>.02)gh.dir=gh.x>gh.pxx?1:-1;else if(gh.pxx===undefined&&Math.abs(tx-gh.x)>.6)gh.dir=tx>gh.x?1:-1;gh.pxx=gh.x;
     const apq=Array.isArray(q.ap)&&q.ap.length===4&&q.ap.slice(0,2).every(v=>typeof v==='number')?[clamp(q.ap[0],-OX+14,CW+OX-14),clamp(q.ap[1],0,600),q.ap[2],q.ap[3]]:null;
-    out.push({pl:typeof q.pl==='string'&&q.pl?q.pl.slice(0,64):null,ap:apq,nap:q.nap===1&&q.s==='h'?1:0,sl:q.sl===1||q.sl===2?q.sl:0,ride:!!q.al,sg:sgq,say:gh.sayUntil>now?gh.sayT:'',typing:!!q.ty&&!(gh.sayUntil>now),id:p.peer,by:p.by,x:gh.x,y:gh.y,scene:q.s==='h'?'house':q.s==='o'?'office':q.s==='m'?'city':q.s==='i'?'island':'garden',back:!!q.b,moving:!!q.m||now-(gh.mvT||0)<150,run:!!q.r,swim:!!q.sw,water:!!q.w,name:str(q.n,14)||'Friend',look:cleanLook(q.l)});
+    out.push({pl:typeof q.pl==='string'&&q.pl?q.pl.slice(0,64):null,ap:apq,nap:q.nap===1&&q.s==='h'?1:0,sl:q.sl===1||q.sl===2?q.sl:0,ride:!!q.al,sg:sgq,say:gh.sayUntil>now?gh.sayT:'',typing:!!q.ty&&!(gh.sayUntil>now),id:p.peer,by:p.by,x:gh.x,y:gh.y,scene:q.s==='h'?'house':q.s==='i'?'island':'garden',back:!!q.b,moving:!!q.m||now-(gh.mvT||0)<150,run:!!q.r,swim:!!q.sw,water:!!q.w,name:str(q.n,14)||'Friend',look:cleanLook(q.l)});
   }
   return out;
 }
@@ -2268,6 +2264,7 @@ document.getElementById('bkLock').addEventListener('click',()=>{if(!home||visiti
 document.getElementById('dLock').addEventListener('click',e=>{e.stopPropagation();if(!active)return;toggleLock(active,active.bed?'bed':'plant');paintLock(e.currentTarget,active.lk,active.bed?'bed':'plant');rebuildLabels();});
 const dNote=document.getElementById('dNote'),dProg=document.getElementById('dProg'),msgEl=document.getElementById('dMsg');
 let active=null,lastActive=undefined,editing=false,pendingEdit=null,banShown=false;
+function closePanel(){active=null;lastActive=undefined;dlg.classList.remove('show');}
 function placeDialog(){
   const titleTop=(OY*.42+10)*S, ax=(OX+av.x)*S, ay=(OY+av.y-camR)*S, gw=CW*S, side=(innerWidth-gw)/2;
   const dock=innerWidth>=820&&side>=170;   // enough empty grass next to the garden for a side panel
@@ -2391,13 +2388,17 @@ function addLinkRow(l){const box=document.getElementById('fLinks');if(box.childr
   r.appendChild(t);r.appendChild(u);r.appendChild(x);box.appendChild(r);}
 function renderLinkRows(L){document.getElementById('fLinks').innerHTML='';L.forEach(addLinkRow);if(!L.length)addLinkRow({});}
 document.getElementById('fAddLink').onclick=()=>addLinkRow({});
+// take the open plant out of the garden (its notes and log too) and close the panel
+function dropActive(){
+  home.projects=home.projects.filter(x=>x!==active); home.skills=home.skills.filter(x=>x!==active); delete home.notes[active.id]; if(home.logs)delete home.logs[active.id];
+  closePanel();
+}
 document.getElementById('fDel').onclick=()=>{
   if(!active||visiting) return;
   if(!delArmed){delArmed=true;document.getElementById('fDel').textContent='Tap again to compost';return;}
   {const c=JSON.parse(JSON.stringify(active));c.ct=Date.now();c.note=home.notes[active.id]||'';c.lg=(home.logs&&home.logs[active.id])||[];delete c.pos;
    home.compost=[c].concat(home.compost||[]).slice(0,30);compostFx(active.code);}
-  home.projects=home.projects.filter(x=>x!==active); home.skills=home.skills.filter(x=>x!==active); delete home.notes[active.id]; if(home.logs)delete home.logs[active.id];
-  active=null; lastActive=undefined; dlg.classList.remove('show');
+  dropActive();
   persist(); rebuildLabels(); refreshChrome();
 };
 function closeKill(){document.getElementById('dKillBar').hidden=true;document.getElementById('dBtns').hidden=false;}
@@ -2410,9 +2411,8 @@ document.getElementById('dKillNo').onclick=e=>{e.stopPropagation();closeKill();}
 document.getElementById('dKillYes').onclick=e=>{
   e.stopPropagation(); if(!active||visiting) return;
   const code=active.code,[px,py]=posOf(active);
-  home.projects=home.projects.filter(x=>x!==active); home.skills=home.skills.filter(x=>x!==active); delete home.notes[active.id]; if(home.logs)delete home.logs[active.id];
+  dropActive(); closeKill();
   for(let i=0;i<12;i++)spawn({kind:'puff',x:px+(Math.random()*14-7),y:py-2-Math.random()*12,vy:-10,life:.5+Math.random()*.3});
-  active=null; lastActive=undefined; dlg.classList.remove('show'); closeKill();
   persist(); rebuildLabels(); refreshChrome(); toast(code+' deleted.',1800);
 };
 const addM=document.getElementById('addM');
@@ -2558,7 +2558,7 @@ function peopleAt(key){return allPeers().filter(p=>!p.isMe&&p.presence&&p.presen
 
 /* ================= the community island: everyone leaves one small thing ================= */
 const IW=232,IH=200,ISL={cx:116,cy:92,rx:98,ry:62},JET={x0:108,x1:124,y0:146,y1:196},LH={x:188,y:58};
-let IX=0,IY=0,isleItems=[],isleMine=[],isleLoaded=0,isleBusy=false,isleSig='',isleBg=null,isleBgW=0,isleT=0;
+let IX=0,IY=0,isleItems=[],isleMine=[],isleLoaded=0,isleBusy=false,isleSig='',isleBg=null,isleT=0;
 const ISLE_K=[['flower','Blume'],['tulip','Tulpe'],['stone','Steine'],['lantern','Laterne'],['shell','Muschel'],['mushroom','Pilz']];
 const ISLE_DAY=3;
 function isleOrigin(){IX=Math.floor((W-IW)/2);IY=Math.max(46,Math.floor((H-IH)/2));}
@@ -2605,16 +2605,16 @@ async function isleDrop(k){
 }
 function enterIsland(){
   if(!started)return;hideHomeHint(false);
-  if(scene==='house')exitHouse(true);
+  if(scene==='house')exitHouse();
   if(mySeat!==null)standUp();
   if(riding)dismount();riding=false;pendRide=false;slide=null;pendSlide=false;av.swim=false;av.jump=null;if(moving)endMove();
   scene='island';isleOrigin();try{Sfx.door(.5);}catch(e){}
   av.x=116;av.y=188;av.back=true;av.target={x:116,y:150};av.water=0;
-  active=null;lastActive=undefined;dlg.classList.remove('show');editing=false;
+  closePanel();editing=false;
   worldEl.style.visibility='hidden';bJump.hidden=true;setPrompt(null);isleHud.hidden=false;
   cat.x=av.x+12;cat.y=av.y;syncRoom();if(Date.now()-isleLoaded>4000)loadIsle();isleHudTxt();
 }
-function exitIsland(silent){
+function exitIsland(){
   scene='garden';worldEl.style.visibility='';isleHud.hidden=true;isleM.classList.remove('show');
   av.x=120;av.y=216;av.back=false;av.target=null;camY=clamp(av.y+OY-H*.55,0,Math.max(0,TH-H));camR=-1;setPrompt(null);
   cat.x=av.x+14;cat.y=av.y+4;syncRoom();rebuildLabels();refreshChrome();
@@ -2667,7 +2667,7 @@ function buildIsleBg(){
   for(let y=ly-21;y<ly-1;y+=8)R(lx-5,y,11,4,'#e8506c');R(lx+3,ly-24,2,23,'rgba(0,0,0,.12)');
   R(lx-6,ly-28,13,4,'#3a2f38');R(lx-4,ly-27,9,2,'#ffe08a');R(lx-5,ly-31,11,3,'#e8506c');R(lx-3,ly-33,7,2,'#e8506c');R(lx,ly-35,1,2,'#3a2f38');
   R(lx-1,ly-9,3,5,'#5a4636');
-  X=keep;isleBgW=W;
+  X=keep;
 }
 function renderIsland(t){
   isleOrigin();if(!isleBg)buildIsleBg();
@@ -2740,7 +2740,7 @@ function islandSprite(gd,big){
   ell(cx,cy+2,rx+2,ry+2,'#7cc4ea');ell(cx,cy+1,rx,ry,'#f0d8a0');
   const dry=gd&&gardenAvg(gd.data)<35;ell(cx,cy-1,rx-3,ry-3,dry?'#b7b46a':'#86c96f');ell(cx,cy+ry-4,rx-6,1,dry?'#a3a05c':'#6fb35c');
   if(big){R(cx-1,cy-14,3,12,'#fdfaf2');R(cx-1,cy-10,3,3,'#e8506c');R(cx-2,cy-16,5,2,'#3a2f38');R(cx-1,cy-15,3,1,'#ffe08a');R(cx-2,cy-18,5,2,'#e8506c');
-    const pick=isleItems.slice(-40);pick.forEach((it,i)=>{const r=rng(i*7+3);const x=Math.round(cx+(it.x-ISL.cx)/ISL.rx*(rx-5)),y=Math.round(cy-1+(it.y-ISL.cy)/ISL.ry*(ry-4));
+    const pick=isleItems.slice(-40);pick.forEach((it,i)=>{const x=Math.round(cx+(it.x-ISL.cx)/ISL.rx*(rx-5)),y=Math.round(cy-1+(it.y-ISL.cy)/ISL.ry*(ry-4));
       if(Math.abs(x-cx)<3&&y<cy)return;R(x,y,1,1,it.k==='stone'?'#9aa0a8':it.k==='lantern'?'#ffe08a':it.k==='mushroom'?'#d84a4a':it.k==='shell'?'#f6d3c4':ISLE_COL[it.c||0][0]);});}
   else if(gd){const ps=(gd.data.projects||[]).slice(0,6),r=rng(hashStr(gd.id));
     ps.forEach((p,i)=>{const x=Math.round(cx-12+i*5+r()*2),y=Math.round(cy-2+(i%2?2:-1));const tall=p.progress>60;R(x,y-(tall?5:3),1,tall?5:3,'#4f9e3f');R(x-1,y-(tall?7:4),3,2,p.kind==='tree'||p.kind==='plum'?'#3f8f44':ISLE_COL[i%4][0]);});
@@ -2909,7 +2909,6 @@ function doWater(p,text){
   renderLog(p);
   setTimeout(()=>{if(p.progress<pr1){p.progress=pr1;persist();}dlg.classList.remove('pouring');if(active===p&&!editing){updateDialog(false);msgEl.textContent=msg;}refreshLabels();},WATER_T*1000);
 }
-const grewBurst=p=>8;
 const WATER_T=2.4;let waterFx=null;const bounceAt={};
 // what the water bar and the plant show while the can is still pouring: it fills up with the stream
 function shownWater(p){if(waterFx&&waterFx.p===p){const e=(performance.now()-waterFx.t0)/1000,k=clamp((e-.35)/1.5,0,1);return waterFx.from+(100-waterFx.from)*(1-(1-k)*(1-k));}return waterOf(p);}
@@ -2948,7 +2947,7 @@ function drawSleeper(t){
     g.globalAlpha=k<.15?k/.15:Math.max(0,1-(k-.15)/.85);R(zx,zy,n,1,'#ffffff');for(let d=1;d<n-1;d++)R(zx+n-1-d,zy+d,1,1,'#ffffff');R(zx,zy+n-1,n,1,'#ffffff');g.globalAlpha=1;});
 }
 const keys={};
-let hintHidden=false,t0=performance.now(),petalT=0,sprayT=0;
+let t0=performance.now(),petalT=0,sprayT=0;
 
 function blocked(x,y){
   if(scene==='house') return houseBlocked(x,y);
@@ -3085,13 +3084,14 @@ document.getElementById('nbAdd').addEventListener('submit',e=>{e.preventDefault(
 document.getElementById('gSB').addEventListener('change',e=>{if(!home)return;home.sb=e.target.checked;persist();writePubBooks();});
 document.getElementById('gListed').addEventListener('change',e=>{if(!home)return;home.listed=e.target.checked;persist();toast(home.listed?'Your garden is now in the list for everyone.':'Your garden is hidden from the list. Friends with your invite link can still visit.',3200);});
 document.getElementById('gSearch').addEventListener('input',()=>renderGardens(true));
+function addFriend(id){if(!home)return;home.friends=home.friends||[];if(!home.friends.includes(id)){home.friends.push(id);persist();}}
 // enter a friend's garden by pasting their invite link (or just the code at its end)
 document.getElementById('gEnter').addEventListener('submit',e=>{e.preventDefault();const inp=document.getElementById('gEnterIn'),raw=inp.value.trim();if(!raw)return;
   let id='';const m=raw.match(/[?&]g=([\w-]{6,64})/);if(m)id=m[1];else if(/^[\w-]{6,64}$/.test(raw))id=raw;
   if(id&&id===myId){toast('That is your own link 🙂',2400);return;}
   const gd=id&&gardensList.find(x=>x.id===id);
   if(!gd){toast(id?'No garden found for this link. Ask your friend to send it again.':'That does not look like an invite link.',3200);return;}
-  if(home){home.friends=home.friends||[];if(!home.friends.includes(gd.id)){home.friends.push(gd.id);persist();}}
+  addFriend(gd.id);
   inp.value='';gardensM.classList.remove('show');visit(gd);toast('Welcome to '+gd.data.name+"'s garden 🌱",3000);});
 function isListed(){return !!home&&(home.listed===undefined?!!home.owner:!!home.listed);}
 const inviteUrl=()=>location.origin+location.pathname+'?g='+encodeURIComponent(myId||'');
@@ -3103,7 +3103,7 @@ let inviteId='';try{inviteId=new URLSearchParams(location.search).get('g')||loca
 function handleInvite(){
   if(!inviteId||!myId||stayHome)return false; if(inviteId===myId){inviteId='';try{localStorage.removeItem('garden-invite');}catch(e){}return false;}
   const gd=gardensList.find(x=>x.id===inviteId); if(!gd)return false;
-  if(home){home.friends=home.friends||[];if(!home.friends.includes(gd.id)){home.friends.push(gd.id);persist();}}
+  addFriend(gd.id);
   inviteId='';try{localStorage.removeItem('garden-invite');history.replaceState(null,'',location.pathname+location.hash);}catch(e){}
   ownerVisited=true;visiting={id:gd.id,data:gd.data};visBooksFor=null;if(started)enterGarden();toast('Welcome to '+gd.data.name+"'s garden 🌱",3000);return true;
 }
@@ -3141,11 +3141,11 @@ function enterGarden(){
   riding=false;pendRide=false;
   av.swim=false;av.jump=null;
   if(moving)endMove();
-  if(scene==='house')exitHouse(true);
-  if(scene==='island')exitIsland(true);
+  if(scene==='house')exitHouse();
+  if(scene==='island')exitIsland();
   syncRoom();
   camY=0;
-  av.x=120;av.y=216;av.target=null;av.water=0;active=null;lastActive=undefined;dlg.classList.remove('show');
+  av.x=120;av.y=216;av.target=null;av.water=0;closePanel();
   document.getElementById('title').style.opacity=1;
   rebuildLabels();refreshChrome();
 }
@@ -3571,7 +3571,7 @@ const Sfx=(()=>{
     const dur=big?1.6:1.05,v=(vol===undefined?1:vol)*(big?.6:.42);
     const out=c.createGain();out.gain.value=v;
     const tone=c.createBiquadFilter();tone.type='lowpass';tone.frequency.setValueAtTime(9500,t);tone.frequency.exponentialRampToValueAtTime(1700,t+dur);out.connect(tone);tone.connect(c.destination);
-    const len=Math.floor(c.sampleRate*dur),buf=c.createBuffer(1,len,c.sampleRate),d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=Math.random()*2-1;
+    const buf=noiseBuf(c,dur);
     const n1=c.createBufferSource();n1.buffer=buf;const lp=c.createBiquadFilter();lp.type='lowpass';lp.Q.value=.3;lp.frequency.setValueAtTime(big?650:800,t);lp.frequency.exponentialRampToValueAtTime(170,t+.5);
     const g1=c.createGain();g1.gain.setValueAtTime(.0001,t);g1.gain.linearRampToValueAtTime(big?.85:.6,t+.05);g1.gain.exponentialRampToValueAtTime(.001,t+(big?.65:.45));
     n1.connect(lp);lp.connect(g1);g1.connect(out);n1.start(t);n1.stop(t+.7);
@@ -3592,6 +3592,8 @@ const Sfx=(()=>{
     try{build(c,c.currentTime+.01,big,vol);}catch(e){}
   }
   // slide: a soft slide-whistle "wheee" on the way down, then a happy little 8-bit "yay" jingle on landing
+  // white noise, the raw material for splashes, steps and clicks
+  function noiseBuf(c,dur){const b=c.createBuffer(1,Math.floor(c.sampleRate*dur),c.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return b;}
   function ready(){if(document.hidden||!Snd.started())return null;const c=Snd.get();if(!c)return null;if(c.state==='suspended'){Snd.unlock();return null;}return c;}
   function whee(vol){const c=ready();if(!c)return;const t=c.currentTime+.01,v=(vol===undefined?1:vol)*.07;
     const o=c.createOscillator(),g=c.createGain(),lfo=c.createOscillator(),lg=c.createGain();
@@ -3614,7 +3616,7 @@ const Sfx=(()=>{
   // watering: a soft trickle from the can's rose (filtered noise that flutters), with little droplet plinks
   function pour(delay,vol){const c=ready();if(!c)return;const t=c.currentTime+(delay||0)+.01,dur=1.6,v=(vol===undefined?1:vol)*.3;
     const out=c.createGain();out.gain.value=v;out.connect(c.destination);
-    const len=Math.floor(c.sampleRate*dur),buf=c.createBuffer(1,len,c.sampleRate),d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=Math.random()*2-1;
+    const buf=noiseBuf(c,dur);
     const n=c.createBufferSource();n.buffer=buf;const bp=c.createBiquadFilter();bp.type='bandpass';bp.Q.value=.7;bp.frequency.setValueAtTime(1500,t);bp.frequency.linearRampToValueAtTime(2300,t+dur);
     const hs=c.createBiquadFilter();hs.type='highshelf';hs.frequency.value=4000;hs.gain.value=-8;
     const g=c.createGain();g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.55,t+.15);g.gain.setValueAtTime(.55,t+dur-.3);g.gain.exponentialRampToValueAtTime(.001,t+dur);
@@ -3635,7 +3637,7 @@ const Sfx=(()=>{
   function sit(vol){const c=ready();if(!c)return;const t=c.currentTime+.01,v=(vol===undefined?1:vol);
     const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(62,t+.16);
     g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.28*v,t+.012);g.gain.exponentialRampToValueAtTime(.0005,t+.22);o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+.25);
-    const n=c.createBufferSource(),nb=c.createBuffer(1,Math.floor(c.sampleRate*.2),c.sampleRate),d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;n.buffer=nb;
+    const n=c.createBufferSource();n.buffer=noiseBuf(c,.2);
     const nf=c.createBiquadFilter();nf.type='lowpass';nf.frequency.value=900;const ng=c.createGain();ng.gain.setValueAtTime(.12*v,t);ng.gain.exponentialRampToValueAtTime(.0005,t+.16);n.connect(nf);nf.connect(ng);ng.connect(c.destination);n.start(t);
     const h=c.createOscillator(),h2=c.createOscillator(),hg=c.createGain(),hf=c.createBiquadFilter(),lfo=c.createOscillator(),lg=c.createGain(),t2=t+.16;
     h.type='triangle';h2.type='sine';h.frequency.setValueAtTime(330,t2);h.frequency.linearRampToValueAtTime(410,t2+.16);h.frequency.linearRampToValueAtTime(345,t2+.42);
@@ -3651,7 +3653,7 @@ const Sfx=(()=>{
     const play=()=>{if(!doorBuf){doorSynth(vol);return;}const s=c.createBufferSource(),g=c.createGain();s.buffer=doorBuf;g.gain.value=.9*v;s.connect(g);g.connect(c.destination);s.start(c.currentTime+.01);};
     if(doorBuf!==null)play();else loadDoor(c).then(play);}
   function doorSynth(vol){const c=ready();if(!c)return;const t=c.currentTime+.01,v=(vol===undefined?1:vol);
-    const nb=c.createBuffer(1,Math.floor(c.sampleRate*.6),c.sampleRate),d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+    const nb=noiseBuf(c,.6);
     const click=(at,fq,a,len)=>{const n=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();n.buffer=nb;f.type='bandpass';f.frequency.value=fq;f.Q.value=4;
       g.gain.setValueAtTime(a*v,at);g.gain.exponentialRampToValueAtTime(.0005,at+len);n.connect(f);f.connect(g);g.connect(c.destination);n.start(at,Math.random()*.3,len+.02);};
     // handle goes down, latch clicks open (two small metal clicks and a wooden knock)
@@ -3892,7 +3894,7 @@ function updateRest(dt,t){
     av.water-=dt;const p=av.pourFor;
     if(p&&waterFx&&waterFx.p===p){const c=canPose(waterFx);
       if(c.pouring){let n=dt*75;while(n>0){if(Math.random()<n)spawn({kind:'drop',x:c.tip[0]+(Math.random()*2-1),y:c.tip[1]+Math.random()*2,vx:c.m*(6+Math.random()*10)+(Math.random()*8-4),vy:6+Math.random()*14,floor:c.py-1+Math.round(Math.random()*3-1),life:2});n-=1;}}
-      if(!waterFx.done&&c.e>=1.9){waterFx.done=true;if(waterFx.grow>p.progress){p.progress=waterFx.grow;burst(p,grewBurst(p));persist();}bounceAt[p.id]=performance.now();Sfx.grow();
+      if(!waterFx.done&&c.e>=1.9){waterFx.done=true;if(waterFx.grow>p.progress){p.progress=waterFx.grow;burst(p,8);persist();}bounceAt[p.id]=performance.now();Sfx.grow();
         const base=p.bed?c.py+BED_H/2-2:c.py;
         spawn({kind:'ring',x:c.px,y:base,r:p.bed?16:11,life:.7});spawn({kind:'ring',x:c.px,y:base,r:p.bed?10:7,life:.5});
         for(let i=0;i<14;i++)spawn({kind:'spark',x:c.px+(Math.random()*26-13),y:c.top+Math.random()*(base-c.top)-2,vy:-10-Math.random()*10,life:.8+Math.random()*.5});
@@ -4003,7 +4005,7 @@ function start(){
 addEventListener('resize',()=>{if(started)resize();});
 function adoptHome(h){
   home=h; localSave();
-  if(started){ if(!visiting){active=null;lastActive=undefined;dlg.classList.remove('show');} rebuildLabels(); refreshChrome(); if(!home.created)openCreator(); }
+  if(started){ if(!visiting)closePanel(); rebuildLabels(); refreshChrome(); if(!home.created)openCreator(); }
 }
 const OWNER_ID=window.__OWNER_ID||'__none__';
 let ownerVisited=false;
@@ -4085,7 +4087,7 @@ function maybeAutoVisit(){
 #gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
 #gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795475446"></script>
+<script src="config.js?v=1795531750"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -4115,7 +4117,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '24.11. 00:10';
+  const BUILD = '24.11. 15:49';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -4369,7 +4371,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 24.11. 00:10';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 24.11. 15:49';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid', 'garden-pending').forEach(k => localStorage.removeItem(k)); } catch (e) {}

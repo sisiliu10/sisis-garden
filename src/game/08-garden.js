@@ -132,7 +132,6 @@ function doWater(p,text){
   renderLog(p);
   setTimeout(()=>{if(p.progress<pr1){p.progress=pr1;persist();}dlg.classList.remove('pouring');if(active===p&&!editing){updateDialog(false);msgEl.textContent=msg;}refreshLabels();},WATER_T*1000);
 }
-const grewBurst=p=>8;
 const WATER_T=2.4;let waterFx=null;const bounceAt={};
 // what the water bar and the plant show while the can is still pouring: it fills up with the stream
 function shownWater(p){if(waterFx&&waterFx.p===p){const e=(performance.now()-waterFx.t0)/1000,k=clamp((e-.35)/1.5,0,1);return waterFx.from+(100-waterFx.from)*(1-(1-k)*(1-k));}return waterOf(p);}
@@ -171,7 +170,7 @@ function drawSleeper(t){
     g.globalAlpha=k<.15?k/.15:Math.max(0,1-(k-.15)/.85);R(zx,zy,n,1,'#ffffff');for(let d=1;d<n-1;d++)R(zx+n-1-d,zy+d,1,1,'#ffffff');R(zx,zy+n-1,n,1,'#ffffff');g.globalAlpha=1;});
 }
 const keys={};
-let hintHidden=false,t0=performance.now(),petalT=0,sprayT=0;
+let t0=performance.now(),petalT=0,sprayT=0;
 
 function blocked(x,y){
   if(scene==='house') return houseBlocked(x,y);
@@ -308,13 +307,14 @@ document.getElementById('nbAdd').addEventListener('submit',e=>{e.preventDefault(
 document.getElementById('gSB').addEventListener('change',e=>{if(!home)return;home.sb=e.target.checked;persist();writePubBooks();});
 document.getElementById('gListed').addEventListener('change',e=>{if(!home)return;home.listed=e.target.checked;persist();toast(home.listed?'Your garden is now in the list for everyone.':'Your garden is hidden from the list. Friends with your invite link can still visit.',3200);});
 document.getElementById('gSearch').addEventListener('input',()=>renderGardens(true));
+function addFriend(id){if(!home)return;home.friends=home.friends||[];if(!home.friends.includes(id)){home.friends.push(id);persist();}}
 // enter a friend's garden by pasting their invite link (or just the code at its end)
 document.getElementById('gEnter').addEventListener('submit',e=>{e.preventDefault();const inp=document.getElementById('gEnterIn'),raw=inp.value.trim();if(!raw)return;
   let id='';const m=raw.match(/[?&]g=([\w-]{6,64})/);if(m)id=m[1];else if(/^[\w-]{6,64}$/.test(raw))id=raw;
   if(id&&id===myId){toast('That is your own link 🙂',2400);return;}
   const gd=id&&gardensList.find(x=>x.id===id);
   if(!gd){toast(id?'No garden found for this link. Ask your friend to send it again.':'That does not look like an invite link.',3200);return;}
-  if(home){home.friends=home.friends||[];if(!home.friends.includes(gd.id)){home.friends.push(gd.id);persist();}}
+  addFriend(gd.id);
   inp.value='';gardensM.classList.remove('show');visit(gd);toast('Welcome to '+gd.data.name+"'s garden 🌱",3000);});
 function isListed(){return !!home&&(home.listed===undefined?!!home.owner:!!home.listed);}
 const inviteUrl=()=>location.origin+location.pathname+'?g='+encodeURIComponent(myId||'');
@@ -326,7 +326,7 @@ let inviteId='';try{inviteId=new URLSearchParams(location.search).get('g')||loca
 function handleInvite(){
   if(!inviteId||!myId||stayHome)return false; if(inviteId===myId){inviteId='';try{localStorage.removeItem('garden-invite');}catch(e){}return false;}
   const gd=gardensList.find(x=>x.id===inviteId); if(!gd)return false;
-  if(home){home.friends=home.friends||[];if(!home.friends.includes(gd.id)){home.friends.push(gd.id);persist();}}
+  addFriend(gd.id);
   inviteId='';try{localStorage.removeItem('garden-invite');history.replaceState(null,'',location.pathname+location.hash);}catch(e){}
   ownerVisited=true;visiting={id:gd.id,data:gd.data};visBooksFor=null;if(started)enterGarden();toast('Welcome to '+gd.data.name+"'s garden 🌱",3000);return true;
 }
@@ -364,11 +364,11 @@ function enterGarden(){
   riding=false;pendRide=false;
   av.swim=false;av.jump=null;
   if(moving)endMove();
-  if(scene==='house')exitHouse(true);
-  if(scene==='island')exitIsland(true);
+  if(scene==='house')exitHouse();
+  if(scene==='island')exitIsland();
   syncRoom();
   camY=0;
-  av.x=120;av.y=216;av.target=null;av.water=0;active=null;lastActive=undefined;dlg.classList.remove('show');
+  av.x=120;av.y=216;av.target=null;av.water=0;closePanel();
   document.getElementById('title').style.opacity=1;
   rebuildLabels();refreshChrome();
 }

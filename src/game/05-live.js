@@ -42,14 +42,14 @@ function livePeers(){
   for(const p of ps){
     if(p.isMe||p.kind!=='viewer') continue;
     const q=p.presence||{}; if(typeof q.x!=='number'||typeof q.y!=='number') continue;
-    const tx=(q.s==='h'||q.s==='o'||q.s==='i')?clamp(q.x,-200,400):q.s==='m'?clamp(q.x,0,4000):clamp(q.x,-OX+14,CW+OX-14), ty=clamp(q.y,0,q.s==='m'?3000:600);
+    const inside=q.s==='h'||q.s==='i', cx=x=>inside?clamp(x,-200,400):clamp(x,-OX+14,CW+OX-14), tx=cx(q.x), ty=clamp(q.y,0,600);
     let gh=ghosts[p.peer]; if(!gh){ gh=ghosts[p.peer]={x:tx,y:ty,sc:q.s}; if(now-roomT0>4000){try{Sfx.join();}catch(e){}} }
     let fresh=false;if(gh.sc!==q.s){gh.sc=q.s;gh.buf=[];gh.off=undefined;gh.jit=0;gh.x=tx;gh.y=ty;gh.pxx=undefined;fresh=true;}
     if(typeof q._t==='number'){
       // smooth playback: keep the last positions with the sender's timestamps and replay them ~140 ms behind, interpolating in between,
       // so a friend's walk looks continuous even when network packets arrive in bursts
       const B=gh.buf||(gh.buf=[]),wall=Date.now();
-      const add=(t,x,y)=>{if(B.length&&t<=B[B.length-1].t)return;x=(q.s==='h'||q.s==='o'||q.s==='i')?clamp(x,-200,400):q.s==='m'?clamp(x,0,4000):clamp(x,-OX+14,CW+OX-14);y=clamp(y,0,q.s==='m'?3000:600);
+      const add=(t,x,y)=>{if(B.length&&t<=B[B.length-1].t)return;x=cx(x);y=clamp(y,0,600);
         B.push({t,x,y});if(B.length>60)B.shift();const d=wall-t;gh.off=gh.off===undefined||d<gh.off?d:gh.off+(d-gh.off)*.03;const late=d-gh.off;gh.jit=Math.max(late,(gh.jit||0)*.985);};
       if(!fresh&&Array.isArray(q._h))q._h.forEach(e=>{if(Array.isArray(e)&&typeof e[0]==='number'&&typeof e[1]==='number'&&typeof e[2]==='number')add(e[0],e[1],e[2]);});
       add(q._t,tx,ty);
@@ -68,7 +68,7 @@ function livePeers(){
     const sgq=q.sg&&(q.sg.s===0||q.sg.s===1)?{s:q.sg.s,a:clamp(num(q.sg.a,0),-1.2,1.2)}:null;
     if(gh.pxx!==undefined&&Math.abs(gh.x-gh.pxx)>.02)gh.dir=gh.x>gh.pxx?1:-1;else if(gh.pxx===undefined&&Math.abs(tx-gh.x)>.6)gh.dir=tx>gh.x?1:-1;gh.pxx=gh.x;
     const apq=Array.isArray(q.ap)&&q.ap.length===4&&q.ap.slice(0,2).every(v=>typeof v==='number')?[clamp(q.ap[0],-OX+14,CW+OX-14),clamp(q.ap[1],0,600),q.ap[2],q.ap[3]]:null;
-    out.push({pl:typeof q.pl==='string'&&q.pl?q.pl.slice(0,64):null,ap:apq,nap:q.nap===1&&q.s==='h'?1:0,sl:q.sl===1||q.sl===2?q.sl:0,ride:!!q.al,sg:sgq,say:gh.sayUntil>now?gh.sayT:'',typing:!!q.ty&&!(gh.sayUntil>now),id:p.peer,by:p.by,x:gh.x,y:gh.y,scene:q.s==='h'?'house':q.s==='o'?'office':q.s==='m'?'city':q.s==='i'?'island':'garden',back:!!q.b,moving:!!q.m||now-(gh.mvT||0)<150,run:!!q.r,swim:!!q.sw,water:!!q.w,name:str(q.n,14)||'Friend',look:cleanLook(q.l)});
+    out.push({pl:typeof q.pl==='string'&&q.pl?q.pl.slice(0,64):null,ap:apq,nap:q.nap===1&&q.s==='h'?1:0,sl:q.sl===1||q.sl===2?q.sl:0,ride:!!q.al,sg:sgq,say:gh.sayUntil>now?gh.sayT:'',typing:!!q.ty&&!(gh.sayUntil>now),id:p.peer,by:p.by,x:gh.x,y:gh.y,scene:q.s==='h'?'house':q.s==='i'?'island':'garden',back:!!q.b,moving:!!q.m||now-(gh.mvT||0)<150,run:!!q.r,swim:!!q.sw,water:!!q.w,name:str(q.n,14)||'Friend',look:cleanLook(q.l)});
   }
   return out;
 }

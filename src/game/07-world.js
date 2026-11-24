@@ -119,7 +119,7 @@ function peopleAt(key){return allPeers().filter(p=>!p.isMe&&p.presence&&p.presen
 
 /* ================= the community island: everyone leaves one small thing ================= */
 const IW=232,IH=200,ISL={cx:116,cy:92,rx:98,ry:62},JET={x0:108,x1:124,y0:146,y1:196},LH={x:188,y:58};
-let IX=0,IY=0,isleItems=[],isleMine=[],isleLoaded=0,isleBusy=false,isleSig='',isleBg=null,isleBgW=0,isleT=0;
+let IX=0,IY=0,isleItems=[],isleMine=[],isleLoaded=0,isleBusy=false,isleSig='',isleBg=null,isleT=0;
 const ISLE_K=[['flower','Blume'],['tulip','Tulpe'],['stone','Steine'],['lantern','Laterne'],['shell','Muschel'],['mushroom','Pilz']];
 const ISLE_DAY=3;
 function isleOrigin(){IX=Math.floor((W-IW)/2);IY=Math.max(46,Math.floor((H-IH)/2));}
@@ -166,16 +166,16 @@ async function isleDrop(k){
 }
 function enterIsland(){
   if(!started)return;hideHomeHint(false);
-  if(scene==='house')exitHouse(true);
+  if(scene==='house')exitHouse();
   if(mySeat!==null)standUp();
   if(riding)dismount();riding=false;pendRide=false;slide=null;pendSlide=false;av.swim=false;av.jump=null;if(moving)endMove();
   scene='island';isleOrigin();try{Sfx.door(.5);}catch(e){}
   av.x=116;av.y=188;av.back=true;av.target={x:116,y:150};av.water=0;
-  active=null;lastActive=undefined;dlg.classList.remove('show');editing=false;
+  closePanel();editing=false;
   worldEl.style.visibility='hidden';bJump.hidden=true;setPrompt(null);isleHud.hidden=false;
   cat.x=av.x+12;cat.y=av.y;syncRoom();if(Date.now()-isleLoaded>4000)loadIsle();isleHudTxt();
 }
-function exitIsland(silent){
+function exitIsland(){
   scene='garden';worldEl.style.visibility='';isleHud.hidden=true;isleM.classList.remove('show');
   av.x=120;av.y=216;av.back=false;av.target=null;camY=clamp(av.y+OY-H*.55,0,Math.max(0,TH-H));camR=-1;setPrompt(null);
   cat.x=av.x+14;cat.y=av.y+4;syncRoom();rebuildLabels();refreshChrome();
@@ -228,7 +228,7 @@ function buildIsleBg(){
   for(let y=ly-21;y<ly-1;y+=8)R(lx-5,y,11,4,'#e8506c');R(lx+3,ly-24,2,23,'rgba(0,0,0,.12)');
   R(lx-6,ly-28,13,4,'#3a2f38');R(lx-4,ly-27,9,2,'#ffe08a');R(lx-5,ly-31,11,3,'#e8506c');R(lx-3,ly-33,7,2,'#e8506c');R(lx,ly-35,1,2,'#3a2f38');
   R(lx-1,ly-9,3,5,'#5a4636');
-  X=keep;isleBgW=W;
+  X=keep;
 }
 function renderIsland(t){
   isleOrigin();if(!isleBg)buildIsleBg();
@@ -301,7 +301,7 @@ function islandSprite(gd,big){
   ell(cx,cy+2,rx+2,ry+2,'#7cc4ea');ell(cx,cy+1,rx,ry,'#f0d8a0');
   const dry=gd&&gardenAvg(gd.data)<35;ell(cx,cy-1,rx-3,ry-3,dry?'#b7b46a':'#86c96f');ell(cx,cy+ry-4,rx-6,1,dry?'#a3a05c':'#6fb35c');
   if(big){R(cx-1,cy-14,3,12,'#fdfaf2');R(cx-1,cy-10,3,3,'#e8506c');R(cx-2,cy-16,5,2,'#3a2f38');R(cx-1,cy-15,3,1,'#ffe08a');R(cx-2,cy-18,5,2,'#e8506c');
-    const pick=isleItems.slice(-40);pick.forEach((it,i)=>{const r=rng(i*7+3);const x=Math.round(cx+(it.x-ISL.cx)/ISL.rx*(rx-5)),y=Math.round(cy-1+(it.y-ISL.cy)/ISL.ry*(ry-4));
+    const pick=isleItems.slice(-40);pick.forEach((it,i)=>{const x=Math.round(cx+(it.x-ISL.cx)/ISL.rx*(rx-5)),y=Math.round(cy-1+(it.y-ISL.cy)/ISL.ry*(ry-4));
       if(Math.abs(x-cx)<3&&y<cy)return;R(x,y,1,1,it.k==='stone'?'#9aa0a8':it.k==='lantern'?'#ffe08a':it.k==='mushroom'?'#d84a4a':it.k==='shell'?'#f6d3c4':ISLE_COL[it.c||0][0]);});}
   else if(gd){const ps=(gd.data.projects||[]).slice(0,6),r=rng(hashStr(gd.id));
     ps.forEach((p,i)=>{const x=Math.round(cx-12+i*5+r()*2),y=Math.round(cy-2+(i%2?2:-1));const tall=p.progress>60;R(x,y-(tall?5:3),1,tall?5:3,'#4f9e3f');R(x-1,y-(tall?7:4),3,2,p.kind==='tree'||p.kind==='plum'?'#3f8f44':ISLE_COL[i%4][0]);});

@@ -61,6 +61,7 @@ document.getElementById('bkLock').addEventListener('click',()=>{if(!home||visiti
 document.getElementById('dLock').addEventListener('click',e=>{e.stopPropagation();if(!active)return;toggleLock(active,active.bed?'bed':'plant');paintLock(e.currentTarget,active.lk,active.bed?'bed':'plant');rebuildLabels();});
 const dNote=document.getElementById('dNote'),dProg=document.getElementById('dProg'),msgEl=document.getElementById('dMsg');
 let active=null,lastActive=undefined,editing=false,pendingEdit=null,banShown=false;
+function closePanel(){active=null;lastActive=undefined;dlg.classList.remove('show');}
 function placeDialog(){
   const titleTop=(OY*.42+10)*S, ax=(OX+av.x)*S, ay=(OY+av.y-camR)*S, gw=CW*S, side=(innerWidth-gw)/2;
   const dock=innerWidth>=820&&side>=170;   // enough empty grass next to the garden for a side panel
@@ -184,13 +185,17 @@ function addLinkRow(l){const box=document.getElementById('fLinks');if(box.childr
   r.appendChild(t);r.appendChild(u);r.appendChild(x);box.appendChild(r);}
 function renderLinkRows(L){document.getElementById('fLinks').innerHTML='';L.forEach(addLinkRow);if(!L.length)addLinkRow({});}
 document.getElementById('fAddLink').onclick=()=>addLinkRow({});
+// take the open plant out of the garden (its notes and log too) and close the panel
+function dropActive(){
+  home.projects=home.projects.filter(x=>x!==active); home.skills=home.skills.filter(x=>x!==active); delete home.notes[active.id]; if(home.logs)delete home.logs[active.id];
+  closePanel();
+}
 document.getElementById('fDel').onclick=()=>{
   if(!active||visiting) return;
   if(!delArmed){delArmed=true;document.getElementById('fDel').textContent='Tap again to compost';return;}
   {const c=JSON.parse(JSON.stringify(active));c.ct=Date.now();c.note=home.notes[active.id]||'';c.lg=(home.logs&&home.logs[active.id])||[];delete c.pos;
    home.compost=[c].concat(home.compost||[]).slice(0,30);compostFx(active.code);}
-  home.projects=home.projects.filter(x=>x!==active); home.skills=home.skills.filter(x=>x!==active); delete home.notes[active.id]; if(home.logs)delete home.logs[active.id];
-  active=null; lastActive=undefined; dlg.classList.remove('show');
+  dropActive();
   persist(); rebuildLabels(); refreshChrome();
 };
 function closeKill(){document.getElementById('dKillBar').hidden=true;document.getElementById('dBtns').hidden=false;}
@@ -203,9 +208,8 @@ document.getElementById('dKillNo').onclick=e=>{e.stopPropagation();closeKill();}
 document.getElementById('dKillYes').onclick=e=>{
   e.stopPropagation(); if(!active||visiting) return;
   const code=active.code,[px,py]=posOf(active);
-  home.projects=home.projects.filter(x=>x!==active); home.skills=home.skills.filter(x=>x!==active); delete home.notes[active.id]; if(home.logs)delete home.logs[active.id];
+  dropActive(); closeKill();
   for(let i=0;i<12;i++)spawn({kind:'puff',x:px+(Math.random()*14-7),y:py-2-Math.random()*12,vy:-10,life:.5+Math.random()*.3});
-  active=null; lastActive=undefined; dlg.classList.remove('show'); closeKill();
   persist(); rebuildLabels(); refreshChrome(); toast(code+' deleted.',1800);
 };
 const addM=document.getElementById('addM');

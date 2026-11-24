@@ -20,11 +20,11 @@ function enterHouse(){hideHomeHint(false);
   av.swim=false;av.jump=null;
   scene='house'; roomOrigin(); try{Sfx.door();}catch(e){}
   av.x=RW/2; av.y=RH-6; av.back=true; av.target=null; av.water=0;
-  active=null; lastActive=undefined; dlg.classList.remove('show'); editing=false;
+  closePanel(); editing=false;
   worldEl.style.visibility='hidden'; bJump.hidden=true; setPrompt(null);
   cat.x=RW/2+14; cat.y=RH-10;
 }
-function exitHouse(silent){
+function exitHouse(){
   scene='garden'; worldEl.style.visibility='';
   av.x=HX; av.y=HB+8; av.back=false; av.target=null; napT=0; napping=false;
   camY=clamp(av.y+OY-H*.55,0,Math.max(0,TH-H)); camR=-1; setPrompt(null);
@@ -61,7 +61,7 @@ function goScene(k){
   if(k==='map'){openMap();return;}
   if(k===scene||!started)return;
   if(k==='island'){enterIsland();return;}
-  if(scene==='house')exitHouse(true);else if(scene==='island')exitIsland(true);
+  if(scene==='house')exitHouse();else if(scene==='island')exitIsland();
   if(k==='house')enterHouse();
 }
 const promptEl=document.getElementById('prompt');
@@ -200,7 +200,6 @@ function seedBooks(){
 // everyone else: take the keeper's books back off the shelf if an older version put them there
 function unseedBooks(){
  if(!books||(!Array.isArray(books.seeds)&&!books.seeded))return false;
- const n=books.list.length;
  books.list=books.list.filter(b=>!(SEEDS.some(x=>x.ti===b.ti&&x.au===b.au)&&!b.ra&&!b.dr&&!b.id));
  delete books.seeds;delete books.seeded;return true;
 }

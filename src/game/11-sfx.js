@@ -6,7 +6,7 @@ const Sfx=(()=>{
     const dur=big?1.6:1.05,v=(vol===undefined?1:vol)*(big?.6:.42);
     const out=c.createGain();out.gain.value=v;
     const tone=c.createBiquadFilter();tone.type='lowpass';tone.frequency.setValueAtTime(9500,t);tone.frequency.exponentialRampToValueAtTime(1700,t+dur);out.connect(tone);tone.connect(c.destination);
-    const len=Math.floor(c.sampleRate*dur),buf=c.createBuffer(1,len,c.sampleRate),d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=Math.random()*2-1;
+    const buf=noiseBuf(c,dur);
     const n1=c.createBufferSource();n1.buffer=buf;const lp=c.createBiquadFilter();lp.type='lowpass';lp.Q.value=.3;lp.frequency.setValueAtTime(big?650:800,t);lp.frequency.exponentialRampToValueAtTime(170,t+.5);
     const g1=c.createGain();g1.gain.setValueAtTime(.0001,t);g1.gain.linearRampToValueAtTime(big?.85:.6,t+.05);g1.gain.exponentialRampToValueAtTime(.001,t+(big?.65:.45));
     n1.connect(lp);lp.connect(g1);g1.connect(out);n1.start(t);n1.stop(t+.7);
@@ -27,6 +27,8 @@ const Sfx=(()=>{
     try{build(c,c.currentTime+.01,big,vol);}catch(e){}
   }
   // slide: a soft slide-whistle "wheee" on the way down, then a happy little 8-bit "yay" jingle on landing
+  // white noise, the raw material for splashes, steps and clicks
+  function noiseBuf(c,dur){const b=c.createBuffer(1,Math.floor(c.sampleRate*dur),c.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return b;}
   function ready(){if(document.hidden||!Snd.started())return null;const c=Snd.get();if(!c)return null;if(c.state==='suspended'){Snd.unlock();return null;}return c;}
   function whee(vol){const c=ready();if(!c)return;const t=c.currentTime+.01,v=(vol===undefined?1:vol)*.07;
     const o=c.createOscillator(),g=c.createGain(),lfo=c.createOscillator(),lg=c.createGain();
@@ -49,7 +51,7 @@ const Sfx=(()=>{
   // watering: a soft trickle from the can's rose (filtered noise that flutters), with little droplet plinks
   function pour(delay,vol){const c=ready();if(!c)return;const t=c.currentTime+(delay||0)+.01,dur=1.6,v=(vol===undefined?1:vol)*.3;
     const out=c.createGain();out.gain.value=v;out.connect(c.destination);
-    const len=Math.floor(c.sampleRate*dur),buf=c.createBuffer(1,len,c.sampleRate),d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=Math.random()*2-1;
+    const buf=noiseBuf(c,dur);
     const n=c.createBufferSource();n.buffer=buf;const bp=c.createBiquadFilter();bp.type='bandpass';bp.Q.value=.7;bp.frequency.setValueAtTime(1500,t);bp.frequency.linearRampToValueAtTime(2300,t+dur);
     const hs=c.createBiquadFilter();hs.type='highshelf';hs.frequency.value=4000;hs.gain.value=-8;
     const g=c.createGain();g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.55,t+.15);g.gain.setValueAtTime(.55,t+dur-.3);g.gain.exponentialRampToValueAtTime(.001,t+dur);
@@ -70,7 +72,7 @@ const Sfx=(()=>{
   function sit(vol){const c=ready();if(!c)return;const t=c.currentTime+.01,v=(vol===undefined?1:vol);
     const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(62,t+.16);
     g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.28*v,t+.012);g.gain.exponentialRampToValueAtTime(.0005,t+.22);o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+.25);
-    const n=c.createBufferSource(),nb=c.createBuffer(1,Math.floor(c.sampleRate*.2),c.sampleRate),d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;n.buffer=nb;
+    const n=c.createBufferSource();n.buffer=noiseBuf(c,.2);
     const nf=c.createBiquadFilter();nf.type='lowpass';nf.frequency.value=900;const ng=c.createGain();ng.gain.setValueAtTime(.12*v,t);ng.gain.exponentialRampToValueAtTime(.0005,t+.16);n.connect(nf);nf.connect(ng);ng.connect(c.destination);n.start(t);
     const h=c.createOscillator(),h2=c.createOscillator(),hg=c.createGain(),hf=c.createBiquadFilter(),lfo=c.createOscillator(),lg=c.createGain(),t2=t+.16;
     h.type='triangle';h2.type='sine';h.frequency.setValueAtTime(330,t2);h.frequency.linearRampToValueAtTime(410,t2+.16);h.frequency.linearRampToValueAtTime(345,t2+.42);
@@ -86,7 +88,7 @@ const Sfx=(()=>{
     const play=()=>{if(!doorBuf){doorSynth(vol);return;}const s=c.createBufferSource(),g=c.createGain();s.buffer=doorBuf;g.gain.value=.9*v;s.connect(g);g.connect(c.destination);s.start(c.currentTime+.01);};
     if(doorBuf!==null)play();else loadDoor(c).then(play);}
   function doorSynth(vol){const c=ready();if(!c)return;const t=c.currentTime+.01,v=(vol===undefined?1:vol);
-    const nb=c.createBuffer(1,Math.floor(c.sampleRate*.6),c.sampleRate),d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+    const nb=noiseBuf(c,.6);
     const click=(at,fq,a,len)=>{const n=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();n.buffer=nb;f.type='bandpass';f.frequency.value=fq;f.Q.value=4;
       g.gain.setValueAtTime(a*v,at);g.gain.exponentialRampToValueAtTime(.0005,at+len);n.connect(f);f.connect(g);g.connect(c.destination);n.start(at,Math.random()*.3,len+.02);};
     // handle goes down, latch clicks open (two small metal clicks and a wooden knock)
