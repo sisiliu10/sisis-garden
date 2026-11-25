@@ -67,7 +67,7 @@ async function ask(prompt: string, maxTokens: number, system?: string): Promise<
   }
   // Free Gemini models get overloaded (503) or hit their daily quota (429) often, and a model name can disappear (404).
   // So: try a few models in turn, with thinking off (thinking can use up the whole output budget and leave no answer).
-  const models = [...new Set([GMODEL, 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-lite-latest'])];
+  const models = [...new Set([GMODEL, 'gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-2.5-flash'])];
   for (const model of models) {
     for (const think of [false, true]) {
       const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent', {
