@@ -309,3 +309,23 @@ document.getElementById('lnForm').addEventListener('submit',e=>{e.preventDefault
 document.getElementById('lnClose').addEventListener('click',closeLine);
 lineM.addEventListener('pointerdown',e=>{if(e.target===lineM)closeLine();});
 
+
+/* ================= duck: lives by the pool in Sisi's garden, quacks when tapped ================= */
+const DUCK={x:138,y:322};
+const DUCK_PAL={w:'#fff5f4',p:'#fab4b4',P:'#d48581',g:'#517746',G:'#6a925d',l:'#98bd7a',b:'#bd6027',r:'#cf3336',m:'#812d2d',R:'#f34b62',o:'#fd9800',y:'#ffb84c',e:'#491718',h:'#ff96a0'};
+const DUCK_ROWS=['........mmmmm....','.......mRhRRrm...','......mRRRrrrrm..','......mRRrrrrrm..','......mlGgGrlGgm.','......gGPwwwwPGg.','...PP.lPwwwwwwPg.','..PppPgPwwewwwwP.',
+  '.PwwwpgPwwwwbbbb.','.PwwwwglPwwboyyyb','PwwwwwgGgwwbbbbb.','PwPpwwwgGGgggggg.','PwpPpwwwgGgGlgg..','PwwPpwPwwgpgpP...','PwwwPPwwwwwwppP..','.PwwwwwwwwwwwpP..','..PpwwwwwwwwpP...','...PPppppppPP....','....boo..boo.....','....bbb..bbb.....'];
+// beak open: the same duck with rows 9 to 12 swapped
+const DUCK_OPEN={9:'.PwwwwglPwwbyyyyb',10:'PwwwwwgGgwwemmm..',11:'PwPpwwwgGGgbooob.',12:'PwpPpwwwgGgGbbb..'};
+function duckSprite(open){const c=document.createElement('canvas');c.width=17;c.height=20;const x=c.getContext('2d');
+  DUCK_ROWS.forEach((r,j)=>{r=open&&DUCK_OPEN[j]||r;for(let i=0;i<r.length;i++)if(DUCK_PAL[r[i]]){x.fillStyle=DUCK_PAL[r[i]];x.fillRect(i,j,1,1);}});return c;}
+const duckImg=[duckSprite(false),duckSprite(true)];
+let duckQuackAt=-9e9;
+function duckHere(){return visiting?(visiting.id===OWNER_ID||!!(visiting.data&&visiting.data.owner)):(isOwner||myId===OWNER_ID);}
+function onDuck(x,y){return duckHere()&&Math.abs(x-DUCK.x)<11&&y>DUCK.y-22&&y<DUCK.y+3;}
+function quack(){duckQuackAt=performance.now();Sfx.quack();}
+function drawDuck(){
+  const k=(performance.now()-duckQuackAt)/1000, open=k<.32, hop=k<.3?Math.round(Math.sin(k/.3*Math.PI)*2):0;
+  ell(DUCK.x,DUCK.y,8,2,'rgba(40,80,40,.28)');
+  g.drawImage(duckImg[open?1:0],DUCK.x-8,DUCK.y-19-hop);
+}

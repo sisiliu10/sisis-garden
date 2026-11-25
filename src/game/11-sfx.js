@@ -68,6 +68,15 @@ const Sfx=(()=>{
     [[1047,0],[1319,.08],[1568,.16],[2093,.26]].forEach(([f,dt],i)=>{const t=t0+dt,dur=i===3?.9:.45;
       [[1,'sine',1],[2.01,'sine',.25],[1,'triangle',.3]].forEach(([mul,ty,m])=>{const o=c.createOscillator(),g=c.createGain();o.type=ty;o.frequency.value=f*mul;
         g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v*m,t+.006);g.gain.exponentialRampToValueAtTime(.0003,t+dur);o.connect(g);g.connect(out);o.start(t);o.stop(t+dur+.05);});});}
+  // the duck: a short nasal "quak" (a buzzy tone through two formant filters, the pitch bends down at the end)
+  function quack(vol){const c=ready();if(!c)return;const t=c.currentTime+.01,v=(vol===undefined?1:vol)*.6,f=290+Math.random()*50,d=.24;
+    const o=c.createOscillator();o.type='sawtooth';o.frequency.setValueAtTime(f*.9,t);o.frequency.linearRampToValueAtTime(f*1.1,t+.05);o.frequency.exponentialRampToValueAtTime(f*.7,t+d);
+    const lfo=c.createOscillator(),lg=c.createGain();lfo.frequency.value=36;lg.gain.value=f*.05;lfo.connect(lg);lg.connect(o.frequency);
+    const env=c.createGain();env.gain.setValueAtTime(.0001,t);env.gain.exponentialRampToValueAtTime(v,t+.018);env.gain.setValueAtTime(v,t+d*.5);env.gain.exponentialRampToValueAtTime(.0001,t+d);
+    const f1=c.createBiquadFilter();f1.type='bandpass';f1.frequency.value=1000;f1.Q.value=4;
+    const f2=c.createBiquadFilter();f2.type='bandpass';f2.frequency.value=2400;f2.Q.value=5;const g2=c.createGain();g2.gain.value=.55;
+    o.connect(f1);o.connect(f2);f1.connect(env);f2.connect(g2);g2.connect(env);env.connect(c.destination);
+    o.start(t);lfo.start(t);o.stop(t+d+.05);lfo.stop(t+d+.05);}
   // sitting down on the alpaca: a soft cushioned "fwump" plus the little hum alpacas make
   function sit(vol){const c=ready();if(!c)return;const t=c.currentTime+.01,v=(vol===undefined?1:vol);
     const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(62,t+.16);
@@ -118,6 +127,6 @@ const Sfx=(()=>{
   function join(){window.__joins=(window.__joins||0)+1;if(document.hidden)return;const c=Snd.get();if(!c)return;const t=c.currentTime+.01;
     [[659,0],[988,.11]].forEach(([f,d])=>{const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(f,t+d);
       g.gain.setValueAtTime(.0001,t+d);g.gain.linearRampToValueAtTime(.13,t+d+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d+.42);o.connect(g);g.connect(c.destination);o.start(t+d);o.stop(t+d+.45);});}
-  return {click,join,splash,whee,yay,pour,grow,sit,door,preload:()=>{const c=Snd.started()&&Snd.get();if(c)loadDoor(c);}};
+  return {click,join,splash,whee,yay,pour,grow,sit,quack,door,preload:()=>{const c=Snd.started()&&Snd.get();if(c)loadDoor(c);}};
 })();
 

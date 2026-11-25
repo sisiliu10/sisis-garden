@@ -3000,6 +3000,7 @@ cvs.addEventListener('pointerdown',e=>{
   {const pp=peerAt(lx,ly);if(pp&&!moving){av.run=false;openActMenu(pp,e.clientX,e.clientY);return;}}
   if(!moving&&riding&&Math.abs(lx-av.x)<12&&ly>av.y-36&&ly<av.y+4){dismount();return;}
   if(!moving&&!riding&&mySeat===null&&alpIdle()&&Math.abs(lx-alp.x)<14&&ly>alp.y-33&&ly<alp.y+4){goRide();return;}
+  if(!moving&&onDuck(lx,ly)){quack();return;}
   if(!moving&&onSlide(lx,ly)){goSlide();return;}
   if(!moving&&lx>COMP.x-15&&lx<COMP.x+21&&ly>COMP.y-26&&ly<COMP.y+4){av.run=false;av.target={x:COMP.x+23,y:COMP.y+3};openCompost();return;}
   if(!moving&&onLine(lx,ly)){av.target=null;const gi=garmentAt(lx,ly);if(gi>=0)openTip(gi,e.clientX,e.clientY);else openLine();return;}
@@ -3563,6 +3564,26 @@ document.getElementById('lnForm').addEventListener('submit',e=>{e.preventDefault
 document.getElementById('lnClose').addEventListener('click',closeLine);
 lineM.addEventListener('pointerdown',e=>{if(e.target===lineM)closeLine();});
 
+
+/* ================= duck: lives by the pool in Sisi's garden, quacks when tapped ================= */
+const DUCK={x:138,y:322};
+const DUCK_PAL={w:'#fff5f4',p:'#fab4b4',P:'#d48581',g:'#517746',G:'#6a925d',l:'#98bd7a',b:'#bd6027',r:'#cf3336',m:'#812d2d',R:'#f34b62',o:'#fd9800',y:'#ffb84c',e:'#491718',h:'#ff96a0'};
+const DUCK_ROWS=['........mmmmm....','.......mRhRRrm...','......mRRRrrrrm..','......mRRrrrrrm..','......mlGgGrlGgm.','......gGPwwwwPGg.','...PP.lPwwwwwwPg.','..PppPgPwwewwwwP.',
+  '.PwwwpgPwwwwbbbb.','.PwwwwglPwwboyyyb','PwwwwwgGgwwbbbbb.','PwPpwwwgGGgggggg.','PwpPpwwwgGgGlgg..','PwwPpwPwwgpgpP...','PwwwPPwwwwwwppP..','.PwwwwwwwwwwwpP..','..PpwwwwwwwwpP...','...PPppppppPP....','....boo..boo.....','....bbb..bbb.....'];
+// beak open: the same duck with rows 9 to 12 swapped
+const DUCK_OPEN={9:'.PwwwwglPwwbyyyyb',10:'PwwwwwgGgwwemmm..',11:'PwPpwwwgGGgbooob.',12:'PwpPpwwwgGgGbbb..'};
+function duckSprite(open){const c=document.createElement('canvas');c.width=17;c.height=20;const x=c.getContext('2d');
+  DUCK_ROWS.forEach((r,j)=>{r=open&&DUCK_OPEN[j]||r;for(let i=0;i<r.length;i++)if(DUCK_PAL[r[i]]){x.fillStyle=DUCK_PAL[r[i]];x.fillRect(i,j,1,1);}});return c;}
+const duckImg=[duckSprite(false),duckSprite(true)];
+let duckQuackAt=-9e9;
+function duckHere(){return visiting?(visiting.id===OWNER_ID||!!(visiting.data&&visiting.data.owner)):(isOwner||myId===OWNER_ID);}
+function onDuck(x,y){return duckHere()&&Math.abs(x-DUCK.x)<11&&y>DUCK.y-22&&y<DUCK.y+3;}
+function quack(){duckQuackAt=performance.now();Sfx.quack();}
+function drawDuck(){
+  const k=(performance.now()-duckQuackAt)/1000, open=k<.32, hop=k<.3?Math.round(Math.sin(k/.3*Math.PI)*2):0;
+  ell(DUCK.x,DUCK.y,8,2,'rgba(40,80,40,.28)');
+  g.drawImage(duckImg[open?1:0],DUCK.x-8,DUCK.y-19-hop);
+}
 /* ================= sound effects (generated live, no samples) ================= */
 const Sfx=(()=>{
   // water splash, built from noise and bubbles (no pitched "thump"):
@@ -3633,6 +3654,15 @@ const Sfx=(()=>{
     [[1047,0],[1319,.08],[1568,.16],[2093,.26]].forEach(([f,dt],i)=>{const t=t0+dt,dur=i===3?.9:.45;
       [[1,'sine',1],[2.01,'sine',.25],[1,'triangle',.3]].forEach(([mul,ty,m])=>{const o=c.createOscillator(),g=c.createGain();o.type=ty;o.frequency.value=f*mul;
         g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v*m,t+.006);g.gain.exponentialRampToValueAtTime(.0003,t+dur);o.connect(g);g.connect(out);o.start(t);o.stop(t+dur+.05);});});}
+  // the duck: a short nasal "quak" (a buzzy tone through two formant filters, the pitch bends down at the end)
+  function quack(vol){const c=ready();if(!c)return;const t=c.currentTime+.01,v=(vol===undefined?1:vol)*.6,f=290+Math.random()*50,d=.24;
+    const o=c.createOscillator();o.type='sawtooth';o.frequency.setValueAtTime(f*.9,t);o.frequency.linearRampToValueAtTime(f*1.1,t+.05);o.frequency.exponentialRampToValueAtTime(f*.7,t+d);
+    const lfo=c.createOscillator(),lg=c.createGain();lfo.frequency.value=36;lg.gain.value=f*.05;lfo.connect(lg);lg.connect(o.frequency);
+    const env=c.createGain();env.gain.setValueAtTime(.0001,t);env.gain.exponentialRampToValueAtTime(v,t+.018);env.gain.setValueAtTime(v,t+d*.5);env.gain.exponentialRampToValueAtTime(.0001,t+d);
+    const f1=c.createBiquadFilter();f1.type='bandpass';f1.frequency.value=1000;f1.Q.value=4;
+    const f2=c.createBiquadFilter();f2.type='bandpass';f2.frequency.value=2400;f2.Q.value=5;const g2=c.createGain();g2.gain.value=.55;
+    o.connect(f1);o.connect(f2);f1.connect(env);f2.connect(g2);g2.connect(env);env.connect(c.destination);
+    o.start(t);lfo.start(t);o.stop(t+d+.05);lfo.stop(t+d+.05);}
   // sitting down on the alpaca: a soft cushioned "fwump" plus the little hum alpacas make
   function sit(vol){const c=ready();if(!c)return;const t=c.currentTime+.01,v=(vol===undefined?1:vol);
     const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(62,t+.16);
@@ -3683,7 +3713,7 @@ const Sfx=(()=>{
   function join(){window.__joins=(window.__joins||0)+1;if(document.hidden)return;const c=Snd.get();if(!c)return;const t=c.currentTime+.01;
     [[659,0],[988,.11]].forEach(([f,d])=>{const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(f,t+d);
       g.gain.setValueAtTime(.0001,t+d);g.gain.linearRampToValueAtTime(.13,t+d+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d+.42);o.connect(g);g.connect(c.destination);o.start(t+d);o.stop(t+d+.45);});}
-  return {click,join,splash,whee,yay,pour,grow,sit,door,preload:()=>{const c=Snd.started()&&Snd.get();if(c)loadDoor(c);}};
+  return {click,join,splash,whee,yay,pour,grow,sit,quack,door,preload:()=>{const c=Snd.started()&&Snd.get();if(c)loadDoor(c);}};
 })();
 
 /* ================= compost heap: projects you let go ================= */
@@ -3825,13 +3855,14 @@ function drawBubbles(){
   const toS=(x,y)=>sc==='island'?[(IX+x)*S,(IY+y)*S]:sc==='house'?[(RX+x)*S,(RY+y)*S]:[(OX+x)*S,(OY+y-camR)*S];
   if(mySay&&mySay.until>now) items.push({id:'me',x:av.x,y:av.y,t:mySay.t});
   else if(document.activeElement===chatIn&&chatIn.value.trim()&&now-typingAt<5000) items.push({id:'me~ty',x:av.x,y:av.y,ty:true});
+  if(sc==='garden'&&duckHere()&&now-duckQuackAt<1100)items.push({id:'duck',x:DUCK.x,y:DUCK.y,dy:24,t:'QUAK!'});
   livePeers().forEach(p=>{if(p.scene!==sc)return;if(p.say)items.push({id:p.id,x:p.x,y:p.y,t:p.say});else if(p.typing)items.push({id:p.id+'~ty',x:p.x,y:p.y,ty:true});});
   const keep=new Set();
   items.forEach(it=>{keep.add(it.id);let el=bubBox.querySelector(`[data-b="${it.id}"]`);
     if(!el){el=document.createElement('div');el.className=it.ty?'bub bty':'bub';el.dataset.b=it.id;if(it.ty){el.innerHTML=PENCIL+'<i></i><i></i><i></i>';el.setAttribute('aria-label','is typing');}bubBox.appendChild(el);}
     if(!it.ty&&el.textContent!==it.t){el.textContent=it.t;el._w=0;}
     if(!el._w)el._w=el.offsetWidth/2+6;
-    const [x,y]=toS(it.x,it.y-(it.id==='me'?30:36));el.style.left=clamp(x,el._w,Math.max(el._w,innerWidth-el._w))+'px';el.style.top=y+'px';});
+    const [x,y]=toS(it.x,it.y-(it.dy||(it.id==='me'?30:36)));el.style.left=clamp(x,el._w,Math.max(el._w,innerWidth-el._w))+'px';el.style.top=y+'px';});
   [...bubBox.children].forEach(el=>{if(!keep.has(el.dataset.b))el.remove();});
 }
 function frame(now){
@@ -3944,6 +3975,7 @@ function render(t){
   for(let r0=0;r0<lineRows();r0++)list.push({y:CLN.rows[r0],d:()=>drawLineRow(r0,t)});
   list.push({y:CLN.by,d:()=>drawBasket()});
   list.push({y:COMP.y,d:()=>drawCompost(t)});
+  if(duckHere())list.push({y:DUCK.y,d:drawDuck});
   if(alpIdle())list.push({y:alp.y,d:()=>drawAlpaca(alp.x,alp.y,alp.dir,alp.moving?Math.floor(t*5)%2+1:0,t)});
   list.push({y:HB,d:()=>drawCottage(t)});
   const myLook=me().look, blink=(t%4)<.12;
@@ -4087,7 +4119,7 @@ function maybeAutoVisit(){
 #gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;outline:none;border-radius:0;-webkit-appearance:none;appearance:none;box-shadow:none;-webkit-tap-highlight-color:transparent}#gEmail:focus,#gTok:focus{outline:none;background:#fff8e6}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
 #gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795533146"></script>
+<script src="config.js?v=1795614053"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -4117,7 +4149,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '24.11. 16:12';
+  const BUILD = '25.11. 14:40';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -4377,7 +4409,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 24.11. 16:12';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 25.11. 14:40';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid', 'garden-pending').forEach(k => localStorage.removeItem(k)); } catch (e) {}
