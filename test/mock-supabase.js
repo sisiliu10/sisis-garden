@@ -17,7 +17,10 @@ function channel(name,opts){let pres=[],status=null;const key=opts&&opts.config&
   presenceState(){const s={};if(window.__track)s[key]=[window.__track];for(const k in window.__remote)s[k]=[window.__remote[k]];return s;},
   _sync(){pres.forEach(f=>f());}};return c;}
 window.supabase={createClient(){return{
- functions:{invoke:async(name,o)=>{(window.__ai=window.__ai||[]).push(o&&o.body);if(window.__aiReply)return{data:window.__aiReply(o.body),error:null};return{data:null,error:{message:'no function'}};}},auth:{getSession:async()=>({data:{session:window.__session||null}}),onAuthStateChange(){return{data:{subscription:{unsubscribe(){}}}};},
+ functions:{invoke:async(name,o)=>{(window.__ai=window.__ai||[]).push(o&&o.body);if(window.__aiReply)return{data:window.__aiReply(o.body),error:null};return{data:null,error:{message:'no function'}};}},auth:{getSession:async()=>({data:{session:window.__session||null}}),onAuthStateChange(cb){window.__authCb=cb;return{data:{subscription:{unsubscribe(){}}}};},
+   signInWithOAuth:async(o)=>{window.__oauth=o;return{data:{url:'https://accounts.example/'+o.provider+'?to='+encodeURIComponent(o.options.redirectTo)},error:null};},
+   refreshSession:async(o)=>{window.__refresh=o;const se={user:{id:'uid-oauth',email:'o@x'},refresh_token:'rt2'};window.__session=se;setTimeout(()=>window.__authCb&&window.__authCb('SIGNED_IN',se),0);return{data:{session:se},error:null};},
+   stopAutoRefresh(){window.__stopped=true;},
    signInWithOtp:async(o)=>{window.__otp=o;const known=(window.__known||[]).includes(o.email);if(!known&&!(o.options&&o.options.shouldCreateUser))return{error:{message:'Signups not allowed for otp',code:'otp_disabled'}};return{error:null};},verifyOtp:async(o)=>{(window.__vo=window.__vo||[]).push(o);if(o.token===(window.__code||'12345678')&&o.type==='email'){const se={user:{id:'uid-code',email:o.email}};window.__session=se;return{data:{session:se},error:null};}return{data:{},error:{message:'Token has expired or is invalid'}};},signOut:async()=>{}},
- from:q, rpc:async(n)=>n==="admin_users"?(window.__users?{data:window.__users,error:null}:{data:null,error:{message:"no fn"}}):({data:n==="garden_count"?(window.__gc??1240):null,error:null}), channel, removeChannel(){} };}};
+ from:q, rpc:async(n,a)=>window.__rpc&&window.__rpc[n]?window.__rpc[n](a):n==="admin_users"?(window.__users?{data:window.__users,error:null}:{data:null,error:{message:"no fn"}}):({data:n==="garden_count"?(window.__gc??1240):null,error:null}), channel, removeChannel(){} };}};
 })();

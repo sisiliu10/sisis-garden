@@ -5,7 +5,8 @@
   const $ = id => document.getElementById(id);
   const gate = $('gate'), gMsg = $('gMsg'), gForm = $('gForm'), gEmail = $('gEmail'), gBtn = $('gBtn');
   let counted = false; const sbRef = () => window.__gardenSb;
-  const showGate = (msg, form) => { gate.hidden = false; gMsg.textContent = msg || ''; gForm.hidden = !form; const gc = $('gCode'); if (gc) gc.hidden = true; if (form) showCount(); };
+  const showGate = (msg, form) => { gate.hidden = false; gMsg.textContent = msg || ''; gForm.hidden = !form; const gc = $('gCode'); if (gc) gc.hidden = true; const ga = $('gAlt'); if (ga) ga.hidden = !form || !altOn; if (form) showCount(); };
+  let altOn = false; // true once Google or Apple sign-in is switched on in Supabase
   // "Join 12 gardeners …" on the sign-up screen, with the real number of gardens
   async function showCount() {
     if (counted || !sbRef()) return; counted = true;
@@ -367,10 +368,66 @@
     clearPending();
     if (data && data.session) { sbUserEmail = data.session.user.email || ''; launch(data.session); }
   });
-  sb.auth.onAuthStateChange((ev, session) => { if (session) { sbUserEmail = session.user.email || ''; launch(session); } });
+  /* ---------- Google / Apple sign-in ----------
+     In a normal browser tab this is a plain redirect. An iPhone home-screen app is different: the sign-in page opens in
+     Safari and lands back in Safari, which has its own storage. So the app leaves a one-time ticket in the URL; the Safari
+     page parks the new login under that ticket (public.put_handoff) and the app picks it up when you come back (take_handoff). */
+  const HKEY = 'garden-handoff', handoffIn = new URLSearchParams(location.search).get('handoff') || '';
+  const standalone = () => navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+  const getTicket = () => { try { const p = JSON.parse(localStorage.getItem(HKEY) || 'null'); return p && p.h && Date.now() - p.t < 600000 ? p.h : ''; } catch (e) { return ''; } };
+  const dropTicket = () => { try { localStorage.removeItem(HKEY); } catch (e) {} };
+  fetch(CFG.url + '/auth/v1/settings', { headers: { apikey: CFG.key } }).then(r => r.ok ? r.json() : null).then(s => {
+    const ex = (s && s.external) || {};
+    $('gGoogle').hidden = !ex.google; $('gApple').hidden = !ex.apple; altOn = !!(ex.google || ex.apple);
+    if (altOn && !gForm.hidden) $('gAlt').hidden = false;
+  }).catch(() => {});
+  async function oauth(provider) {
+    const app = standalone(); let redirectTo = location.origin + location.pathname;
+    if (app) {
+      const a = new Uint8Array(24); crypto.getRandomValues(a); const h = Array.from(a, b => b.toString(16).padStart(2, '0')).join('');
+      try { localStorage.setItem(HKEY, JSON.stringify({ h, t: Date.now() })); } catch (e) {}
+      redirectTo += '?handoff=' + h;
+    }
+    const { data, error } = await sb.auth.signInWithOAuth({ provider, options: { redirectTo, skipBrowserRedirect: true } });
+    if (error || !data || !data.url) { console.warn('[garden] oauth', error); gMsg.textContent = 'That did not work. Please try again.'; return; }
+    if (!app) { location.href = data.url; return; }
+    gMsg.textContent = 'Sign in in the window that just opened. Then come back here.';
+    if (!window.open(data.url, '_blank')) location.href = data.url;
+    watchTicket();
+  }
+  $('gGoogle').addEventListener('click', () => oauth('google'));
+  $('gApple').addEventListener('click', () => oauth('apple'));
+  let watching = 0;
+  async function pickUp() {
+    const h = getTicket(); if (!h || launched) { clearInterval(watching); watching = 0; return; }
+    try {
+      const { data: rt } = await sb.rpc('take_handoff', { h });
+      if (typeof rt === 'string' && rt) { dropTicket(); clearInterval(watching); watching = 0; const { error } = await sb.auth.refreshSession({ refresh_token: rt }); if (error) showGate('That sign-in did not come through. Please try again.', true); }
+    } catch (e) {}
+  }
+  function watchTicket() { if (!watching) watching = setInterval(pickUp, 2000); }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && getTicket()) pickUp(); });
+  // the Safari side of the hand-over: park the login for the app, then forget it here (no sign-out call, that would end it for the app too)
+  let handedOver = false;
+  async function handOver(session) {
+    if (handedOver) return; handedOver = true;
+    try { history.replaceState(null, '', location.pathname); } catch (e) {}
+    const { error } = await sb.rpc('put_handoff', { h: handoffIn, rt: session.refresh_token });
+    sb.auth.stopAutoRefresh();
+    try { Object.keys(localStorage).filter(k => /^sb-.*-auth-token$/.test(k)).forEach(k => localStorage.removeItem(k)); } catch (e) {}
+    showGate(error ? 'Hmm, that did not work. Open the app and try again.' : "You're signed in. Go back to Sisi's Garden on your home screen.", false);
+  }
+  // signed in through a ticket: hand it over, unless this already is the app that made the ticket
+  const ownTicket = !!handoffIn && standalone() && getTicket() === handoffIn;
+  const forApp = session => !!handoffIn && !!session && !ownTicket;
+  if (ownTicket) { dropTicket(); try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) {} }
+
+  sb.auth.onAuthStateChange((ev, session) => { if (forApp(session)) { handOver(session); return; } if (session) { sbUserEmail = session.user.email || ''; launch(session); } });
   sb.auth.getSession().then(({ data }) => {
     const s = data && data.session;
-    if (s) { clearPending(); sbUserEmail = s.user.email || ''; launch(s); }
+    if (s && forApp(s)) handOver(s);
+    else if (s) { clearPending(); sbUserEmail = s.user.email || ''; launch(s); }
+    else if (getTicket()) { showGate('Sign in in the window that opened. Then come back here.', true); watchTicket(); pickUp(); }
     else if (!/access_token|error_description/.test(location.hash)) { const pe = getPending(); if (pe) askCode(pe); else showGate('Sign in with your email.', true); }
     else if (/error_description/.test(location.hash)) showGate('That login link has expired. Ask for a new one.', true);
   });
