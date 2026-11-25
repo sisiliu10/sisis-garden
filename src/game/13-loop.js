@@ -13,14 +13,13 @@ function drawBubbles(){
   const toS=(x,y)=>sc==='island'?[(IX+x)*S,(IY+y)*S]:sc==='house'?[(RX+x)*S,(RY+y)*S]:[(OX+x)*S,(OY+y-camR)*S];
   if(mySay&&mySay.until>now) items.push({id:'me',x:av.x,y:av.y,t:mySay.t});
   else if(document.activeElement===chatIn&&chatIn.value.trim()&&now-typingAt<5000) items.push({id:'me~ty',x:av.x,y:av.y,ty:true});
-  if(sc==='garden'&&duckHere()&&now-duckQuackAt<1100)items.push({id:'duck',x:DUCK.x,y:DUCK.y,dy:24,t:'QUAK!'});
   livePeers().forEach(p=>{if(p.scene!==sc)return;if(p.say)items.push({id:p.id,x:p.x,y:p.y,t:p.say});else if(p.typing)items.push({id:p.id+'~ty',x:p.x,y:p.y,ty:true});});
   const keep=new Set();
   items.forEach(it=>{keep.add(it.id);let el=bubBox.querySelector(`[data-b="${it.id}"]`);
     if(!el){el=document.createElement('div');el.className=it.ty?'bub bty':'bub';el.dataset.b=it.id;if(it.ty){el.innerHTML=PENCIL+'<i></i><i></i><i></i>';el.setAttribute('aria-label','is typing');}bubBox.appendChild(el);}
     if(!it.ty&&el.textContent!==it.t){el.textContent=it.t;el._w=0;}
     if(!el._w)el._w=el.offsetWidth/2+6;
-    const [x,y]=toS(it.x,it.y-(it.dy||(it.id==='me'?30:36)));el.style.left=clamp(x,el._w,Math.max(el._w,innerWidth-el._w))+'px';el.style.top=y+'px';});
+    const [x,y]=toS(it.x,it.y-(it.id==='me'?30:36));el.style.left=clamp(x,el._w,Math.max(el._w,innerWidth-el._w))+'px';el.style.top=y+'px';});
   [...bubBox.children].forEach(el=>{if(!keep.has(el.dataset.b))el.remove();});
 }
 function frame(now){

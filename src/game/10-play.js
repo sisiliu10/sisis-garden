@@ -310,7 +310,7 @@ document.getElementById('lnClose').addEventListener('click',closeLine);
 lineM.addEventListener('pointerdown',e=>{if(e.target===lineM)closeLine();});
 
 
-/* ================= duck: lives by the pool in Sisi's garden, quacks when tapped ================= */
+/* ================= duck: lives by the pool in Sisi's garden, quacks when tapped (just the sound and its beak) ================= */
 const DUCK={x:138,y:322};
 const DUCK_PAL={w:'#fff5f4',p:'#fab4b4',P:'#d48581',g:'#517746',G:'#6a925d',l:'#98bd7a',b:'#bd6027',r:'#cf3336',m:'#812d2d',R:'#f34b62',o:'#fd9800',y:'#ffb84c',e:'#491718',h:'#ff96a0'};
 const DUCK_ROWS=['........mmmmm....','.......mRhRRrm...','......mRRRrrrrm..','......mRRrrrrrm..','......mlGgGrlGgm.','......gGPwwwwPGg.','...PP.lPwwwwwwPg.','..PppPgPwwewwwwP.',
@@ -325,7 +325,7 @@ function duckHere(){return visiting?(visiting.id===OWNER_ID||!!(visiting.data&&v
 function onDuck(x,y){return duckHere()&&Math.abs(x-DUCK.x)<11&&y>DUCK.y-22&&y<DUCK.y+3;}
 function quack(){duckQuackAt=performance.now();Sfx.quack();}
 function drawDuck(){
-  const k=(performance.now()-duckQuackAt)/1000, open=k<.32, hop=k<.3?Math.round(Math.sin(k/.3*Math.PI)*2):0;
+  const open=performance.now()-duckQuackAt<320;
   ell(DUCK.x,DUCK.y,8,2,'rgba(40,80,40,.28)');
-  g.drawImage(duckImg[open?1:0],DUCK.x-8,DUCK.y-19-hop);
+  g.drawImage(duckImg[open?1:0],DUCK.x-8,DUCK.y-19);
 }
