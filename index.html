@@ -2355,6 +2355,7 @@ function canPlace(p,x,y){
   if(y<165||y>340||x<-OX+12||x>CW+OX-12) return false;
   if(Math.hypot((x-FOUNT.x)/34,(y-FOUNT.y)/16)<1) return false;
   if(x>POOL.x0-26&&x<BOARD.x1+6&&y>POOL.y0-10&&y<POOL.y1+10) return false;
+  if(duckHere()&&Math.abs(x-DUCK.x)<20&&y>DUCK.y-12&&y<DUCK.y+14) return false;
   if(x>36&&x<96&&y<175) return false;
   return !projects().some(q=>q!==p&&Math.hypot(posOf(q)[0]-x,(posOf(q)[1]-y)*1.4)<26);
 }
@@ -3566,23 +3567,22 @@ lineM.addEventListener('pointerdown',e=>{if(e.target===lineM)closeLine();});
 
 
 /* ================= duck: lives by the pool in Sisi's garden, quacks when tapped (just the sound and its beak) ================= */
-const DUCK={x:138,y:322};
+const DUCK={x:129,y:322};
 const DUCK_PAL={w:'#fff5f4',p:'#fab4b4',P:'#d48581',g:'#517746',G:'#6a925d',l:'#98bd7a',b:'#bd6027',r:'#cf3336',m:'#812d2d',R:'#f34b62',o:'#fd9800',y:'#ffb84c',e:'#491718',h:'#ff96a0'};
-const DUCK_ROWS=['........mmmmm....','.......mRhRRrm...','......mRRRrrrrm..','......mRRrrrrrm..','......mlGgGrlGgm.','......gGPwwwwPGg.','...PP.lPwwwwwwPg.','..PppPgPwwewwwwP.',
-  '.PwwwpgPwwwwbbbb.','.PwwwwglPwwboyyyb','PwwwwwgGgwwbbbbb.','PwPpwwwgGGgggggg.','PwpPpwwwgGgGlgg..','PwwPpwPwwgpgpP...','PwwwPPwwwwwwppP..','.PwwwwwwwwwwwpP..','..PpwwwwwwwwpP...','...PPppppppPP....','....boo..boo.....','....bbb..bbb.....'];
-// beak open: the same duck with rows 9 to 12 swapped
-const DUCK_OPEN={9:'.PwwwwglPwwbyyyyb',10:'PwwwwwgGgwwemmm..',11:'PwPpwwwgGGgbooob.',12:'PwpPpwwwgGgGbbb..'};
-function duckSprite(open){const c=document.createElement('canvas');c.width=17;c.height=20;const x=c.getContext('2d');
+const DUCK_ROWS=['..............mmmmm.....','............mmRhRRmmm...','...........mRRhRRrrrrm..','...........mRRRrrrrrrrm.','...........mRRrrlGrrlGrm','..........mRRGglGGgGlGgm','..........mRGgPwwwwwPGgm','..........mRGPwwwwwwwPlG','....PPP...lGGPwwwwwwwwPg','...PpppPP.lGPwwwwwwwwwpP','..PpwwpppPPgPwwwewwwwwpP','..PwwwwwpGggPwwwmwbbbbbP','..PwwwwwwglgPwwwbooyyyyb','.PpwwwwwglGGgwwwwbbbbbb.','.PwwwwwwwgGglgPwwwppgP..','PpwwPPwwwwwgGGgwwwpgggGg','PpwPppPPwwwgGlGgggGgllgg','PwwPpwPPwwPpggGglGggGg..','PwwwPpwPpwwPwppglGgpgg..','.PwwPPPwwwwwwwppggpppP..','.PpwwPwwwwwPwwwwwwwppP..','..PwwwPPPPPwwwwwwwwwpP..','...PwwwwwwwwwwwwwwwpP...','....PpwwwwwwwwwwwwwpP...','.....PpwwwwwwwwwwwpP....','......PPppppppppPP......','......boob....boob......','.....byoob...byoob......','.....bbbbb...bbbbb......'];
+// beak open: the same duck with rows 12 to 14 swapped
+const DUCK_OPEN={12:'..PwwwwwwglgPwwwbyyyyyb.',13:'.PpwwwwwglGGgwwwwemmmm..',14:'.PwwwwwwwgGglgPwwbooob..'};
+function duckSprite(open){const c=document.createElement('canvas');c.width=24;c.height=29;const x=c.getContext('2d');
   DUCK_ROWS.forEach((r,j)=>{r=open&&DUCK_OPEN[j]||r;for(let i=0;i<r.length;i++)if(DUCK_PAL[r[i]]){x.fillStyle=DUCK_PAL[r[i]];x.fillRect(i,j,1,1);}});return c;}
 const duckImg=[duckSprite(false),duckSprite(true)];
 let duckQuackAt=-9e9;
 function duckHere(){return visiting?(visiting.id===OWNER_ID||!!(visiting.data&&visiting.data.owner)):(isOwner||myId===OWNER_ID);}
-function onDuck(x,y){return duckHere()&&Math.abs(x-DUCK.x)<11&&y>DUCK.y-22&&y<DUCK.y+3;}
+function onDuck(x,y){return duckHere()&&Math.abs(x-DUCK.x)<13&&y>DUCK.y-28&&y<DUCK.y+3;}
 function quack(){duckQuackAt=performance.now();Sfx.quack();}
 function drawDuck(){
   const open=performance.now()-duckQuackAt<320;
-  ell(DUCK.x,DUCK.y,8,2,'rgba(40,80,40,.28)');
-  g.drawImage(duckImg[open?1:0],DUCK.x-8,DUCK.y-19);
+  ell(DUCK.x,DUCK.y,10,2,'rgba(40,80,40,.28)');
+  g.drawImage(duckImg[open?1:0],DUCK.x-12,DUCK.y-27);
 }
 /* ================= sound effects (generated live, no samples) ================= */
 const Sfx=(()=>{
@@ -4118,7 +4118,7 @@ function maybeAutoVisit(){
 #gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;outline:none;border-radius:0;-webkit-appearance:none;appearance:none;box-shadow:none;-webkit-tap-highlight-color:transparent}#gEmail:focus,#gTok:focus{outline:none;background:#fff8e6}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
 #gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795614289"></script>
+<script src="config.js?v=1795614385"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -4148,7 +4148,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '25.11. 14:44';
+  const BUILD = '25.11. 14:46';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -4408,7 +4408,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 25.11. 14:44';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 25.11. 14:46';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid', 'garden-pending').forEach(k => localStorage.removeItem(k)); } catch (e) {}
