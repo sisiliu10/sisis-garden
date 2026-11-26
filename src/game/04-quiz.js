@@ -435,8 +435,9 @@ function qRender(force){
 let qOwn=false,qTalk=0,qStageArgs=null,qConfAt=0,qConfId='';
 const Q_CONF=['#f2c94c','#e8506c','#4fb3e8','#7cf08a','#ffffff','#c98aff','#ff9a3c'];
 const qDuckX=document.getElementById('qDuck').getContext('2d'),qBuntX=document.getElementById('qBunt').getContext('2d');
-// bunting along the top
-(()=>{const X=qBuntX,C=['#e8506c','#f2c94c','#4f9a94','#7aa8e0'];X.fillStyle='#8a7f72';X.fillRect(0,1,180,1);for(let i=0;i<18;i++){X.fillStyle=C[i%4];for(let r=0;r<6;r++)X.fillRect(i*10+2+(r/2|0),2+r,7-r,1);}})();
+// bunting along the top (also used by Vier gewinnt)
+function drawBunting(X){const C=['#e8506c','#f2c94c','#4f9a94','#7aa8e0'];X.fillStyle='#8a7f72';X.fillRect(0,1,180,1);for(let i=0;i<18;i++){X.fillStyle=C[i%4];for(let r=0;r<6;r++)X.fillRect(i*10+2+(r/2|0),2+r,7-r,1);}}
+drawBunting(qBuntX);
 let qDuckK='';
 function qDrawDuck(){const now=performance.now(),open=now<qTalk&&Math.floor(now/110)%2===0,bob=now<qTalk?0:Math.floor(now/600)%2,k=(open?1:0)+':'+bob;
   if(k===qDuckK)return;qDuckK=k;qDuckX.clearRect(0,0,24,29);try{qDuckX.drawImage(duckImg['1'][open?1:0],0,bob);}catch(e){}}

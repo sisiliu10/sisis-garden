@@ -234,26 +234,8 @@
   @media (min-width:640px){#askM .askp{width:min(560px,100%)}.gcards{grid-template-columns:repeat(3,minmax(0,1fr))}.mcard.g-quiz{grid-column:span 2}}
   @media (prefers-reduced-motion:reduce){.mcard.live::after{animation:none}}
   .gclose{display:block;margin:12px auto 10px;background:none;border:0;font:inherit;font-size:15px;color:#6d6472;cursor:pointer;text-decoration:underline dotted 1px;text-underline-offset:3px}
-  .c4p{width:min(460px,100%);max-height:100%;overflow:auto;background:linear-gradient(#1f3a7a,#142456);border:4px solid var(--ink);box-shadow:6px 6px 0 rgba(0,0,0,.35);padding:14px;color:#fff}
-  .c4logo{font-family:Silkscreen,monospace;font-size:20px;letter-spacing:1px;color:#ffd0dc;text-shadow:0 2px 0 #e8506c}
-  .c4logo span{color:#f2c94c;text-shadow:0 2px 0 #b5552a;margin-left:6px}
-  .c4who{display:flex;justify-content:space-between;gap:10px;margin-top:12px;font-size:15px}
-  .c4who b{display:inline-block;width:12px;height:12px;border:2px solid var(--ink);vertical-align:-1px;margin-right:6px}
-  .c4who .on{color:#fff;font-weight:700}.c4who .off{color:#9fb0dd}
-  .c4st{margin-top:8px;min-height:24px;text-align:center;font-size:17px;font-weight:600}
-  .c4b{margin:10px auto 0;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:minmax(0,1fr);gap:0;background:#3f6fe0;border:4px solid var(--ink);padding:5px;box-sizing:content-box;aspect-ratio:7/6;width:calc(min(100%,420px,calc((100vh - 178px)*7/6)) - 18px);width:calc(min(100%,420px,calc((100dvh - 178px)*7/6)) - 18px);min-width:calc(min(100%,238px) - 18px);touch-action:manipulation}
-  .c4col{display:grid;grid-template-rows:repeat(6,minmax(0,1fr));min-width:0;min-height:0;cursor:pointer}
-  .c4col.no{cursor:default}
-  .c4col:not(.no):hover{background:rgba(255,255,255,.12)}
-  .c4c{margin:2px;min-height:0;border-radius:50%;background:#142456;box-shadow:inset 0 3px 0 rgba(0,0,0,.35);position:relative}
-  .c4c.p1{background:#e8506c;box-shadow:inset 0 -3px 0 rgba(0,0,0,.25)}
-  .c4c.p2{background:#f2c94c;box-shadow:inset 0 -3px 0 rgba(0,0,0,.2)}
-  .c4c.win{outline:3px solid #fff;outline-offset:-1px}
   .c4c.drop{animation:c4drop .32s cubic-bezier(.4,0,1,1)}
   @keyframes c4drop{from{transform:translateY(calc(var(--r)*-112%))}to{transform:none}}
-  .c4row{display:flex;justify-content:center;gap:18px;margin-top:12px;min-height:22px}
-  .c4row button{background:none;border:0;font:inherit;font-size:16px;color:#ffd0dc;cursor:pointer;text-decoration:underline dotted 1px;text-underline-offset:3px}
-  .c4row button:hover{color:#fff}
   @media (max-width:360px){.c4p{padding:10px 8px}.c4c{margin:1.5px}.qpanel{padding:10px 8px}.qopts{gap:6px;grid-template-columns:1fr}.qopt{font-size:16px;padding:8px 6px;min-height:42px}}
   @media (max-height:500px){.c4p,.qpanel{padding:6px 12px}.c4p .qtop .btn{padding:2px 8px}.c4logo{font-size:16px}.c4who{margin-top:2px;font-size:13px}.c4b{width:calc(min(100%,420px,calc((100vh - 128px)*7/6)) - 18px);width:calc(min(100%,420px,calc((100dvh - 128px)*7/6)) - 18px)}.c4st{margin-top:2px;min-height:20px;font-size:15px}.c4b{margin-top:4px}.c4row{margin-top:4px}
     .qboard{padding:8px 10px;min-height:0;font-size:16px;margin-top:6px}.qopt{min-height:40px;padding:6px}.qstagewrap{margin-top:6px}#qStage{max-height:22vh;width:auto;margin:0 auto}}
@@ -276,6 +258,41 @@
   .qbar.low i{background:#e8506c}
   #qConf{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:30;image-rendering:pixelated}
   #qConf[hidden]{display:none}
+  /* Vier gewinnt: cosy like the quiz. Cream paper, bunting, a blue board with cream holes, the leaderboard underneath */
+  .c4p{width:min(460px,100%);max-height:100%;overflow:auto;background:#fff6e0;border:4px solid var(--ink);box-shadow:6px 6px 0 rgba(0,0,0,.35);padding:0 18px 16px;color:var(--ink)}
+  .c4p .bunt{display:block;width:calc(100% + 36px);height:20px;margin:0 -18px;image-rendering:pixelated}
+  .c4p .qtop{margin-top:6px}.c4p #c4Close{background:#fff}
+  .c4logo{font-family:Silkscreen,monospace;font-size:16px;letter-spacing:2px;color:var(--ink)}
+  .c4logo span{color:#e8506c;margin-left:6px}
+  .c4who{display:flex;justify-content:space-between;gap:10px;margin-top:14px;font-size:15px;font-weight:600}
+  .c4who div{display:flex;align-items:center;gap:6px;padding:4px 8px;border:2px solid transparent}
+  .c4who b{display:inline-block;width:14px;height:14px;border:2px solid var(--ink)}
+  .c4who .on{border-color:var(--ink);background:#fff}.c4who .off{color:#8a7f72}
+  .c4st{margin-top:8px;min-height:24px;text-align:center;font-size:17px;font-weight:600}
+  .c4b{margin:10px auto 0;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:minmax(0,1fr);gap:0;background:#4f7fe0;border:4px solid var(--ink);box-shadow:inset 0 -5px 0 #3a62c0;padding:5px;box-sizing:content-box;aspect-ratio:7/6;width:calc(min(100%,420px,calc((100vh - 360px)*7/6)) - 18px);width:calc(min(100%,420px,calc((100dvh - 360px)*7/6)) - 18px);min-width:min(100% - 18px,250px)}
+  .c4col{display:grid;grid-template-rows:repeat(6,minmax(0,1fr));min-width:0;min-height:0;cursor:pointer}
+  .c4col.no{cursor:default}
+  .c4col:not(.no):hover{background:rgba(255,255,255,.18)}
+  .c4c{margin:2px;min-height:0;border-radius:50%;background:#fff6e0;box-shadow:inset 0 3px 0 rgba(42,36,48,.18);position:relative}
+  .c4c.p1{background:#e8506c;box-shadow:inset 0 -3px 0 rgba(0,0,0,.22)}
+  .c4c.p2{background:#f2c94c;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18)}
+  .c4c.win{outline:3px solid var(--ink);outline-offset:-1px}
+  .c4row{display:flex;flex-direction:column;align-items:stretch;gap:8px;margin-top:12px}
+  .c4row:empty{display:none}
+  .c4row button{background:none;border:2px dashed #b9ad95;font:inherit;font-size:15px;color:#8a7f72;cursor:pointer;padding:9px}
+  .c4row button:hover{border-color:var(--ink);color:var(--ink)}
+  .c4row button.go{font-family:Silkscreen,monospace;font-size:17px;letter-spacing:2px;color:#fff;background:#e8506c;border:3px solid var(--ink);box-shadow:inset 0 -5px 0 #b8335a;padding:12px}
+  .c4row button.go:hover{background:#f0607a;color:#fff}
+  .c4lbh{font-family:Silkscreen,monospace;font-size:12px;letter-spacing:2px;color:#8a7f72;text-align:center;margin-top:16px}
+  .c4lb{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:5px}
+  .c4lb li{display:flex;align-items:center;gap:9px;padding:5px 10px;background:#f1e6cf;border:2px solid #e6dcc8;font-size:15px;font-weight:600}
+  .c4lb li.top{background:#fbe8a6;border-color:#e6c46a}.c4lb li.me{border-color:var(--ink)}
+  .c4lb li.empty{justify-content:center;font-weight:400;color:#8a7f72;background:none;border-style:dashed}
+  .c4lb .rk{width:16px;text-align:center;font-family:Silkscreen,monospace;font-size:12px;color:#e8506c}
+  .c4lb canvas{width:30px;height:30px;border:2px solid var(--ink);image-rendering:pixelated;flex:0 0 auto}
+  .c4lb .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .c4lb b{font-family:Silkscreen,monospace;font-weight:400;font-size:12px}
+  @media (max-height:500px){.c4p{padding:0 14px 10px}.c4who{margin-top:4px}.c4b{width:calc(min(100%,420px,calc((100dvh - 150px)*7/6)) - 18px);min-width:0}}
   /* party games: one frame, a colour per game */
   .gpnl{width:min(560px,100%);max-height:100%;overflow:auto;border:4px solid var(--ink);box-shadow:6px 6px 0 rgba(0,0,0,.35);padding:14px;color:#fff;background:linear-gradient(var(--g1),var(--g2))}
   .gpnl.t-hang{--g1:#2f6a3a;--g2:#1c4526}.gpnl.t-slf{--g1:#9a5a14;--g2:#6a3a0c}.gpnl.t-draw{--g1:#23625f;--g2:#143f3d}
@@ -619,11 +636,14 @@
 
 <div class="modal" id="c4M">
   <div class="c4p" role="dialog" aria-label="Vier gewinnt">
-    <div class="qtop"><div class="c4logo">VIER<span>GEWINNT</span></div><div class="qinfo"></div><button class="btn" id="c4Close" type="button" aria-label="Close">×</button></div>
+    <canvas class="bunt" width="180" height="10" aria-hidden="true"></canvas>
+    <div class="qtop"><div class="c4logo">VIER<span>GEWINNT</span></div><div class="qinfo"></div><button class="btn" id="c4Close" type="button" aria-label="Schließen">×</button></div>
     <div class="c4who" id="c4Who"></div>
     <div class="c4st" id="c4St"></div>
     <div class="c4b" id="c4B"></div>
     <div class="c4row" id="c4Row"></div>
+    <div class="c4lbh">Bestenliste</div>
+    <ol class="c4lb" id="c4Lb"></ol>
   </div>
 </div>
 
@@ -2026,8 +2046,9 @@ function qRender(force){
 let qOwn=false,qTalk=0,qStageArgs=null,qConfAt=0,qConfId='';
 const Q_CONF=['#f2c94c','#e8506c','#4fb3e8','#7cf08a','#ffffff','#c98aff','#ff9a3c'];
 const qDuckX=document.getElementById('qDuck').getContext('2d'),qBuntX=document.getElementById('qBunt').getContext('2d');
-// bunting along the top
-(()=>{const X=qBuntX,C=['#e8506c','#f2c94c','#4f9a94','#7aa8e0'];X.fillStyle='#8a7f72';X.fillRect(0,1,180,1);for(let i=0;i<18;i++){X.fillStyle=C[i%4];for(let r=0;r<6;r++)X.fillRect(i*10+2+(r/2|0),2+r,7-r,1);}})();
+// bunting along the top (also used by Vier gewinnt)
+function drawBunting(X){const C=['#e8506c','#f2c94c','#4f9a94','#7aa8e0'];X.fillStyle='#8a7f72';X.fillRect(0,1,180,1);for(let i=0;i<18;i++){X.fillStyle=C[i%4];for(let r=0;r<6;r++)X.fillRect(i*10+2+(r/2|0),2+r,7-r,1);}}
+drawBunting(qBuntX);
 let qDuckK='';
 function qDrawDuck(){const now=performance.now(),open=now<qTalk&&Math.floor(now/110)%2===0,bob=now<qTalk?0:Math.floor(now/600)%2,k=(open?1:0)+':'+bob;
   if(k===qDuckK)return;qDuckK=k;qDuckX.clearRect(0,0,24,29);try{qDuckX.drawImage(duckImg['1'][open?1:0],0,bob);}catch(e){}}
@@ -2073,6 +2094,7 @@ const askM=document.getElementById('askM');
    Alone? Play against the computer. */
 const c4M=document.getElementById('c4M'),c4JoinB=document.getElementById('c4Join');
 const C4W=7,C4H=6;
+drawBunting(document.querySelector('#c4M .bunt').getContext('2d'));
 let c4H=null, c4LastPub='', c4LastPubT=0, c4Seen={}, c4BotAt=0;
 function c4Rank(id,ph,key){const t=parseInt(String(id).slice(1),36)||0;return [ph==='wait'?1:0,t,String(key)];}
 function c4Leader(){
@@ -2139,11 +2161,28 @@ function c4Tick(){
     if(H.ph==='end'&&H.p2&&!H.bot){const p=ps.find(x=>x.peer===H.p2[0]);const r=p&&p.presence.c4r;if(r&&r.id===H.id&&r.n===H.rd+1)c4Reset();}
     if(room){const st=c4Pub(),k=JSON.stringify(st);if(k!==c4LastPub||now-c4LastPubT>3000){c4LastPub=k;c4LastPubT=now;room.presence({c4:st}).catch(()=>{});}}
   }
+  {const st=c4State(),role=c4MyRole(st);if(st&&st.ph==='end'&&st.p2&&!st.bot&&role){const key=st.id+'|'+st.rd;if(!c4Rec[key]){c4Rec[key]=1;c4Record(st.w===3?'d':st.w===role?'w':'l');}}}
   if(c4M.classList.contains('show'))renderC4();
   const L=c4Leader(),st=L.self?null:c4State();
   const showJ=!!(st&&st.ph==='wait'&&!st.p2&&!c4M.classList.contains('show')&&scene==='house');
   if(c4JoinB.hidden===showJ)c4JoinB.hidden=!showJ;
   if(showJ){const tx=`Vier gewinnt mit ${st.p1[1]}: mitspielen`;if(c4JoinB.textContent!==tx)c4JoinB.textContent=tx;}
+}
+/* the leaderboard: wins against friends only (games against the computer don't count), kept by every player in their own doc */
+let c4Mine=null,c4Board=null,c4Rec={};
+async function c4LoadBoard(){const f=window.__c4;if(!f)return;const L=await f.load();if(!L)return;c4Board=L;const m=L.find(x=>x.me);c4Mine=m?{w:m.w,l:m.l,d:m.d}:(c4Mine||{w:0,l:0,d:0});renderC4Board();}
+async function c4Record(r){const f=window.__c4;if(!f)return;if(!c4Mine)await c4LoadBoard();c4Mine=c4Mine||{w:0,l:0,d:0};c4Mine[r]++;
+  await f.save({w:c4Mine.w,l:c4Mine.l,d:c4Mine.d,n:(me().name||'').slice(0,14),look:me().look});c4LoadBoard();}
+function c4Face(look){const c=document.createElement('canvas');c.width=18;c.height=18;const X=c.getContext('2d');X.fillStyle='#cfe3f7';X.fillRect(0,0,18,18);try{drawAvatar(X,9,31,cleanLook(look),{blink:false,t:0,shadow:false});}catch(e){}return c;}
+function renderC4Board(){
+  const L=document.getElementById('c4Lb');if(!L)return;
+  const rows=(c4Board||[]).filter(x=>x.w+x.l+x.d>0).sort((a,b)=>b.w-a.w||a.l-b.l).slice(0,8);
+  const k=rows.map(x=>(x.me?1:0)+x.n+x.w+'/'+x.l).join(',');if(L.dataset.k===k)return;L.dataset.k=k;L.innerHTML='';
+  if(!rows.length){const e=document.createElement('li');e.className='empty';e.textContent='Noch keine Siege. Spielt zu zweit, dann steht ihr hier.';L.appendChild(e);return;}
+  rows.forEach((x,i)=>{const li=document.createElement('li');if(i===0)li.className='top';if(x.me)li.classList.add('me');
+    const r=document.createElement('span');r.className='rk';r.textContent=i+1;li.appendChild(r);li.appendChild(c4Face(x.look));
+    const n=document.createElement('span');n.className='nm';n.textContent=x.me?'Du':(x.n||'Friend');li.appendChild(n);
+    const w=document.createElement('b');w.textContent=x.w+(x.w===1?' Sieg':' Siege');li.appendChild(w);L.appendChild(li);});
 }
 function c4Reset(first){const H=c4H;if(!H)return;H.b=Array(42).fill(0);H.ph=H.p2?'play':'wait';H.w=0;H.l=[];H.last=-1;H.mv=0;if(!first){H.rd++;H.start=H.start===1?2:1;}H.t=H.start;c4BotAt=0;c4Seen={};}
 function c4MyRole(st){if(!st)return 0;if(st.p1[0]===myPeer())return 1;if(st.p2&&st.p2[0]===myPeer())return 2;return 0;}
@@ -2158,7 +2197,7 @@ function openC4(){
   const L=c4Leader(),st=c4State();
   if(L.self&&!c4H)c4New();
   else if(st&&st.ph==='wait'&&!st.p2&&!L.self&&room)room.presence({c4j:{id:st.id}}).catch(()=>{});
-  c4M.classList.add('show');renderC4();
+  c4M.classList.add('show');renderC4();renderC4Board();c4LoadBoard();
 }
 function closeC4(){
   c4M.classList.remove('show');
@@ -2201,9 +2240,9 @@ function renderC4(){
   // actions
   const rK=[st.ph,isHost?1:0,role,st.bot?1:0,st.p2?1:0,st.rd].join('|');
   if(row.dataset.k!==rK){row.dataset.k=rK;row.innerHTML='';
-    const add=(t,f)=>{const b=document.createElement('button');b.type='button';b.textContent=t;b.onclick=f;row.appendChild(b);};
+    const add=(t,f,main)=>{const b=document.createElement('button');b.type='button';b.textContent=t;b.onclick=f;if(main)b.className='go';row.appendChild(b);};
     if(isHost&&st.ph==='wait')add('Gegen den Computer',()=>{c4H.p2=['bot','Computer'];c4H.bot=true;c4Reset(true);renderC4();});
-    if(st.ph==='end'&&role){if(isHost)add('Nochmal',()=>{c4Reset();renderC4();});else add('Nochmal',()=>{if(room)room.presence({c4r:{id:st.id,n:st.rd+1}}).catch(()=>{});});}
+    if(st.ph==='end'&&role){if(isHost)add('Nochmal',()=>{c4Reset();renderC4();},1);else add('Nochmal',()=>{if(room)room.presence({c4r:{id:st.id,n:st.rd+1}}).catch(()=>{});},1);}
   }
 }
 setInterval(c4Tick,200);
@@ -4682,7 +4721,7 @@ function maybeAutoVisit(){
 #gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gAlt{display:flex;flex-direction:column;gap:10px;margin-top:4px}#gAlt[hidden],.galt[hidden]{display:none}.gor{margin:6px 0 0;font-size:14px;opacity:.6}.galt{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;color:#2a2430;cursor:pointer}.galt:active{transform:translate(2px,2px)}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;outline:none;border-radius:0;-webkit-appearance:none;appearance:none;box-shadow:none;-webkit-tap-highlight-color:transparent}#gEmail:focus,#gTok:focus{outline:none;background:#fff8e6}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
 #gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795690107"></script>
+<script src="config.js?v=1795690514"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -4713,7 +4752,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '26.11. 11:48';
+  const BUILD = '26.11. 11:55';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -4922,6 +4961,20 @@ function maybeAutoVisit(){
     },
   };
 
+  /* ---------- Vier gewinnt: everyone keeps their own wins against friends, the board shows all of them ---------- */
+  window.__c4 = {
+    async load() {
+      const { data, error } = await sb.from('docs').select('path,data').like('path', 'gardens/%/x/c4');
+      if (error || !Array.isArray(data)) return null;
+      const n = v => (Number.isFinite(v) && v > 0 ? Math.min(99999, Math.floor(v)) : 0);
+      return data.map(r => { const d = r.data || {}; return { me: r.path === 'gardens/' + uid + '/x/c4', w: n(d.w), l: n(d.l), d: n(d.d), n: String(d.n || '').slice(0, 14), look: d.look && typeof d.look === 'object' ? d.look : null }; });
+    },
+    async save(o) {
+      if (!uid) return false;
+      try { await setDoc('gardens/' + uid + '/x/c4', { w: o.w, l: o.l, d: o.d, n: String(o.n || '').slice(0, 14), look: o.look || null }); return true; } catch (e) { return false; }
+    },
+  };
+
   /* ---------- AI quiz questions for an own topic (limits are enforced on the server) ---------- */
   window.__quiz = {
     // the server already tries several models, so one call is enough
@@ -4961,7 +5014,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 26.11. 11:48';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 26.11. 11:55';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid', 'garden-pending').forEach(k => localStorage.removeItem(k)); } catch (e) {}

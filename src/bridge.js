@@ -236,6 +236,20 @@
     },
   };
 
+  /* ---------- Vier gewinnt: everyone keeps their own wins against friends, the board shows all of them ---------- */
+  window.__c4 = {
+    async load() {
+      const { data, error } = await sb.from('docs').select('path,data').like('path', 'gardens/%/x/c4');
+      if (error || !Array.isArray(data)) return null;
+      const n = v => (Number.isFinite(v) && v > 0 ? Math.min(99999, Math.floor(v)) : 0);
+      return data.map(r => { const d = r.data || {}; return { me: r.path === 'gardens/' + uid + '/x/c4', w: n(d.w), l: n(d.l), d: n(d.d), n: String(d.n || '').slice(0, 14), look: d.look && typeof d.look === 'object' ? d.look : null }; });
+    },
+    async save(o) {
+      if (!uid) return false;
+      try { await setDoc('gardens/' + uid + '/x/c4', { w: o.w, l: o.l, d: o.d, n: String(o.n || '').slice(0, 14), look: o.look || null }); return true; } catch (e) { return false; }
+    },
+  };
+
   /* ---------- AI quiz questions for an own topic (limits are enforced on the server) ---------- */
   window.__quiz = {
     // the server already tries several models, so one call is enough

@@ -5,6 +5,7 @@ const askM=document.getElementById('askM');
    Alone? Play against the computer. */
 const c4M=document.getElementById('c4M'),c4JoinB=document.getElementById('c4Join');
 const C4W=7,C4H=6;
+drawBunting(document.querySelector('#c4M .bunt').getContext('2d'));
 let c4H=null, c4LastPub='', c4LastPubT=0, c4Seen={}, c4BotAt=0;
 function c4Rank(id,ph,key){const t=parseInt(String(id).slice(1),36)||0;return [ph==='wait'?1:0,t,String(key)];}
 function c4Leader(){
@@ -71,11 +72,28 @@ function c4Tick(){
     if(H.ph==='end'&&H.p2&&!H.bot){const p=ps.find(x=>x.peer===H.p2[0]);const r=p&&p.presence.c4r;if(r&&r.id===H.id&&r.n===H.rd+1)c4Reset();}
     if(room){const st=c4Pub(),k=JSON.stringify(st);if(k!==c4LastPub||now-c4LastPubT>3000){c4LastPub=k;c4LastPubT=now;room.presence({c4:st}).catch(()=>{});}}
   }
+  {const st=c4State(),role=c4MyRole(st);if(st&&st.ph==='end'&&st.p2&&!st.bot&&role){const key=st.id+'|'+st.rd;if(!c4Rec[key]){c4Rec[key]=1;c4Record(st.w===3?'d':st.w===role?'w':'l');}}}
   if(c4M.classList.contains('show'))renderC4();
   const L=c4Leader(),st=L.self?null:c4State();
   const showJ=!!(st&&st.ph==='wait'&&!st.p2&&!c4M.classList.contains('show')&&scene==='house');
   if(c4JoinB.hidden===showJ)c4JoinB.hidden=!showJ;
   if(showJ){const tx=`Vier gewinnt mit ${st.p1[1]}: mitspielen`;if(c4JoinB.textContent!==tx)c4JoinB.textContent=tx;}
+}
+/* the leaderboard: wins against friends only (games against the computer don't count), kept by every player in their own doc */
+let c4Mine=null,c4Board=null,c4Rec={};
+async function c4LoadBoard(){const f=window.__c4;if(!f)return;const L=await f.load();if(!L)return;c4Board=L;const m=L.find(x=>x.me);c4Mine=m?{w:m.w,l:m.l,d:m.d}:(c4Mine||{w:0,l:0,d:0});renderC4Board();}
+async function c4Record(r){const f=window.__c4;if(!f)return;if(!c4Mine)await c4LoadBoard();c4Mine=c4Mine||{w:0,l:0,d:0};c4Mine[r]++;
+  await f.save({w:c4Mine.w,l:c4Mine.l,d:c4Mine.d,n:(me().name||'').slice(0,14),look:me().look});c4LoadBoard();}
+function c4Face(look){const c=document.createElement('canvas');c.width=18;c.height=18;const X=c.getContext('2d');X.fillStyle='#cfe3f7';X.fillRect(0,0,18,18);try{drawAvatar(X,9,31,cleanLook(look),{blink:false,t:0,shadow:false});}catch(e){}return c;}
+function renderC4Board(){
+  const L=document.getElementById('c4Lb');if(!L)return;
+  const rows=(c4Board||[]).filter(x=>x.w+x.l+x.d>0).sort((a,b)=>b.w-a.w||a.l-b.l).slice(0,8);
+  const k=rows.map(x=>(x.me?1:0)+x.n+x.w+'/'+x.l).join(',');if(L.dataset.k===k)return;L.dataset.k=k;L.innerHTML='';
+  if(!rows.length){const e=document.createElement('li');e.className='empty';e.textContent='Noch keine Siege. Spielt zu zweit, dann steht ihr hier.';L.appendChild(e);return;}
+  rows.forEach((x,i)=>{const li=document.createElement('li');if(i===0)li.className='top';if(x.me)li.classList.add('me');
+    const r=document.createElement('span');r.className='rk';r.textContent=i+1;li.appendChild(r);li.appendChild(c4Face(x.look));
+    const n=document.createElement('span');n.className='nm';n.textContent=x.me?'Du':(x.n||'Friend');li.appendChild(n);
+    const w=document.createElement('b');w.textContent=x.w+(x.w===1?' Sieg':' Siege');li.appendChild(w);L.appendChild(li);});
 }
 function c4Reset(first){const H=c4H;if(!H)return;H.b=Array(42).fill(0);H.ph=H.p2?'play':'wait';H.w=0;H.l=[];H.last=-1;H.mv=0;if(!first){H.rd++;H.start=H.start===1?2:1;}H.t=H.start;c4BotAt=0;c4Seen={};}
 function c4MyRole(st){if(!st)return 0;if(st.p1[0]===myPeer())return 1;if(st.p2&&st.p2[0]===myPeer())return 2;return 0;}
@@ -90,7 +108,7 @@ function openC4(){
   const L=c4Leader(),st=c4State();
   if(L.self&&!c4H)c4New();
   else if(st&&st.ph==='wait'&&!st.p2&&!L.self&&room)room.presence({c4j:{id:st.id}}).catch(()=>{});
-  c4M.classList.add('show');renderC4();
+  c4M.classList.add('show');renderC4();renderC4Board();c4LoadBoard();
 }
 function closeC4(){
   c4M.classList.remove('show');
@@ -133,9 +151,9 @@ function renderC4(){
   // actions
   const rK=[st.ph,isHost?1:0,role,st.bot?1:0,st.p2?1:0,st.rd].join('|');
   if(row.dataset.k!==rK){row.dataset.k=rK;row.innerHTML='';
-    const add=(t,f)=>{const b=document.createElement('button');b.type='button';b.textContent=t;b.onclick=f;row.appendChild(b);};
+    const add=(t,f,main)=>{const b=document.createElement('button');b.type='button';b.textContent=t;b.onclick=f;if(main)b.className='go';row.appendChild(b);};
     if(isHost&&st.ph==='wait')add('Gegen den Computer',()=>{c4H.p2=['bot','Computer'];c4H.bot=true;c4Reset(true);renderC4();});
-    if(st.ph==='end'&&role){if(isHost)add('Nochmal',()=>{c4Reset();renderC4();});else add('Nochmal',()=>{if(room)room.presence({c4r:{id:st.id,n:st.rd+1}}).catch(()=>{});});}
+    if(st.ph==='end'&&role){if(isHost)add('Nochmal',()=>{c4Reset();renderC4();},1);else add('Nochmal',()=>{if(room)room.presence({c4r:{id:st.id,n:st.rd+1}}).catch(()=>{});},1);}
   }
 }
 setInterval(c4Tick,200);
