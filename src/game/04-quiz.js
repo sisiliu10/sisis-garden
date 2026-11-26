@@ -221,6 +221,24 @@ Wer malte „Das Mädchen mit dem Perlenohrring“?|Jan Vermeer|Rembrandt|Rubens
 Wie heißt die Kunstrichtung von Picasso mit eckigen Formen?|Kubismus|Impressionismus|Barock`],
 ];
 
+
+/* ---- each topic: a soft colour and a small hand-made pixel icon ---- */
+const QI={
+ geo:['..#####..','.##.#.##.','##..#..##','#########','##..#..##','#########','##..#..##','.##.#.##.','..#####..'],
+ his:['#########','.#.....#.','.##...##.','..##.##..','...#a#...','..#.a.#..','.#.aaa.#.','.#aaaaa#.','#########'],
+ nat:['......###','....#####','..######.','.#####.#.','.####.##.','.###.###.','.##.###..','.#.###...','#........'],
+ sci:['...###...','....#....','....#....','...#.#...','..#...#..','.#aaaaa#.','#aaaaaaa#','#aaaaaaa#','.#######.'],
+ food:['......#.#','.....#.#.','....#.#..','#########','#########','.#######.','..#####..','...###...'],
+ pop:['...######','...######','...#....#','...#....#','...#....#','.###..###','####.####','.##...##.'],
+ sport:['..#####..','.##.#.##.','#..###..#','#.#####.#','#########','#.#####.#','#..###..#','.##.#.##.','..#####..'],
+ tech:['#########','#.......#','#.aa....#','#.......#','#.......#','#########','...###...','.#######.'],
+ art:['..#####..','.#######.','##r##b###','#########','###..####','##a###...','.#####...','..##.....'],
+};
+const QCOL={geo:['#cfe3f7','#2f6fb0'],his:['#f7e0b8','#a0681e'],nat:['#d6efc6','#3f8a3a'],sci:['#e3dcf7','#6a4fc0'],food:['#f9d4cc','#c0503a'],pop:['#f8d3e3','#b03a72'],sport:['#cdeee6','#1f8a72'],tech:['#dde3ea','#4a5a6e'],art:['#fbedb4','#a88a10']};
+const qIconC={};
+function qIcon(k){if(qIconC[k])return qIconC[k];const rows=QI[k],c=document.createElement('canvas');c.width=10;c.height=10;const X=c.getContext('2d'),m=QCOL[k][1];
+  rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='.')return;X.fillStyle=ch==='#'?m:ch==='r'?'#e8506c':ch==='b'?'#4f7fe0':'#f2c94c';X.fillRect(x,y,1,1);}));
+  return qIconC[k]=c.toDataURL();}
 const QB={};Q_CATS.forEach(([k,,s])=>{if(s)QB[k]=s.trim().split('\n').map(l=>l.trim().split('|')).filter(x=>x.length===4&&x.every(Boolean));});
 const QCAT_NAME=Object.fromEntries(Q_CATS.map(c=>[c[0],c[1]]));
 const Q_N=8, Q_T=12000, Q_R=2800, Q_LEAD=3200, Q_GEN=30000;
@@ -367,7 +385,7 @@ function qRender(force){
   const now=Date.now(),g=qRound(),P=qPhase(g,now),players=qPlayers(g),upto=g&&g.ph==='play'?qUpto(g,P):-1;
   const board=document.getElementById('qBoard'),opts=document.getElementById('qOpts'),lobby=document.getElementById('qLobby'),info=document.getElementById('qInfo'),bar=document.getElementById('qBar');
   const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!==undefined)e.textContent=x;return e;};
-  const pop=(e,t)=>{if(e.textContent===t)return;e.textContent=t;e.classList.remove('pop');void e.offsetWidth;e.classList.add('pop');};
+  const pop=(e,t)=>{if(e.textContent===t)return;e.textContent=t;e.classList.remove('pop');void e.offsetWidth;e.classList.add('pop');qTalk=performance.now()+Math.min(1400,300+t.length*18);};
   const keyed=(e,k,build)=>{if(!force&&e.dataset.k===k)return;e.dataset.k=k;const old=e.querySelector('input'),v=old?old.value:'',f=!!old&&document.activeElement===old;e.innerHTML='';build(v,f);};
   const playing=P.ph==='count'||P.ph==='q'||P.ph==='rev';
   board.className='qboard'+(P.ph==='count'?' big':'')+(board.classList.contains('pop')?' pop':'');
@@ -403,7 +421,7 @@ function qRender(force){
       if(ended&&rank.length){const R=el('ol','qrank');rank.forEach((r,i)=>{const li=el('li',i===0&&!tie&&r.s>0?'win':'');li.appendChild(el('span','',(r.p.me?'Du':r.p.n)));li.appendChild(el('b','',String(r.s)));R.appendChild(li);});lobby.appendChild(R);}
       const again=ended&&g.ck?g.ck:'mix',go=el('button','qgo',ended?'Nochmal':'Los geht’s');go.type='button';go.onclick=()=>qStartCat(again);lobby.appendChild(go);
       const C=el('div','qchips');
-      Q_CATS.forEach(([k,n])=>{if(k==='mix')return;const b=el('button','',n);b.type='button';b.onclick=()=>qStartCat(k);C.appendChild(b);});
+      Q_CATS.forEach(([k,n])=>{if(k==='mix')return;const b=el('button','qt');b.type='button';b.style.setProperty('--bg',QCOL[k][0]);b.style.setProperty('--fg',QCOL[k][1]);const im=el('img');im.src=qIcon(k);im.alt='';b.appendChild(im);b.appendChild(el('span','',n));b.onclick=()=>qStartCat(k);C.appendChild(b);});
       const own=el('button','own',qOwn?'×':'Eigenes Thema …');own.type='button';own.onclick=()=>{qOwn=!qOwn;qRender(true);};C.appendChild(own);
       lobby.appendChild(C);
       if(qOwn){const row=el('div','row'),inp=el('input','inp');inp.maxLength=60;inp.autocomplete='off';inp.placeholder='Thema eintippen';inp.value=v;inp.setAttribute('aria-label','Eigenes Thema');
@@ -414,22 +432,28 @@ function qRender(force){
   }
   qStageArgs=[g,P,players,upto];
 }
-let qOwn=false,qStageArgs=null,qConfAt=0,qConfId='';
+let qOwn=false,qTalk=0,qStageArgs=null,qConfAt=0,qConfId='';
 const Q_CONF=['#f2c94c','#e8506c','#4fb3e8','#7cf08a','#ffffff','#c98aff','#ff9a3c'];
-(function qFrame(){requestAnimationFrame(qFrame);if(!qStageArgs||!quizM.classList.contains('show'))return;const [g,,players,upto]=qStageArgs;qDrawStage(g,qPhase(g,Date.now()),players,upto);qDrawConf();})();
+const qDuckX=document.getElementById('qDuck').getContext('2d'),qBuntX=document.getElementById('qBunt').getContext('2d');
+// bunting along the top
+(()=>{const X=qBuntX,C=['#e8506c','#f2c94c','#4f9a94','#7aa8e0'];X.fillStyle='#8a7f72';X.fillRect(0,1,180,1);for(let i=0;i<18;i++){X.fillStyle=C[i%4];for(let r=0;r<6;r++)X.fillRect(i*10+2+(r/2|0),2+r,7-r,1);}})();
+let qDuckK='';
+function qDrawDuck(){const now=performance.now(),open=now<qTalk&&Math.floor(now/110)%2===0,bob=now<qTalk?0:Math.floor(now/600)%2,k=(open?1:0)+':'+bob;
+  if(k===qDuckK)return;qDuckK=k;qDuckX.clearRect(0,0,24,29);try{qDuckX.drawImage(duckImg['1'][open?1:0],0,bob);}catch(e){}}
+(function qFrame(){requestAnimationFrame(qFrame);if(!qStageArgs||!quizM.classList.contains('show'))return;const [g,,players,upto]=qStageArgs;qDrawStage(g,qPhase(g,Date.now()),players,upto);qDrawDuck();qDrawConf();})();
 // the players: avatars on one line, a small mark over a head when they answered, the winner hops with a crown
 function qDrawStage(g,P,players,upto){
-  const W=160,H=36,X=qsx,t=performance.now(),play=g&&g.ph==='play',end=play&&P.ph==='end';
-  X.clearRect(0,0,W,H);X.fillStyle='#3a3266';for(let x=2;x<W;x+=4)X.fillRect(x,30,2,1);
+  const W=160,H=42,X=qsx,t=performance.now(),play=g&&g.ph==='play',end=play&&P.ph==='end';
+  X.clearRect(0,0,W,H);X.fillStyle='#c98a5a';X.fillRect(0,31,W,11);X.fillStyle='#e0a878';X.fillRect(0,31,W,2);X.fillStyle='#a86c40';for(let x=0;x<W;x+=16)X.fillRect(x,33,1,9);for(let x=8;x<W;x+=16)X.fillRect(x,37,1,5);
   const n=Math.max(1,players.length),sc=players.map(p=>play?qScore(g,p.a,upto):0),top=Math.max(0,...sc),tie=sc.filter(v=>v===top).length>1;
   const inQ=play&&(P.ph==='q'||P.ph==='rev'),revAt=P.ph==='rev'?P.T.R[P.i]:0;
   players.forEach((p,i)=>{
     const cx=Math.round((i+.5)*W/n),win=end&&top>0&&!tie&&sc[i]===top,x=inQ&&p.a[P.i],ok=x&&P.ph==='rev'?x[0]===g.qs[P.i][2]:null;
     const hop=win?Math.round(Math.abs(Math.sin(t/220))*4):ok?Math.round(Math.abs(Math.sin((Date.now()-revAt)/140))*3*Math.max(0,1-(Date.now()-revAt)/1500)):0;
-    if(!p.gone)drawAvatar(X,cx,29-hop,p.l,{blink:false,t:0});
-    if(win){const y=3-hop;X.fillStyle='#f2c94c';X.fillRect(cx-4,y+2,9,3);X.fillRect(cx-4,y,1,2);X.fillRect(cx,y-1,1,3);X.fillRect(cx+4,y,1,2);
+    if(!p.gone)drawAvatar(X,cx,32-hop,p.l,{blink:false,t:0});
+    if(win){const y=6-hop;X.fillStyle='#f2c94c';X.fillRect(cx-4,y+2,9,3);X.fillRect(cx-4,y,1,2);X.fillRect(cx,y-1,1,3);X.fillRect(cx+4,y,1,2);
       for(let k=0;k<16;k++){const yy=((t/1000*(12+k%4*4)+k*9)%30),xx=cx-12+((k*19)%25);X.fillStyle=Q_CONF[k%Q_CONF.length];X.fillRect(xx,yy,(k+Math.floor(t/150))%3?2:1,1);}}
-    else if(x){X.fillStyle=ok===null?'#fff6e0':ok?'#7cf08a':'#e8506c';X.fillRect(cx+5,5,3,3);}
+    else if(x){X.fillStyle='#2a2430';X.fillRect(cx+4,6,6,6);X.fillStyle=ok===null?'#fff6e0':ok?'#5cb85c':'#e8506c';X.fillRect(cx+5,7,4,4);}
   });
   const names=document.getElementById('qNames');
   const nk=players.map((p,i)=>p.peer+':'+p.n+':'+(p.me?1:0)+':'+(play?sc[i]:'')).join(',');

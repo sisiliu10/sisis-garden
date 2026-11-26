@@ -327,53 +327,61 @@
   .dfeed{display:flex;flex-direction:column;gap:3px;font-size:14px;min-height:20px}
   .dfeed div{background:rgba(0,0,0,.2);padding:3px 8px}.dfeed b{color:#ffe3b0}.dfeed .ok{color:#7cf08a}
   @media (max-width:440px){.sform,.svote{grid-template-columns:1fr}.hkey{height:40px;font-size:13px}.hword{gap:3px}.hword span{height:30px;font-size:14px;border-width:2px}}
-  /* quiz show: night blue, cream, one yellow; green and red only for right and wrong */
-  #quizM .qpanel{width:min(520px,100%);max-height:100%;overflow:auto;background:#1b1636;border:4px solid var(--ink);box-shadow:6px 6px 0 rgba(0,0,0,.35);padding:16px 18px 12px;color:#fff6e0}
-  #quizM .qtop{display:flex;align-items:center;gap:10px}
-  #quizM .qlogo{font-family:Silkscreen,monospace;font-size:18px;letter-spacing:2px;color:#fff6e0}
-  #quizM .qlogo span{color:#f2c94c;margin-left:6px}
-  #quizM .qinfo{flex:1;display:flex;justify-content:flex-end;align-items:center;gap:4px;font-family:Silkscreen,monospace;font-size:11px;color:#8f87b5}
-  #quizM .qinfo i{width:7px;height:7px;background:#3a3266}#quizM .qinfo i.done{background:#8f87b5}#quizM .qinfo i.now{background:#f2c94c}
-  #quizM .qboard{margin:22px 0 4px;min-height:64px;display:flex;align-items:center;justify-content:center;text-align:center;font-family:"Pixelify Sans",sans-serif;font-size:22px;font-weight:600;line-height:1.3;color:#fff6e0;text-wrap:balance}
-  #quizM .qboard.big{font-family:Silkscreen,monospace;font-size:56px;font-weight:400;color:#f2c94c}
+  /* quiz show: cosy. Cream paper like the other windows, bunting, the duck hosts, each topic its own soft colour, a wooden stage */
+  #quizM .qpanel{width:min(500px,100%);max-height:100%;overflow:auto;background:#fff6e0;border:4px solid var(--ink);box-shadow:6px 6px 0 rgba(0,0,0,.35);padding:0 18px 0;color:var(--ink);position:relative}
+  #qBunt{display:block;width:calc(100% + 36px);height:20px;margin:0 -18px;image-rendering:pixelated}
+  #quizM .qtop{display:flex;align-items:center;gap:10px;margin-top:6px}
+  #quizM .qlogo{font-family:Silkscreen,monospace;font-size:16px;letter-spacing:2px;color:var(--ink);text-shadow:none}
+  #quizM .qlogo span{color:#e8506c;margin-left:6px;text-shadow:none}
+  #quizM #qClose{background:#fff}
+  #quizM .qinfo{flex:1;display:flex;justify-content:flex-end;align-items:center;gap:4px;font-family:Silkscreen,monospace;font-size:11px;color:#8a7f72}
+  #quizM .qinfo i{width:8px;height:8px;background:#e6dcc8}#quizM .qinfo i.done{background:#e8506c}#quizM .qinfo i.now{background:var(--ink)}
+  #quizM .qhost{display:flex;align-items:flex-end;gap:10px;margin-top:14px}
+  #qDuck{flex:0 0 auto;width:72px;height:87px;image-rendering:pixelated}
+  #quizM .qboard{flex:1;position:relative;margin:0 0 30px;min-height:58px;display:flex;align-items:center;justify-content:center;text-align:center;background:#fff;border:3px solid var(--ink);box-shadow:4px 4px 0 rgba(42,36,48,.15);padding:10px 12px;font-family:"Pixelify Sans",sans-serif;font-size:19px;font-weight:600;line-height:1.3;color:var(--ink);text-wrap:balance}
+  #quizM .qboard::before{content:'';position:absolute;left:-12px;bottom:10px;width:12px;height:12px;background:linear-gradient(135deg,transparent 50%,var(--ink) 50%)}
+  #quizM .qboard::after{content:'';position:absolute;left:-7px;bottom:12px;width:8px;height:8px;background:linear-gradient(135deg,transparent 50%,#fff 50%)}
+  #quizM .qboard.big{font-family:Silkscreen,monospace;font-size:44px;font-weight:400;color:#e8506c}
   #quizM .qboard.pop{animation:qpop .25s steps(3)}
-  @keyframes qpop{from{transform:translateY(4px);opacity:.2}to{transform:none;opacity:1}}
-  #quizM .qbar{height:4px;margin:10px auto 0;width:100%;background:#3a3266;border:0;position:relative}
-  #quizM .qbar::before{content:'';position:absolute;left:0;top:0;bottom:0;width:var(--w,100%);background:#fff6e0;transition:width .1s linear}
+  @keyframes qpop{from{transform:translateY(4px);opacity:.3}to{transform:none;opacity:1}}
+  #quizM .qbar{height:6px;margin:4px 0 0;width:100%;background:#e6dcc8;border:0;position:relative}
+  #quizM .qbar::before{content:'';position:absolute;left:0;top:0;bottom:0;width:var(--w,100%);background:var(--ink);transition:width .1s linear}
   #quizM .qbar.low::before{background:#e8506c}
-  #quizM .qopts{display:grid;grid-template-columns:1fr;gap:8px;margin-top:18px}
+  #quizM .qopts{display:grid;grid-template-columns:1fr;gap:8px;margin-top:14px}
   #quizM .qopts:empty{display:none}
-  #quizM .qopt{font-family:"Pixelify Sans",sans-serif;font-size:18px;font-weight:600;color:var(--ink);background:#fff6e0;border:3px solid var(--ink);box-shadow:0 4px 0 #b9ad95;padding:12px 14px;min-height:52px;cursor:pointer;text-align:center;line-height:1.2;overflow-wrap:break-word}
-  #quizM .qopt:hover:not([disabled]){background:#fff}
-  #quizM .qopt:active:not([disabled]){transform:translateY(3px);box-shadow:0 1px 0 #b9ad95}
+  #quizM .qopt{font-family:"Pixelify Sans",sans-serif;font-size:18px;font-weight:600;color:var(--ink);background:#fff;border:3px solid var(--ink);box-shadow:inset 0 -4px 0 #e6dcc8;padding:12px 14px 14px;min-height:52px;cursor:pointer;text-align:center;line-height:1.2;overflow-wrap:break-word}
+  #quizM .qopt:hover:not([disabled]){background:#fffbf0}
+  #quizM .qopt:active:not([disabled]){transform:translateY(2px);box-shadow:none}
   #quizM .qopt[disabled]{cursor:default}
-  #quizM .qopt.mine{background:#f2c94c;box-shadow:0 4px 0 #b5852a}
-  #quizM .qopt.right{background:#5cb85c;color:#fff;box-shadow:0 4px 0 #2f7a33}
-  #quizM .qopt.bad{background:#e8506c;color:#fff;box-shadow:0 4px 0 #9a2a4a}
-  #quizM .qopt.wrong{opacity:.35}
-  #quizM .qlobby{margin-top:14px;display:flex;flex-direction:column;gap:12px;color:#fff6e0}
+  #quizM .qopt.mine{background:#f2c94c;box-shadow:inset 0 -4px 0 #c99a2a}
+  #quizM .qopt.right{background:#5cb85c;color:#fff;box-shadow:inset 0 -4px 0 #3a8a3e}
+  #quizM .qopt.bad{background:#e8506c;color:#fff;box-shadow:inset 0 -4px 0 #b8335a}
+  #quizM .qopt.wrong{opacity:.4}
+  #quizM .qlobby{margin-top:2px;display:flex;flex-direction:column;gap:10px;color:var(--ink)}
   #quizM .qlobby:empty{display:none}
-  #quizM .qnote{color:#8f87b5;font-size:15px;text-align:center}
-  #quizM .qfb{text-align:center;font-family:Silkscreen,monospace;font-size:15px;letter-spacing:1px}
-  #quizM .qfb.ok{color:#7cf08a}#quizM .qfb.bad{color:#ff8aa8}#quizM .qfb.wait{color:#8f87b5;font-family:"Pixelify Sans",sans-serif;letter-spacing:0}
-  #quizM .qgo{align-self:stretch;font-family:Silkscreen,monospace;font-size:18px;letter-spacing:1px;color:var(--ink);background:#f2c94c;border:3px solid var(--ink);box-shadow:0 5px 0 #b5852a;padding:14px 26px;cursor:pointer}
-  #quizM .qgo:hover{background:#ffd860}#quizM .qgo:active{transform:translateY(4px);box-shadow:0 1px 0 #b5852a}
-  #quizM .qchips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-  #quizM .qchips button{font-family:"Pixelify Sans",sans-serif;font-size:15px;color:#fff6e0;background:none;border:2px solid #3a3266;padding:8px 4px;min-height:40px;cursor:pointer;-webkit-hyphens:auto;hyphens:auto;line-height:1.15}
-  #quizM .qchips button:hover{border-color:#f2c94c;color:#f2c94c}
-  #quizM .qchips .own{grid-column:1/-1;border-style:dashed;color:#8f87b5}
+  #quizM .qnote{color:#8a7f72;font-size:15px;text-align:center}
+  #quizM .qfb{text-align:center;font-family:Silkscreen,monospace;font-size:15px;letter-spacing:1px;margin-top:4px}
+  #quizM .qfb.ok{color:#3a8a3e}#quizM .qfb.bad{color:#c0384f}#quizM .qfb.wait{color:#8a7f72;font-family:"Pixelify Sans",sans-serif;letter-spacing:0}
+  #quizM .qgo{align-self:stretch;font-family:Silkscreen,monospace;font-size:19px;letter-spacing:2px;color:#fff;background:#e8506c;border:3px solid var(--ink);box-shadow:inset 0 -5px 0 #b8335a;padding:14px;cursor:pointer}
+  #quizM .qgo:hover{background:#f0607a}#quizM .qgo:active{transform:translateY(2px);box-shadow:inset 0 -2px 0 #b8335a}
+  #quizM .qchips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  #quizM .qchips .qt{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:66px;padding:6px 3px 8px;background:var(--bg);color:var(--fg);border:3px solid var(--ink);box-shadow:inset 0 -4px 0 rgba(0,0,0,.08);font-family:"Pixelify Sans",sans-serif;font-size:14px;font-weight:600;line-height:1.1;cursor:pointer;-webkit-hyphens:auto;hyphens:auto}
+  #quizM .qchips .qt img{width:22px;height:22px;image-rendering:pixelated}
+  #quizM .qchips .qt:hover{filter:brightness(1.04);transform:translateY(-1px)}#quizM .qchips .qt:active{transform:translateY(2px);box-shadow:none}
+  #quizM .qchips .own{grid-column:1/-1;min-height:40px;background:none;border:2px dashed #b9ad95;color:#8a7f72;font-family:"Pixelify Sans",sans-serif;font-size:15px;cursor:pointer}
+  #quizM .qchips .own:hover{border-color:var(--ink);color:var(--ink)}
   #quizM .qlobby .row{display:flex;gap:8px}#quizM .qlobby .inp{flex:1;min-width:0;border:3px solid var(--ink)}
-  #quizM .qlink{align-self:center;color:#8f87b5}
+  #quizM .qlink{align-self:center;color:#8a7f72}
   #quizM .qrank{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
-  #quizM .qrank li{display:flex;justify-content:space-between;padding:7px 12px;background:#241e47;font-size:16px}
-  #quizM .qrank li.win{background:#f2c94c;color:var(--ink)}#quizM .qrank li b{font-family:Silkscreen,monospace;font-weight:400}
-  #quizM .qstagewrap{margin-top:16px;border-top:2px solid #2a2452;padding-top:8px}
-  #qStage{display:block;width:min(100%,400px);height:auto;margin:0 auto;image-rendering:pixelated}
-  #quizM .qnames{background:none;padding:2px 0 0;font-size:12px;color:#8f87b5;width:min(100%,400px);margin:0 auto}
-  #quizM .qnames b{color:#fff6e0}
+  #quizM .qrank li{display:flex;justify-content:space-between;padding:7px 12px;background:#f1e6cf;border:2px solid #e6dcc8;font-size:16px}
+  #quizM .qrank li.win{background:#f2c94c;border-color:var(--ink)}#quizM .qrank li b{font-family:Silkscreen,monospace;font-weight:400}
+  #quizM .qstagewrap{margin:14px -18px 0;border:0;background:none;position:relative}
+  #qStage{display:block;width:100%;height:auto;image-rendering:pixelated}
+  #quizM .qnames{position:absolute;left:0;right:0;bottom:2px;display:flex;justify-content:space-around;background:none;padding:0;font-size:11px;color:#fff6e0;text-shadow:1px 1px 0 #7a4a2a}
+  #quizM .qnames b{display:inline;color:#fff6e0;margin-left:5px}
   @media (min-width:600px){#quizM .qopts{grid-template-columns:repeat(3,minmax(0,1fr))}}
-  @media (max-width:360px){#quizM .qchips button{font-size:12.5px;padding:8px 2px}}
-  @media (max-height:500px){#quizM .qpanel{padding:8px 14px}#quizM .qboard{margin:6px 0 2px;min-height:0;font-size:18px}#quizM .qboard.big{font-size:40px}#quizM .qopts{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:8px}#quizM .qopt{min-height:40px;padding:6px 8px;font-size:16px}#quizM .qstagewrap{margin-top:8px}#qStage{max-height:16vh;width:auto;margin:0 auto}}
+  @media (max-width:380px){#qDuck{width:56px;height:68px}#quizM .qboard{font-size:17px}#quizM .qchips .qt{font-size:12.5px;min-height:60px}}
+  @media (max-height:500px){#quizM .qhost{margin-top:4px}#qDuck{width:44px;height:53px}#quizM .qboard{margin-bottom:10px;min-height:0;font-size:16px;padding:6px 10px}#quizM .qboard.big{font-size:32px}#quizM .qopts{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:8px}#quizM .qopt{min-height:40px;padding:6px 8px 8px;font-size:16px}#qStage{max-height:16vh;width:auto;margin:0 auto}}
   @media (prefers-reduced-motion:reduce){#quizM .qboard.pop{animation:none}}
   .qrank{display:flex;flex-direction:column;gap:4px}
   .qrank div{display:flex;justify-content:space-between;background:rgba(255,255,255,.08);padding:6px 10px;font-size:16px}
@@ -596,12 +604,13 @@
 
 <div class="modal" id="quizM">
   <div class="qpanel" role="dialog" aria-label="Quiz Show">
+    <canvas id="qBunt" width="180" height="10" aria-hidden="true"></canvas>
     <div class="qtop"><div class="qlogo">QUIZ<span>SHOW</span></div><div class="qinfo" id="qInfo"></div><button class="btn" id="qClose" type="button" aria-label="Schließen">×</button></div>
-    <div class="qboard" id="qBoard" lang="de" aria-live="polite"></div>
+    <div class="qhost"><canvas id="qDuck" width="24" height="29" aria-hidden="true"></canvas><div class="qboard" id="qBoard" lang="de" aria-live="polite"></div></div>
     <div class="qbar" id="qBar" hidden></div>
     <div class="qopts" id="qOpts" lang="de"></div>
     <div class="qlobby" id="qLobby" lang="de"></div>
-    <div class="qstagewrap"><canvas id="qStage" width="160" height="36"></canvas><div class="qnames" id="qNames"></div></div>
+    <div class="qstagewrap"><canvas id="qStage" width="160" height="42"></canvas><div class="qnames" id="qNames"></div></div>
   </div>
 </div>
 <canvas id="qConf" hidden aria-hidden="true"></canvas>
@@ -1793,6 +1802,24 @@ Wer malte „Das Mädchen mit dem Perlenohrring“?|Jan Vermeer|Rembrandt|Rubens
 Wie heißt die Kunstrichtung von Picasso mit eckigen Formen?|Kubismus|Impressionismus|Barock`],
 ];
 
+
+/* ---- each topic: a soft colour and a small hand-made pixel icon ---- */
+const QI={
+ geo:['..#####..','.##.#.##.','##..#..##','#########','##..#..##','#########','##..#..##','.##.#.##.','..#####..'],
+ his:['#########','.#.....#.','.##...##.','..##.##..','...#a#...','..#.a.#..','.#.aaa.#.','.#aaaaa#.','#########'],
+ nat:['......###','....#####','..######.','.#####.#.','.####.##.','.###.###.','.##.###..','.#.###...','#........'],
+ sci:['...###...','....#....','....#....','...#.#...','..#...#..','.#aaaaa#.','#aaaaaaa#','#aaaaaaa#','.#######.'],
+ food:['......#.#','.....#.#.','....#.#..','#########','#########','.#######.','..#####..','...###...'],
+ pop:['...######','...######','...#....#','...#....#','...#....#','.###..###','####.####','.##...##.'],
+ sport:['..#####..','.##.#.##.','#..###..#','#.#####.#','#########','#.#####.#','#..###..#','.##.#.##.','..#####..'],
+ tech:['#########','#.......#','#.aa....#','#.......#','#.......#','#########','...###...','.#######.'],
+ art:['..#####..','.#######.','##r##b###','#########','###..####','##a###...','.#####...','..##.....'],
+};
+const QCOL={geo:['#cfe3f7','#2f6fb0'],his:['#f7e0b8','#a0681e'],nat:['#d6efc6','#3f8a3a'],sci:['#e3dcf7','#6a4fc0'],food:['#f9d4cc','#c0503a'],pop:['#f8d3e3','#b03a72'],sport:['#cdeee6','#1f8a72'],tech:['#dde3ea','#4a5a6e'],art:['#fbedb4','#a88a10']};
+const qIconC={};
+function qIcon(k){if(qIconC[k])return qIconC[k];const rows=QI[k],c=document.createElement('canvas');c.width=10;c.height=10;const X=c.getContext('2d'),m=QCOL[k][1];
+  rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='.')return;X.fillStyle=ch==='#'?m:ch==='r'?'#e8506c':ch==='b'?'#4f7fe0':'#f2c94c';X.fillRect(x,y,1,1);}));
+  return qIconC[k]=c.toDataURL();}
 const QB={};Q_CATS.forEach(([k,,s])=>{if(s)QB[k]=s.trim().split('\n').map(l=>l.trim().split('|')).filter(x=>x.length===4&&x.every(Boolean));});
 const QCAT_NAME=Object.fromEntries(Q_CATS.map(c=>[c[0],c[1]]));
 const Q_N=8, Q_T=12000, Q_R=2800, Q_LEAD=3200, Q_GEN=30000;
@@ -1939,7 +1966,7 @@ function qRender(force){
   const now=Date.now(),g=qRound(),P=qPhase(g,now),players=qPlayers(g),upto=g&&g.ph==='play'?qUpto(g,P):-1;
   const board=document.getElementById('qBoard'),opts=document.getElementById('qOpts'),lobby=document.getElementById('qLobby'),info=document.getElementById('qInfo'),bar=document.getElementById('qBar');
   const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!==undefined)e.textContent=x;return e;};
-  const pop=(e,t)=>{if(e.textContent===t)return;e.textContent=t;e.classList.remove('pop');void e.offsetWidth;e.classList.add('pop');};
+  const pop=(e,t)=>{if(e.textContent===t)return;e.textContent=t;e.classList.remove('pop');void e.offsetWidth;e.classList.add('pop');qTalk=performance.now()+Math.min(1400,300+t.length*18);};
   const keyed=(e,k,build)=>{if(!force&&e.dataset.k===k)return;e.dataset.k=k;const old=e.querySelector('input'),v=old?old.value:'',f=!!old&&document.activeElement===old;e.innerHTML='';build(v,f);};
   const playing=P.ph==='count'||P.ph==='q'||P.ph==='rev';
   board.className='qboard'+(P.ph==='count'?' big':'')+(board.classList.contains('pop')?' pop':'');
@@ -1975,7 +2002,7 @@ function qRender(force){
       if(ended&&rank.length){const R=el('ol','qrank');rank.forEach((r,i)=>{const li=el('li',i===0&&!tie&&r.s>0?'win':'');li.appendChild(el('span','',(r.p.me?'Du':r.p.n)));li.appendChild(el('b','',String(r.s)));R.appendChild(li);});lobby.appendChild(R);}
       const again=ended&&g.ck?g.ck:'mix',go=el('button','qgo',ended?'Nochmal':'Los geht’s');go.type='button';go.onclick=()=>qStartCat(again);lobby.appendChild(go);
       const C=el('div','qchips');
-      Q_CATS.forEach(([k,n])=>{if(k==='mix')return;const b=el('button','',n);b.type='button';b.onclick=()=>qStartCat(k);C.appendChild(b);});
+      Q_CATS.forEach(([k,n])=>{if(k==='mix')return;const b=el('button','qt');b.type='button';b.style.setProperty('--bg',QCOL[k][0]);b.style.setProperty('--fg',QCOL[k][1]);const im=el('img');im.src=qIcon(k);im.alt='';b.appendChild(im);b.appendChild(el('span','',n));b.onclick=()=>qStartCat(k);C.appendChild(b);});
       const own=el('button','own',qOwn?'×':'Eigenes Thema …');own.type='button';own.onclick=()=>{qOwn=!qOwn;qRender(true);};C.appendChild(own);
       lobby.appendChild(C);
       if(qOwn){const row=el('div','row'),inp=el('input','inp');inp.maxLength=60;inp.autocomplete='off';inp.placeholder='Thema eintippen';inp.value=v;inp.setAttribute('aria-label','Eigenes Thema');
@@ -1986,22 +2013,28 @@ function qRender(force){
   }
   qStageArgs=[g,P,players,upto];
 }
-let qOwn=false,qStageArgs=null,qConfAt=0,qConfId='';
+let qOwn=false,qTalk=0,qStageArgs=null,qConfAt=0,qConfId='';
 const Q_CONF=['#f2c94c','#e8506c','#4fb3e8','#7cf08a','#ffffff','#c98aff','#ff9a3c'];
-(function qFrame(){requestAnimationFrame(qFrame);if(!qStageArgs||!quizM.classList.contains('show'))return;const [g,,players,upto]=qStageArgs;qDrawStage(g,qPhase(g,Date.now()),players,upto);qDrawConf();})();
+const qDuckX=document.getElementById('qDuck').getContext('2d'),qBuntX=document.getElementById('qBunt').getContext('2d');
+// bunting along the top
+(()=>{const X=qBuntX,C=['#e8506c','#f2c94c','#4f9a94','#7aa8e0'];X.fillStyle='#8a7f72';X.fillRect(0,1,180,1);for(let i=0;i<18;i++){X.fillStyle=C[i%4];for(let r=0;r<6;r++)X.fillRect(i*10+2+(r/2|0),2+r,7-r,1);}})();
+let qDuckK='';
+function qDrawDuck(){const now=performance.now(),open=now<qTalk&&Math.floor(now/110)%2===0,bob=now<qTalk?0:Math.floor(now/600)%2,k=(open?1:0)+':'+bob;
+  if(k===qDuckK)return;qDuckK=k;qDuckX.clearRect(0,0,24,29);try{qDuckX.drawImage(duckImg['1'][open?1:0],0,bob);}catch(e){}}
+(function qFrame(){requestAnimationFrame(qFrame);if(!qStageArgs||!quizM.classList.contains('show'))return;const [g,,players,upto]=qStageArgs;qDrawStage(g,qPhase(g,Date.now()),players,upto);qDrawDuck();qDrawConf();})();
 // the players: avatars on one line, a small mark over a head when they answered, the winner hops with a crown
 function qDrawStage(g,P,players,upto){
-  const W=160,H=36,X=qsx,t=performance.now(),play=g&&g.ph==='play',end=play&&P.ph==='end';
-  X.clearRect(0,0,W,H);X.fillStyle='#3a3266';for(let x=2;x<W;x+=4)X.fillRect(x,30,2,1);
+  const W=160,H=42,X=qsx,t=performance.now(),play=g&&g.ph==='play',end=play&&P.ph==='end';
+  X.clearRect(0,0,W,H);X.fillStyle='#c98a5a';X.fillRect(0,31,W,11);X.fillStyle='#e0a878';X.fillRect(0,31,W,2);X.fillStyle='#a86c40';for(let x=0;x<W;x+=16)X.fillRect(x,33,1,9);for(let x=8;x<W;x+=16)X.fillRect(x,37,1,5);
   const n=Math.max(1,players.length),sc=players.map(p=>play?qScore(g,p.a,upto):0),top=Math.max(0,...sc),tie=sc.filter(v=>v===top).length>1;
   const inQ=play&&(P.ph==='q'||P.ph==='rev'),revAt=P.ph==='rev'?P.T.R[P.i]:0;
   players.forEach((p,i)=>{
     const cx=Math.round((i+.5)*W/n),win=end&&top>0&&!tie&&sc[i]===top,x=inQ&&p.a[P.i],ok=x&&P.ph==='rev'?x[0]===g.qs[P.i][2]:null;
     const hop=win?Math.round(Math.abs(Math.sin(t/220))*4):ok?Math.round(Math.abs(Math.sin((Date.now()-revAt)/140))*3*Math.max(0,1-(Date.now()-revAt)/1500)):0;
-    if(!p.gone)drawAvatar(X,cx,29-hop,p.l,{blink:false,t:0});
-    if(win){const y=3-hop;X.fillStyle='#f2c94c';X.fillRect(cx-4,y+2,9,3);X.fillRect(cx-4,y,1,2);X.fillRect(cx,y-1,1,3);X.fillRect(cx+4,y,1,2);
+    if(!p.gone)drawAvatar(X,cx,32-hop,p.l,{blink:false,t:0});
+    if(win){const y=6-hop;X.fillStyle='#f2c94c';X.fillRect(cx-4,y+2,9,3);X.fillRect(cx-4,y,1,2);X.fillRect(cx,y-1,1,3);X.fillRect(cx+4,y,1,2);
       for(let k=0;k<16;k++){const yy=((t/1000*(12+k%4*4)+k*9)%30),xx=cx-12+((k*19)%25);X.fillStyle=Q_CONF[k%Q_CONF.length];X.fillRect(xx,yy,(k+Math.floor(t/150))%3?2:1,1);}}
-    else if(x){X.fillStyle=ok===null?'#fff6e0':ok?'#7cf08a':'#e8506c';X.fillRect(cx+5,5,3,3);}
+    else if(x){X.fillStyle='#2a2430';X.fillRect(cx+4,6,6,6);X.fillStyle=ok===null?'#fff6e0':ok?'#5cb85c':'#e8506c';X.fillRect(cx+5,7,4,4);}
   });
   const names=document.getElementById('qNames');
   const nk=players.map((p,i)=>p.peer+':'+p.n+':'+(p.me?1:0)+':'+(play?sc[i]:'')).join(',');
@@ -4666,7 +4699,7 @@ function maybeAutoVisit(){
 #gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gAlt{display:flex;flex-direction:column;gap:10px;margin-top:4px}#gAlt[hidden],.galt[hidden]{display:none}.gor{margin:6px 0 0;font-size:14px;opacity:.6}.galt{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;color:#2a2430;cursor:pointer}.galt:active{transform:translate(2px,2px)}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;outline:none;border-radius:0;-webkit-appearance:none;appearance:none;box-shadow:none;-webkit-tap-highlight-color:transparent}#gEmail:focus,#gTok:focus{outline:none;background:#fff8e6}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
 #gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795688807"></script>
+<script src="config.js?v=1795689486"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -4697,7 +4730,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '26.11. 11:26';
+  const BUILD = '26.11. 11:38';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -4945,7 +4978,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 26.11. 11:26';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 26.11. 11:38';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid', 'garden-pending').forEach(k => localStorage.removeItem(k)); } catch (e) {}

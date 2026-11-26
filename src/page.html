@@ -128,12 +128,13 @@
 
 <div class="modal" id="quizM">
   <div class="qpanel" role="dialog" aria-label="Quiz Show">
+    <canvas id="qBunt" width="180" height="10" aria-hidden="true"></canvas>
     <div class="qtop"><div class="qlogo">QUIZ<span>SHOW</span></div><div class="qinfo" id="qInfo"></div><button class="btn" id="qClose" type="button" aria-label="Schließen">×</button></div>
-    <div class="qboard" id="qBoard" lang="de" aria-live="polite"></div>
+    <div class="qhost"><canvas id="qDuck" width="24" height="29" aria-hidden="true"></canvas><div class="qboard" id="qBoard" lang="de" aria-live="polite"></div></div>
     <div class="qbar" id="qBar" hidden></div>
     <div class="qopts" id="qOpts" lang="de"></div>
     <div class="qlobby" id="qLobby" lang="de"></div>
-    <div class="qstagewrap"><canvas id="qStage" width="160" height="36"></canvas><div class="qnames" id="qNames"></div></div>
+    <div class="qstagewrap"><canvas id="qStage" width="160" height="42"></canvas><div class="qnames" id="qNames"></div></div>
   </div>
 </div>
 <canvas id="qConf" hidden aria-hidden="true"></canvas>
