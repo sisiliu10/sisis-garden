@@ -410,11 +410,19 @@ def chat_and_panels(pw, chk, device):
         chk("? opens help panel", seen(pg.get_by_role("heading", name=re.compile("How it works|Help", re.I))))
         for n in ["Got it", "Close", "×"]:
             if seen(c.btn(n)): c.press(c.btn(n)); pg.wait_for_timeout(500); break
-        c.press(c.btn("Avatar")); pg.wait_for_timeout(800)
-        chk("Avatar opens the editor", seen(pg.get_by_role("heading", name=re.compile("avatar", re.I))) and
+        chk("no Avatar button at the top (the outfit lives in the cottage wardrobe)", not seen(c.btn("Avatar")))
+        c.home()  # new people start as visitors; the wardrobe is in their own cottage
+        c.menu(); c.press(c.btn("Cottage")); pg.wait_for_timeout(2000)
+        # tap the wardrobe on the right wall of the cottage, like a person would
+        box = pg.locator("canvas#c").bounding_box(); W = pg.evaluate("()=>document.getElementById('c').width")
+        sc = box["width"] / W; rw, rh = 196, 172; H = pg.evaluate("()=>document.getElementById('c').height")
+        rx = (W - rw) // 2; ry = max(52, (H - rh) // 2 + 6)
+        pg.mouse.click(box["x"] + (rx + 174) * sc, box["y"] + (ry + 40) * sc); pg.wait_for_timeout(3500)
+        chk("the wardrobe opens the outfit editor", seen(pg.get_by_role("heading", name=re.compile("wardrobe", re.I))) and
             seen(c.btn("Randomize")))
-        c.press(first_seen(pg.get_by_role("button", name=re.compile("Into the garden|Save|Done"))))
+        c.press(first_seen(pg.get_by_role("button", name=re.compile("Done|Into the garden|Save"))))
         pg.wait_for_timeout(800)
+        c.menu(); c.press(c.btn("Garden")); pg.wait_for_timeout(1500)
         c.press(c.btn("Friends")); pg.wait_for_timeout(800)
         chk("Friends opens a list of gardens", seen(pg.get_by_role("heading", name="Friends")) and
             seen(pg.get_by_text("Sisi", exact=True)))

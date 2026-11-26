@@ -7,6 +7,8 @@ const HOBJ=[
   {x:139,y:97,get label(){return napping?'Get up':(bedSleepers().length?'Lie down next to '+(livePeers().find(p=>p.scene==='house'&&p.nap)||{name:'them'}).name:'Take a nap');},act:()=>{napping=!napping;napT=napping?.01:0;av.target=null;av.moving=false;av.back=false;},box:[120,32,158,92]},
   {x:20,y:76,label:'Open bookshelf',act:()=>openBooks(),box:[4,16,36,68]},
   {x:42,y:140,label:'Play a game',act:()=>askQuiz(),box:[4,100,34,152]},
+  // the wardrobe: only in your own cottage, it is where you change your outfit
+  {x:174,y:78,own:true,label:'Open wardrobe',act:()=>{if(!visiting)openCreator(true);},box:[156,12,192,68]},
 ];
 function roomOrigin(){RX=Math.floor((W-RW)/2);RY=Math.max(52,Math.floor((H-RH)/2)+6);}
 function houseBlocked(x,y){
@@ -33,13 +35,13 @@ function exitHouse(){
 function goToDoor(){ if(scene==='garden') av.target={x:HX,y:167,onArrive:()=>{av.target={x:HX,y:148,onArrive:enterHouse};}}; }
 function housePointer(lx,ly){
   if(ly>RH-14&&Math.abs(lx-RW/2)<14){av.target={x:RW/2,y:RH+4};return;}
-  for(const o of HOBJ){ const b=o.box; if(b?(lx>=b[0]&&lx<=b[2]&&ly>=b[1]&&ly<=b[3]):(Math.abs(lx-o.x)<14&&Math.abs(ly-o.y)<10)){ av.target={x:o.x,y:o.y,onArrive:o.act}; return; } }
+  for(const o of HOBJ){ if(o.own&&visiting)continue; const b=o.box; if(b?(lx>=b[0]&&lx<=b[2]&&ly>=b[1]&&ly<=b[3]):(Math.abs(lx-o.x)<14&&Math.abs(ly-o.y)<10)){ av.target={x:o.x,y:o.y,onArrive:o.act}; return; } }
   av.target={x:clamp(lx,9,RW-9),y:clamp(ly,WALL+11,RH-4)};
 }
 function houseUpdate(dt,t){
   if(av.y>RH+1){exitHouse();return;}
   houseNear=null; let bd=1e9;
-  for(const o of HOBJ){const d=Math.hypot(av.x-o.x,av.y-o.y);if(d<28&&d<bd){bd=d;houseNear=o;}}
+  for(const o of HOBJ){if(o.own&&visiting)continue;const d=Math.hypot(av.x-o.x,av.y-o.y);if(d<28&&d<bd){bd=d;houseNear=o;}}
   if(houseNear) setPrompt(houseNear.label,'E');
   else if(av.y>RH-24&&Math.abs(av.x-RW/2)<20) setPrompt('Go outside','↓');
   else setPrompt(null);
@@ -133,9 +135,16 @@ function renderHouse(t){
       R(122,88,3,3,'#6a3f27');R(153,88,3,3,'#6a3f27');
     }},
     {y:68,d:()=>{ // wardrobe
-      R(157,16,34,52,'#b9ab78');R(158,17,32,50,'#ecdfab');R(160,14,28,3,'#ecdfab');R(161,13,26,1,'#b9ab78');
-      R(173,20,2,44,'#c9b880');R(168,40,2,4,'#a8975e');R(178,40,2,4,'#a8975e');
-      R(161,22,10,16,'#e2d39a');R(177,22,10,16,'#e2d39a');R(158,66,32,2,'#a8975e');
+      R(157,16,34,52,'#b9ab78');R(158,17,32,50,'#ecdfab');R(160,14,28,3,'#ecdfab');R(161,13,26,1,'#b9ab78');R(158,66,32,2,'#a8975e');
+      if(creator.classList.contains('show')&&!visiting){ // doors open while you change: clothes on a rail
+        R(159,18,30,47,'#6a5540');R(159,18,30,2,'#4a3a2c');R(160,22,28,1,'#c9b880');
+        ['#e8506c','#9fc4ef','#f2c94c','#7cc46c','#f4a7b9'].forEach((c,i)=>{const x=161+i*5+(i>2?1:0);R(x+1,22,1,2,'#c9b880');R(x,24,4,11+(i%2)*6,c);R(x,24,4,1,'rgba(255,255,255,.35)');});
+        R(160,54,12,8,'#8a5a36');R(176,54,12,8,'#8a5a36');R(165,57,2,1,'#5a3420');R(181,57,2,1,'#5a3420');
+        R(151,17,6,49,'#ecdfab');R(151,17,1,49,'#b9ab78');R(191,17,6,49,'#ecdfab');R(196,17,1,49,'#b9ab78');R(153,40,1,4,'#a8975e');R(193,40,1,4,'#a8975e');
+      } else {
+        R(173,20,2,44,'#c9b880');R(168,40,2,4,'#a8975e');R(178,40,2,4,'#a8975e');
+        R(161,22,10,16,'#e2d39a');R(177,22,10,16,'#e2d39a');
+      }
     }},
     {y:150,d:()=>{ // arcade cabinet: quiz show
       R(7,104,24,46,'#2a2430');R(8,105,22,44,'#6a3fa0');R(8,105,22,7,'#e8506c');R(10,107,18,3,'#ffd0dc');

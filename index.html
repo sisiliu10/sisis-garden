@@ -497,7 +497,7 @@
 <div id="world"><div class="title" id="title"><div class="t1" id="tName">Sisi's</div><div class="t2">Garden</div><div class="sub" id="tSub">keep your projects watered</div><div class="wx" id="tWx"></div></div></div>
 
 <div class="hud l"><div class="chip" id="mood" hidden><span class="h">♥</span> <span id="moodTxt"></span></div><button class="btn dark" id="bHome" hidden>← Home</button><button type="button" id="live" class="live" aria-label="Who is here">···</button></div>
-<div class="hud r"><button class="btn" id="bGardens">Friends</button><button class="btn" id="bAdd" title="Add a project or skill">+ Add</button><button class="btn" id="bJump" hidden>Skills ↓</button><button class="btn" id="bAv">Avatar</button><button class="btn" id="bMusic" type="button">♪</button><button class="btn" id="bHelp">?</button></div>
+<div class="hud r"><button class="btn" id="bGardens">Friends</button><button class="btn" id="bAdd" title="Add a project or skill">+ Add</button><button class="btn" id="bJump" hidden>Skills ↓</button><button class="btn" id="bMusic" type="button">♪</button><button class="btn" id="bHelp">?</button></div>
 <div class="banner" id="banner" hidden></div>
 <div class="toast" id="toast" hidden></div>
 <button class="btn dark prompt" id="prompt" hidden></button>
@@ -543,8 +543,8 @@
 
 <div class="modal" id="creator">
   <div class="panel">
-    <h2>Create your avatar</h2>
-    <div class="lead">Pick a look. You can change it any time.</div>
+    <h2 id="crT">Create your avatar</h2>
+    <div class="lead" id="crL">Pick a look. Later you can change it in the wardrobe in your cottage.</div>
     <div class="cwrap">
       <div class="pv"><canvas id="prev" width="30" height="36"></canvas><button class="btn" id="rnd">Randomize</button></div>
       <div class="opts" id="opts"><div class="opt"><div class="k">NAME</div><input id="nm" class="inp" maxlength="14"></div></div>
@@ -649,6 +649,7 @@
     <p><b>Projects</b> are plants you water.</p>
     <p><b>Skills</b> are flower beds.</p>
     <p><b>To-dos</b> hang on the clothesline.</p>
+    <p><b>Your outfit</b> is in the wardrobe in your cottage.</p>
     <div hidden><div id="gMine"><div id="nbList"></div><form id="nbAdd"><input id="nbN"><input id="nbU"></form><input type="checkbox" id="gSB"></div></div>
     <div class="pfoot"><span></span><button class="btn dark" id="helpOk">Got it</button></div>
   </div>
@@ -1248,6 +1249,8 @@ const HOBJ=[
   {x:139,y:97,get label(){return napping?'Get up':(bedSleepers().length?'Lie down next to '+(livePeers().find(p=>p.scene==='house'&&p.nap)||{name:'them'}).name:'Take a nap');},act:()=>{napping=!napping;napT=napping?.01:0;av.target=null;av.moving=false;av.back=false;},box:[120,32,158,92]},
   {x:20,y:76,label:'Open bookshelf',act:()=>openBooks(),box:[4,16,36,68]},
   {x:42,y:140,label:'Play a game',act:()=>askQuiz(),box:[4,100,34,152]},
+  // the wardrobe: only in your own cottage, it is where you change your outfit
+  {x:174,y:78,own:true,label:'Open wardrobe',act:()=>{if(!visiting)openCreator(true);},box:[156,12,192,68]},
 ];
 function roomOrigin(){RX=Math.floor((W-RW)/2);RY=Math.max(52,Math.floor((H-RH)/2)+6);}
 function houseBlocked(x,y){
@@ -1274,13 +1277,13 @@ function exitHouse(){
 function goToDoor(){ if(scene==='garden') av.target={x:HX,y:167,onArrive:()=>{av.target={x:HX,y:148,onArrive:enterHouse};}}; }
 function housePointer(lx,ly){
   if(ly>RH-14&&Math.abs(lx-RW/2)<14){av.target={x:RW/2,y:RH+4};return;}
-  for(const o of HOBJ){ const b=o.box; if(b?(lx>=b[0]&&lx<=b[2]&&ly>=b[1]&&ly<=b[3]):(Math.abs(lx-o.x)<14&&Math.abs(ly-o.y)<10)){ av.target={x:o.x,y:o.y,onArrive:o.act}; return; } }
+  for(const o of HOBJ){ if(o.own&&visiting)continue; const b=o.box; if(b?(lx>=b[0]&&lx<=b[2]&&ly>=b[1]&&ly<=b[3]):(Math.abs(lx-o.x)<14&&Math.abs(ly-o.y)<10)){ av.target={x:o.x,y:o.y,onArrive:o.act}; return; } }
   av.target={x:clamp(lx,9,RW-9),y:clamp(ly,WALL+11,RH-4)};
 }
 function houseUpdate(dt,t){
   if(av.y>RH+1){exitHouse();return;}
   houseNear=null; let bd=1e9;
-  for(const o of HOBJ){const d=Math.hypot(av.x-o.x,av.y-o.y);if(d<28&&d<bd){bd=d;houseNear=o;}}
+  for(const o of HOBJ){if(o.own&&visiting)continue;const d=Math.hypot(av.x-o.x,av.y-o.y);if(d<28&&d<bd){bd=d;houseNear=o;}}
   if(houseNear) setPrompt(houseNear.label,'E');
   else if(av.y>RH-24&&Math.abs(av.x-RW/2)<20) setPrompt('Go outside','↓');
   else setPrompt(null);
@@ -1374,9 +1377,16 @@ function renderHouse(t){
       R(122,88,3,3,'#6a3f27');R(153,88,3,3,'#6a3f27');
     }},
     {y:68,d:()=>{ // wardrobe
-      R(157,16,34,52,'#b9ab78');R(158,17,32,50,'#ecdfab');R(160,14,28,3,'#ecdfab');R(161,13,26,1,'#b9ab78');
-      R(173,20,2,44,'#c9b880');R(168,40,2,4,'#a8975e');R(178,40,2,4,'#a8975e');
-      R(161,22,10,16,'#e2d39a');R(177,22,10,16,'#e2d39a');R(158,66,32,2,'#a8975e');
+      R(157,16,34,52,'#b9ab78');R(158,17,32,50,'#ecdfab');R(160,14,28,3,'#ecdfab');R(161,13,26,1,'#b9ab78');R(158,66,32,2,'#a8975e');
+      if(creator.classList.contains('show')&&!visiting){ // doors open while you change: clothes on a rail
+        R(159,18,30,47,'#6a5540');R(159,18,30,2,'#4a3a2c');R(160,22,28,1,'#c9b880');
+        ['#e8506c','#9fc4ef','#f2c94c','#7cc46c','#f4a7b9'].forEach((c,i)=>{const x=161+i*5+(i>2?1:0);R(x+1,22,1,2,'#c9b880');R(x,24,4,11+(i%2)*6,c);R(x,24,4,1,'rgba(255,255,255,.35)');});
+        R(160,54,12,8,'#8a5a36');R(176,54,12,8,'#8a5a36');R(165,57,2,1,'#5a3420');R(181,57,2,1,'#5a3420');
+        R(151,17,6,49,'#ecdfab');R(151,17,1,49,'#b9ab78');R(191,17,6,49,'#ecdfab');R(196,17,1,49,'#b9ab78');R(153,40,1,4,'#a8975e');R(193,40,1,4,'#a8975e');
+      } else {
+        R(173,20,2,44,'#c9b880');R(168,40,2,4,'#a8975e');R(178,40,2,4,'#a8975e');
+        R(161,22,10,16,'#e2d39a');R(177,22,10,16,'#e2d39a');
+      }
     }},
     {y:150,d:()=>{ // arcade cabinet: quiz show
       R(7,104,24,46,'#2a2430');R(8,105,22,44,'#6a3fa0');R(8,105,22,7,'#e8506c');R(10,107,18,3,'#ffd0dc');
@@ -3591,7 +3601,8 @@ function buildCreator(){
   nm.value=me().name||'';
 }
 const GUEST_LOOK={skin:'#fde4d0',hair:'short',hairColor:'#c27a42',top:'#2b3550',bottom:'pants',bottomColor:'#2d2d35',acc:'glasses'};
-function openCreator(){const m=me(),fresh=!!m&&(!m.name||m.name==='Me'||m.name==='Visitor');if(!isOwner&&fresh&&!m.tailored){m.look=Object.assign({},GUEST_LOOK);['skin','hair','hairColor','top','bottom','bottomColor','acc'].forEach(k=>m.look[k]=pick(OPT[k]));m.tailored=1;}buildCreator();if(fresh){nm.value='';nm.placeholder='Your name';}creator.classList.add('show');}
+// first visit: pick a look; later the wardrobe in your own cottage opens the same editor
+function openCreator(ward){document.getElementById('crT').textContent=ward?'Your wardrobe':'Create your avatar';document.getElementById('crL').textContent=ward?'Pick what you wear today.':'Pick a look. Later you can change it in the wardrobe in your cottage.';document.getElementById('done').textContent=ward?'Done':'Into the garden →';const m=me(),fresh=!!m&&(!m.name||m.name==='Me'||m.name==='Visitor');if(!isOwner&&fresh&&!m.tailored){m.look=Object.assign({},GUEST_LOOK);['skin','hair','hairColor','top','bottom','bottomColor','acc'].forEach(k=>m.look[k]=pick(OPT[k]));m.tailored=1;}buildCreator();if(fresh){nm.value='';nm.placeholder='Your name';}creator.classList.add('show');}
 function closeCreator(){
   if(loadFailed){toast('Could not load your garden. Check your connection and reload the page.',4000);return;}
   const m=me(),typed=(nm.value||'').trim().slice(0,14);
@@ -3614,7 +3625,6 @@ function showHomeHint(){const b=document.getElementById('bHome');if(!visiting||!
 addEventListener('resize',()=>hideHomeHint(false));
 document.getElementById('rnd').onclick=()=>{['skin','hair','hairColor','top','bottom','bottomColor','acc'].forEach(k=>me().look[k]=pick(OPT[k]));const n=nm.value;buildCreator();nm.value=n;};
 document.getElementById('done').onclick=closeCreator;
-document.getElementById('bAv').onclick=openCreator;
 const help=document.getElementById('help');
 document.getElementById('bHelp').onclick=()=>{renderNeighbours();help.classList.add('show');};
 document.getElementById('helpOk').onclick=()=>help.classList.remove('show');
@@ -4672,7 +4682,7 @@ function maybeAutoVisit(){
 #gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gAlt{display:flex;flex-direction:column;gap:10px;margin-top:4px}#gAlt[hidden],.galt[hidden]{display:none}.gor{margin:6px 0 0;font-size:14px;opacity:.6}.galt{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;color:#2a2430;cursor:pointer}.galt:active{transform:translate(2px,2px)}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;outline:none;border-radius:0;-webkit-appearance:none;appearance:none;box-shadow:none;-webkit-tap-highlight-color:transparent}#gEmail:focus,#gTok:focus{outline:none;background:#fff8e6}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
 #gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795689823"></script>
+<script src="config.js?v=1795690107"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -4703,7 +4713,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '26.11. 11:43';
+  const BUILD = '26.11. 11:48';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -4951,7 +4961,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 26.11. 11:43';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 26.11. 11:48';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid', 'garden-pending').forEach(k => localStorage.removeItem(k)); } catch (e) {}

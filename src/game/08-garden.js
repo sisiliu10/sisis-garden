@@ -256,7 +256,8 @@ function buildCreator(){
   nm.value=me().name||'';
 }
 const GUEST_LOOK={skin:'#fde4d0',hair:'short',hairColor:'#c27a42',top:'#2b3550',bottom:'pants',bottomColor:'#2d2d35',acc:'glasses'};
-function openCreator(){const m=me(),fresh=!!m&&(!m.name||m.name==='Me'||m.name==='Visitor');if(!isOwner&&fresh&&!m.tailored){m.look=Object.assign({},GUEST_LOOK);['skin','hair','hairColor','top','bottom','bottomColor','acc'].forEach(k=>m.look[k]=pick(OPT[k]));m.tailored=1;}buildCreator();if(fresh){nm.value='';nm.placeholder='Your name';}creator.classList.add('show');}
+// first visit: pick a look; later the wardrobe in your own cottage opens the same editor
+function openCreator(ward){document.getElementById('crT').textContent=ward?'Your wardrobe':'Create your avatar';document.getElementById('crL').textContent=ward?'Pick what you wear today.':'Pick a look. Later you can change it in the wardrobe in your cottage.';document.getElementById('done').textContent=ward?'Done':'Into the garden →';const m=me(),fresh=!!m&&(!m.name||m.name==='Me'||m.name==='Visitor');if(!isOwner&&fresh&&!m.tailored){m.look=Object.assign({},GUEST_LOOK);['skin','hair','hairColor','top','bottom','bottomColor','acc'].forEach(k=>m.look[k]=pick(OPT[k]));m.tailored=1;}buildCreator();if(fresh){nm.value='';nm.placeholder='Your name';}creator.classList.add('show');}
 function closeCreator(){
   if(loadFailed){toast('Could not load your garden. Check your connection and reload the page.',4000);return;}
   const m=me(),typed=(nm.value||'').trim().slice(0,14);
@@ -279,7 +280,6 @@ function showHomeHint(){const b=document.getElementById('bHome');if(!visiting||!
 addEventListener('resize',()=>hideHomeHint(false));
 document.getElementById('rnd').onclick=()=>{['skin','hair','hairColor','top','bottom','bottomColor','acc'].forEach(k=>me().look[k]=pick(OPT[k]));const n=nm.value;buildCreator();nm.value=n;};
 document.getElementById('done').onclick=closeCreator;
-document.getElementById('bAv').onclick=openCreator;
 const help=document.getElementById('help');
 document.getElementById('bHelp').onclick=()=>{renderNeighbours();help.classList.add('show');};
 document.getElementById('helpOk').onclick=()=>help.classList.remove('show');
