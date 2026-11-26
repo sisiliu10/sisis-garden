@@ -152,7 +152,6 @@ function canPlace(p,x,y){
   if(y<165||y>340||x<-OX+12||x>CW+OX-12) return false;
   if(Math.hypot((x-FOUNT.x)/34,(y-FOUNT.y)/16)<1) return false;
   if(x>POOL.x0-26&&x<BOARD.x1+6&&y>POOL.y0-10&&y<POOL.y1+10) return false;
-  if(duckHere()&&Math.abs(x-DUCK.x)<20&&y>DUCK.y-12&&y<DUCK.y+14) return false;
   if(x>36&&x<96&&y<175) return false;
   return !projects().some(q=>q!==p&&Math.hypot(posOf(q)[0]-x,(posOf(q)[1]-y)*1.4)<26);
 }

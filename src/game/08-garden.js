@@ -222,8 +222,7 @@ cvs.addEventListener('pointerdown',e=>{
   if(!hit)for(const b of skills()){const [bx,by]=posOf(b);if(Math.abs(lx-bx)<BED_W/2+2&&ly>by-BED_H/2-12&&ly<by+BED_H/2+6){hit=b;break;}}
   {const pp=peerAt(lx,ly);if(pp&&!moving){av.run=false;openActMenu(pp,e.clientX,e.clientY);return;}}
   if(!moving&&riding&&Math.abs(lx-av.x)<12&&ly>av.y-36&&ly<av.y+4){dismount();return;}
-  if(!moving&&!riding&&mySeat===null&&alpIdle()&&Math.abs(lx-alp.x)<14&&ly>alp.y-33&&ly<alp.y+4){goRide('a');return;}
-  if(!moving&&!riding&&onDuck(lx,ly)){quack();if(mySeat===null)goRide('d');return;}
+  if(!moving&&!riding&&mySeat===null&&alpIdle()&&Math.abs(lx-alp.x)<14&&ly>alp.y-33&&ly<alp.y+4){goRide();return;}
   if(!moving&&onSlide(lx,ly)){goSlide();return;}
   if(!moving&&lx>COMP.x-15&&lx<COMP.x+21&&ly>COMP.y-26&&ly<COMP.y+4){av.run=false;av.target={x:COMP.x+23,y:COMP.y+3};openCompost();return;}
   if(!moving&&onLine(lx,ly)){av.target=null;const gi=garmentAt(lx,ly);if(gi>=0)openTip(gi,e.clientX,e.clientY);else openLine();return;}

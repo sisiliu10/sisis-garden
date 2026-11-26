@@ -132,20 +132,19 @@ function render(t){
   for(let r0=0;r0<lineRows();r0++)list.push({y:CLN.rows[r0],d:()=>drawLineRow(r0,t)});
   list.push({y:CLN.by,d:()=>drawBasket()});
   list.push({y:COMP.y,d:()=>drawCompost(t)});
-  if(duckIdle())list.push({y:duck.y,d:()=>drawDuck(t)});
   if(alpIdle())list.push({y:alp.y,d:()=>drawAlpaca(alp.x,alp.y,alp.dir,alp.moving?Math.floor(t*5)%2+1:0,t)});
   list.push({y:HB,d:()=>drawCottage(t)});
   const myLook=me().look, blink=(t%4)<.12;
-  if(av.jump){const J=av.jump,k=Math.min(1,J.t);list.push({y:9999,d:()=>riding?drawRider(av.x,av.y-Math.sin(Math.PI*k)*J.h,av.dir||1,myLook,true,t,null,passengerOf(myPeer()),rideKind):drawAvatar(g,av.x,av.y-Math.sin(Math.PI*k)*J.h,myLook,{frame:1,back:false,blink:false,t,shadow:false})});}
+  if(av.jump){const J=av.jump,k=Math.min(1,J.t);list.push({y:9999,d:()=>riding?drawRider(av.x,av.y-Math.sin(Math.PI*k)*J.h,av.dir||1,myLook,true,t,null,passengerOf(myPeer())):drawAvatar(g,av.x,av.y-Math.sin(Math.PI*k)*J.h,myLook,{frame:1,back:false,blink:false,t,shadow:false})});}
   else if(passOf&&peerById(passOf)){}
-  else if(av.swim&&riding) list.push({y:av.y,d:()=>drawRiderSwim(av.x,av.y,av.dir||1,myLook,av.moving,t,myHeartUntil>performance.now()?'#e8506c':null,passengerOf(myPeer()),rideKind)});
+  else if(av.swim&&riding) list.push({y:av.y,d:()=>drawRiderSwim(av.x,av.y,av.dir||1,myLook,av.moving,t,myHeartUntil>performance.now()?'#e8506c':null,passengerOf(myPeer()))});
   else if(av.swim) list.push({y:av.y,d:()=>drawSwimmer(av.x,av.y,myLook,{t,moving:av.moving,back:av.back,blink})});
   else if(slide){}
-  else if(mySeat===null&&riding) list.push({y:av.y,d:()=>drawRider(av.x,av.y,av.dir||1,myLook,av.moving,t,myHeartUntil>performance.now()?'#e8506c':null,passengerOf(myPeer()),rideKind)});
+  else if(mySeat===null&&riding) list.push({y:av.y,d:()=>drawRider(av.x,av.y,av.dir||1,myLook,av.moving,t,myHeartUntil>performance.now()?'#e8506c':null,passengerOf(myPeer()))});
   else if(mySeat===null) list.push({y:av.y,d:()=>{const rn=av.run&&av.moving,fr=av.moving?(rn?[1,2][Math.floor(t*10)%2]:[1,0,2,0][Math.floor(t*8)%4]):0;
     drawAvatar(g,av.x,av.y-(rn&&fr===1?1:0)-(av.kh||0),myLook,{run:rn||!!knock,frame:knock?1:fr,back:av.back,blink:blink||!!knock,can:!rn&&!knock&&!visiting&&!!active&&av.water<=0,pour:false,happy:av.water>0&&av.water<.7,heart:myHeartUntil>performance.now()?'#e8506c':(visiting?null:moodColor(gardenAvg(home))),t,shadow:!knock});}});
   if(hasCat()) list.push({y:cat.y,d:()=>drawCat(t)});
-  livePeers().filter(p=>p.scene==='garden'&&!p.sg&&!(p.pl&&(p.pl===myPeer()?riding:(peerById(p.pl)||{}).ride))).forEach(p=>list.push({y:p.sl?SL.y+1:p.y,d:()=>p.sl?drawAvatar(g,p.x,p.y,p.look,p.sl===1?{side:true,dir:-1,frame:Math.floor((SL.y-1-p.y)/4.9)%2,happy:true,shadow:false,t}:{sit:true,kick:1,shadow:false,t}):p.ride&&p.swim?drawRiderSwim(p.x,p.y,(ghosts[p.id]&&ghosts[p.id].dir)||1,p.look,p.moving,t,null,passengerOf(p.id),p.rk):p.ride&&!p.swim?drawRider(p.x,p.y,(ghosts[p.id]&&ghosts[p.id].dir)||1,p.look,p.moving,t,(ghosts[p.id]&&ghosts[p.id].heartUntil>performance.now())?'#e8506c':null,passengerOf(p.id),p.rk):p.swim?drawSwimmer(p.x,p.y,p.look,{t,moving:p.moving,back:p.back}):drawAvatar(g,p.x,p.y,p.look,{run:p.run&&p.moving,frame:p.moving?(p.run?[1,2][Math.floor(t*10)%2]:[1,0,2,0][Math.floor(t*8+p.x)%4]):0,back:p.back,blink:((t+p.x)%4)<.12,can:p.water,pour:p.water,heart:(ghosts[p.id]&&ghosts[p.id].heartUntil>performance.now())?'#e8506c':null,t})}));
+  livePeers().filter(p=>p.scene==='garden'&&!p.sg&&!(p.pl&&(p.pl===myPeer()?riding:(peerById(p.pl)||{}).ride))).forEach(p=>list.push({y:p.sl?SL.y+1:p.y,d:()=>p.sl?drawAvatar(g,p.x,p.y,p.look,p.sl===1?{side:true,dir:-1,frame:Math.floor((SL.y-1-p.y)/4.9)%2,happy:true,shadow:false,t}:{sit:true,kick:1,shadow:false,t}):p.ride&&p.swim?drawRiderSwim(p.x,p.y,(ghosts[p.id]&&ghosts[p.id].dir)||1,p.look,p.moving,t,null,passengerOf(p.id)):p.ride&&!p.swim?drawRider(p.x,p.y,(ghosts[p.id]&&ghosts[p.id].dir)||1,p.look,p.moving,t,(ghosts[p.id]&&ghosts[p.id].heartUntil>performance.now())?'#e8506c':null,passengerOf(p.id)):p.swim?drawSwimmer(p.x,p.y,p.look,{t,moving:p.moving,back:p.back}):drawAvatar(g,p.x,p.y,p.look,{run:p.run&&p.moving,frame:p.moving?(p.run?[1,2][Math.floor(t*10)%2]:[1,0,2,0][Math.floor(t*8+p.x)%4]):0,back:p.back,blink:((t+p.x)%4)<.12,can:p.water,pour:p.water,heart:(ghosts[p.id]&&ghosts[p.id].heartUntil>performance.now())?'#e8506c':null,t})}));
   {const nowp=performance.now(),drip=(x,y)=>{if(Math.random()<.6)spawn({kind:'drop',x:x+Math.round(Math.random()*10-5),y:y-20+Math.random()*10,vy:10,floor:y,life:1});};
    if(myWetUntil>nowp&&!av.swim)drip(av.x,av.y);
    livePeers().forEach(p=>{const gh=ghosts[p.id];if(gh&&gh.wetUntil>nowp&&p.scene==='garden'&&!p.swim)drip(p.x,p.y);});}

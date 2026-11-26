@@ -119,9 +119,9 @@ function leaveSwing(tgt){
 
 /* ================= alpaca to ride ================= */
 const alp={x:164,y:240,hx:164,hy:240,tx:164,ty:240,next:performance.now()+9000,dir:-1,moving:false};
-// rideKind: what I ride, 'a' alpaca or 'd' duck; pendRide: what I'm walking over to ride (false when nothing)
-let riding=false,pendRide=false,rideKind='a';
-function alpIdle(){return !(riding&&rideKind==='a')&&!livePeers().some(p=>p.ride&&p.rk!=='d');}
+// pendRide: walking over to the alpaca to get on
+let riding=false,pendRide=false;
+function alpIdle(){return !riding&&!livePeers().some(p=>p.ride);}
 function drawAlpaca(x,y,dir,frame,t){
   x=Math.round(x);y=Math.round(y);const C='#f4ecdc',Cl='#fffaf0',Cs='#d8ccb2',H='#6b5a46',O='#2a2430';
   ell(x,y,11,2,'rgba(40,80,40,.28)');
@@ -133,21 +133,20 @@ function drawAlpaca(x,y,dir,frame,t){
   R(dir>0?hx+2:hx-5,y-25,4,3,Cl);R(dir>0?hx+5:hx-5,y-25,1,1,O);R(hx+dir,y-26,1,1,O);R(dir>0?hx+3:hx-4,y-23,2,1,'#e9a0a8');
   R(x-4,y-16,8,3,'#e8506c');R(x-4,y-14,8,1,'#f2c94c');R(x-4,y-13,1,2,'#f2c94c');R(x+3,y-13,1,2,'#f2c94c');
 }
-function drawRiderSwim(x,y,dir,look,moving,t,heart,pass,kind){
+function drawRiderSwim(x,y,dir,look,moving,t,heart,pass){
   const wl=Math.round(y-7+Math.sin(t*3)*0.6);
   g.save();g.beginPath();g.rect(x-30,wl-60,60,60);g.clip();
-  drawRider(x,y+6,dir,look,false,t,heart,pass,kind);g.restore();
+  drawRider(x,y+6,dir,look,false,t,heart,pass);g.restore();
   const k=Math.floor(t*4)%2;ell(Math.round(x),wl,14+k,2,'#9fdcfa');ell(Math.round(x),wl,11,1,'#3f9ad8');
   if(moving){R(Math.round(x-dir*15),wl,3,1,'#cfeefc');R(Math.round(x-dir*18),wl+1,2,1,'#cfeefc');}
 }
-function drawRider(x,y,dir,look,moving,t,heart,pass,kind){
+function drawRider(x,y,dir,look,moving,t,heart,pass){
   const fr=moving?Math.floor(t*7)%2+1:0,bob=moving&&fr===1?1:0;
-  // on the duck you sit on its back, behind the head; on the alpaca a little further forward
-  const duckR=kind==='d',front=duckR?(pass?-dir*3:-dir*5):pass?dir*2:-dir,back=duckR?-dir*10:-dir*6,sy=duckR?11:9;
-  if(duckR)drawDuckAt(x,y,dir,bob,false);else drawAlpaca(x,y-bob,dir,fr,t);
+  const front=pass?dir*2:-dir,back=-dir*6,sy=9;
+  drawAlpaca(x,y-bob,dir,fr,t);
   if(pass)drawAvatar(g,x+back,y-sy-bob,pass.look,{sit:true,ride:true,shadow:false,blink:((t+1.3)%4)<.12,t});
   drawAvatar(g,x+front,y-sy-bob,look,{sit:true,ride:true,shadow:false,blink:(t%4)<.12,heart,t});
-  if(!duckR)R(Math.round(x+front)-2,Math.round(y)-13-bob,4,2,'#e8506c');
+  R(Math.round(x+front)-2,Math.round(y)-13-bob,4,2,'#e8506c');
 }
 // riding together: tap someone on the alpaca, "Mitreiten", and you sit behind them; any tap or step gets you off again
 let passOf=null,pendPass=null;
@@ -166,11 +165,10 @@ function updatePillion(){
   if(scene!=='garden'||!d||!d.ride||d.scene!=='garden'||twin||['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d'].some(k=>keys[k])){hopOff();return;}
   av.x=d.x;av.y=d.y;av.dir=(ghosts[d.id]&&ghosts[d.id].dir)||av.dir;av.moving=d.moving;av.target=null;av.swim=false;
 }
-function goRide(kind){if(av.swim||av.jump||knock||mySeat!==null||passOf)return;kind=kind||'a';const m=kind==='d'?duck:alp;pendRide=kind;av.run=false;av.target={x:m.x,y:m.y+3};}
-function mount(){const m=pendRide==='d'?duck:alp;rideKind=pendRide==='d'?'d':'a';pendRide=false;riding=true;Sfx.sit();av.target=null;av.x=m.x;av.y=m.y;av.dir=m.dir;lastPres='';for(let i=0;i<5;i++)spawn({kind:'spark',x:av.x+(Math.random()*14-7),y:av.y-22-Math.random()*8,vy:-10,life:.5});}
+function goRide(){if(av.swim||av.jump||knock||mySeat!==null||passOf)return;pendRide=true;av.run=false;av.target={x:alp.x,y:alp.y+3};}
+function mount(){pendRide=false;riding=true;Sfx.sit();av.target=null;av.x=alp.x;av.y=alp.y;av.dir=alp.dir;lastPres='';for(let i=0;i<5;i++)spawn({kind:'spark',x:av.x+(Math.random()*14-7),y:av.y-22-Math.random()*8,vy:-10,life:.5});}
 function dismount(){if(!riding)return;if(av.swim||av.jump)return;riding=false;
-  if(rideKind==='d'){duck.x=av.x;duck.y=av.y;duck.dir=av.dir||1;duck.homeAt=performance.now()+8000;}
-  else{alp.x=alp.hx=alp.tx=av.x;alp.y=alp.hy=alp.ty=av.y;alp.dir=av.dir||1;alp.next=performance.now()+4000;}
+  alp.x=alp.hx=alp.tx=av.x;alp.y=alp.hy=alp.ty=av.y;alp.dir=av.dir||1;alp.next=performance.now()+4000;
   const nx=av.x-(av.dir||1)*11;if(!blocked(nx,av.y+2)&&!isWater(nx,av.y+2)){av.x=nx;av.y+=2;}lastPres='';}
 // one alpaca for everyone: the garden's owner (or, without them, the lowest peer id) moves it, the others follow
 var alpDrop=null;
@@ -185,18 +183,17 @@ function alpLeader(){
 function updateAlpaca(dt){
   updatePillion();
   if(scene!=='garden')return;
-  updateDuck(dt);
-  if(riding&&rideKind==='a'){alp.x=av.x;alp.y=av.y;return;}
+  if(riding){alp.x=av.x;alp.y=av.y;return;}
   if(alpDrop){alp.x=alp.hx=alp.tx=alpDrop.x;alp.y=alp.hy=alp.ty=alpDrop.y;alp.next=performance.now()+4000;alpDrop=null;}
   const L=alpLeader();
-  if(!L.me&&pendRide!=='a'){const a=L.peer.ap;
+  if(!L.me&&!pendRide){const a=L.peer.ap;
     if(a){if(Math.hypot(a[0]-alp.x,a[1]-alp.y)>60){alp.x=a[0];alp.y=a[1];}else{const f=1-Math.exp(-dt*6);alp.x+=(a[0]-alp.x)*f;alp.y+=(a[1]-alp.y)*f;}
       alp.dir=a[2]>0?1:-1;alp.moving=!!a[3];alp.hx=alp.tx=a[0];alp.hy=alp.ty=a[1];return;}}
-  if(pendRide==='a'){if(!alpIdle()){pendRide=false;}else if(Math.hypot(av.x-alp.x,av.y-(alp.y+3))<11){mount();return;}else if(!av.target)pendRide=false;}
+  if(pendRide){if(!alpIdle()){pendRide=false;}else if(Math.hypot(av.x-alp.x,av.y-(alp.y+3))<11){mount();return;}else if(!av.target)pendRide=false;}
   const now=performance.now();
-  if(now>alp.next&&pendRide!=='a'){alp.next=now+3500+Math.random()*4500;for(let k=0;k<6;k++){const tx=alp.hx+(Math.random()*36-18),ty=alp.hy+(Math.random()*20-10);
+  if(now>alp.next&&!pendRide){alp.next=now+3500+Math.random()*4500;for(let k=0;k<6;k++){const tx=alp.hx+(Math.random()*36-18),ty=alp.hy+(Math.random()*20-10);
     if(!blocked(tx,ty)&&!isWater(tx,ty)&&ty>150&&ty<345&&tx>-OX+14&&tx<CW+OX-14){alp.tx=tx;alp.ty=ty;break;}}}
-  const dx=alp.tx-alp.x,dy=alp.ty-alp.y,d=Math.hypot(dx,dy);alp.moving=d>1&&pendRide!=='a';
+  const dx=alp.tx-alp.x,dy=alp.ty-alp.y,d=Math.hypot(dx,dy);alp.moving=d>1&&!pendRide;
   if(alp.moving){alp.x+=dx/d*11*dt;alp.y+=dy/d*11*dt;if(Math.abs(dx)>.5)alp.dir=dx>0?1:-1;}
 }
 
@@ -316,8 +313,7 @@ document.getElementById('lnClose').addEventListener('click',closeLine);
 lineM.addEventListener('pointerdown',e=>{if(e.target===lineM)closeLine();});
 
 
-/* ================= duck: lives by the pool in Sisi's garden, quacks when tapped (just the sound and its beak) ================= */
-const DUCK={x:129,y:322};
+/* ================= the duck: only the quiz show's host now (sprite and talking beak) ================= */
 const DUCK_PAL={w:'#fff5f4',p:'#fab4b4',P:'#d48581',g:'#517746',G:'#6a925d',l:'#98bd7a',b:'#bd6027',r:'#cf3336',m:'#812d2d',R:'#f34b62',o:'#fd9800',y:'#ffb84c',e:'#491718',h:'#ff96a0'};
 const DUCK_ROWS=['..............mmmmm.....','............mmRhRRmmm...','...........mRRhRRrrrrm..','...........mRRRrrrrrrrm.','...........mRRrrlGrrlGrm','..........mRRGglGGgGlGgm','..........mRGgPwwwwwPGgm','..........mRGPwwwwwwwPlG','....PPP...lGGPwwwwwwwwPg','...PpppPP.lGPwwwwwwwwwpP','..PpwwpppPPgPwwwewwwwwpP','..PwwwwwpGggPwwwmwbbbbbP','..PwwwwwwglgPwwwbooyyyyb','.PpwwwwwglGGgwwwwbbbbbb.','.PwwwwwwwgGglgPwwwppgP..','PpwwPPwwwwwgGGgwwwpgggGg','PpwPppPPwwwgGlGgggGgllgg','PwwPpwPPwwPpggGglGggGg..','PwwwPpwPpwwPwppglGgpgg..','.PwwPPPwwwwwwwppggpppP..','.PpwwPwwwwwPwwwwwwwppP..','..PwwwPPPPPwwwwwwwwwpP..','...PwwwwwwwwwwwwwwwpP...','....PpwwwwwwwwwwwwwpP...','.....PpwwwwwwwwwwwpP....','......PPppppppppPP......','......boob....boob......','.....byoob...byoob......','.....bbbbb...bbbbb......'];
 // beak open: the same duck with rows 12 to 14 swapped
@@ -325,23 +321,3 @@ const DUCK_OPEN={12:'..PwwwwwwglgPwwwbyyyyyb.',13:'.PpwwwwwglGGgwwwwemmmm..',14:
 function duckSprite(open,dir){const c=document.createElement('canvas');c.width=24;c.height=29;const x=c.getContext('2d');
   DUCK_ROWS.forEach((r,j)=>{r=open&&DUCK_OPEN[j]||r;for(let i=0;i<r.length;i++)if(DUCK_PAL[r[i]]){x.fillStyle=DUCK_PAL[r[i]];x.fillRect(dir>0?i:23-i,j,1,1);}});return c;}
 const duckImg={'1':[duckSprite(false,1),duckSprite(true,1)],'-1':[duckSprite(false,-1),duckSprite(true,-1)]};
-// the duck walks home to the pool on its own a while after you get off
-const duck={x:DUCK.x,y:DUCK.y,dir:1,moving:false,homeAt:0};
-let duckQuackAt=-9e9,duckDrop=null;
-function duckHere(){return visiting?(visiting.id===OWNER_ID||!!(visiting.data&&visiting.data.owner)):(isOwner||myId===OWNER_ID);}
-function duckIdle(){return duckHere()&&!(riding&&rideKind==='d')&&!livePeers().some(p=>p.ride&&p.rk==='d');}
-function onDuck(x,y){return duckIdle()&&Math.abs(x-duck.x)<13&&y>duck.y-28&&y<duck.y+3;}
-function quack(){duckQuackAt=performance.now();Sfx.quack();}
-function updateDuck(dt){
-  if(riding&&rideKind==='d'){duck.x=av.x;duck.y=av.y;duck.dir=av.dir||1;return;}
-  if(duckDrop){duck.x=duckDrop.x;duck.y=duckDrop.y;duck.homeAt=performance.now()+8000;duckDrop=null;}
-  if(pendRide==='d'){if(!duckIdle()||!av.target)pendRide=false;else if(Math.hypot(av.x-duck.x,av.y-(duck.y+3))<11){mount();return;}}
-  const dx=DUCK.x-duck.x,dy=DUCK.y-duck.y,d=Math.hypot(dx,dy);
-  duck.moving=d>1&&pendRide!=='d'&&performance.now()>duck.homeAt;
-  if(duck.moving){duck.x+=dx/d*9*dt;duck.y+=dy/d*9*dt;if(Math.abs(dx)>.5)duck.dir=dx>0?1:-1;}else if(d<=1)duck.dir=1;
-}
-function drawDuckAt(x,y,dir,bob,open){x=Math.round(x);y=Math.round(y);
-  ell(x,y,10,2,'rgba(40,80,40,.28)');
-  g.drawImage(duckImg[dir>0?'1':'-1'][open?1:0],x-12,y-27-bob);
-}
-function drawDuck(t){drawDuckAt(duck.x,duck.y,duck.dir,duck.moving&&Math.floor(t*6)%2?1:0,performance.now()-duckQuackAt<320);}
