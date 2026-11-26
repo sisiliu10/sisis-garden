@@ -2721,7 +2721,7 @@ function dTick(){
 }
 setInterval(dTick,150);
 function openDraw(){dOpen=true;dW.m.classList.add('show');pjPub({k:'draw',id:''});dTick();dRender(true);}
-function closeDraw(){dW.m.classList.remove('show');dOpen=false;pjPub(null);const S=pgS('draw');S.cur=null;
+function closeDraw(){dW.m.classList.remove('show');dOpen=false;dBot=null;pjPub(null);const S=pgS('draw');S.cur=null;
   if(S.mine&&!dPlayers(Object.assign({},S.mine,{mine:true})).some(p=>!p.gone&&!p.me)){S.mine=null;pgPub();}}
 function dCell(cv,e){const r=cv.getBoundingClientRect();return [clamp(Math.floor((e.clientX-r.left)/r.width*D_GW),0,D_GW-1),clamp(Math.floor((e.clientY-r.top)/r.height*D_GH),0,D_GH-1)];}
 function dPaint(x0,y0,x1,y1){const dx=Math.abs(x1-x0),dy=-Math.abs(y1-y0),sx=x0<x1?1:-1,sy=y0<y1?1:-1;let e=dx+dy;
@@ -2729,6 +2729,7 @@ function dPaint(x0,y0,x1,y1){const dx=Math.abs(x1-x0),dy=-Math.abs(y1-y0),sx=x0<
 function dSendPx(i){dMy.c={i,px:dEnc(dPx)};pjSoon(dPub());}
 function dRender(force){
   if(!dOpen)return;
+  if(dBot){dRenderBot(force);return;}
   const now=Date.now(),g=dRound(),B=dW.body,P=g?dPhase(g,now):{ph:'lobby'},ps=dPlayers(g),ph=P.ph,i=P.i;
   const set=(e,t)=>{if(e.textContent!==t)e.textContent=t;};
   const drawer=g&&(ph==='draw'||ph==='rev')?g.order[i]:null,iDraw=drawer===myPeer();
@@ -2740,8 +2741,12 @@ function dRender(force){
         B.appendChild(pgEl('div','gres ok',R.length>1&&sc[R[1].peer]===top?'Unentschieden!':R[0]&&R[0].me?'Du gewinnst!':R[0]?R[0].n+' gewinnt!':'Fertig'));
         const rk=pgEl('div','qrank');R.forEach((p,k)=>{const d=pgEl('div');d.appendChild(pgEl('span','',(k+1)+'. '+(p.me?'Du':p.n)));d.appendChild(pgEl('span','',sc[p.peer]+' Punkte'));rk.appendChild(d);});B.appendChild(rk);
         if(top>0&&dDone!==g.id&&dMy.id===g.id&&R.some(p=>p.me&&sc[p.peer]===top)){dDone=g.id;qConfetti();}}
-      const n=ps.filter(p=>!p.gone).length,row=pgEl('div','gstart'),b=pgBtn('btn dark gbig',ph==='end'?'Nochmal':'Runde starten',()=>dStart());b.disabled=n<2;row.appendChild(b);B.appendChild(row);
-      B.appendChild(pgEl('div','qnote',n<2?'Montagsmaler braucht mindestens zwei. Warte, bis jemand das Spiel öffnet.':`${n} Leute sind da. Jeder malt einmal, die anderen raten.`));
+      const n=ps.filter(p=>!p.gone).length,row=pgEl('div','gstart');
+      if(n>=2){row.appendChild(pgBtn('btn dark gbig',ph==='end'?'Nochmal':'Runde starten',()=>dStart()));}
+      else row.appendChild(pgBtn('btn dark gbig','Gegen den Computer',()=>dBotStart()));
+      B.appendChild(row);
+      B.appendChild(pgEl('div','qnote',n<2?'Allein? Der Computer malt, du rätst. Sobald jemand dazukommt, könnt ihr gegeneinander spielen.':`${n} Leute sind da. Jeder malt einmal, die anderen raten.`));
+      if(n>=2)B.appendChild(pgBtn('qlink','Oder allein gegen den Computer',()=>dBotStart()));
     } else if(ph==='count'){B.appendChild(pgEl('div','gres ok',String(Math.max(1,Math.ceil((P.T.S[0]-now)/1000)))));B.appendChild(pgEl('div','qnote',`Als Erstes malt ${g.order[0]===myPeer()?'du':g.nm[0]}.`));}
     else {
       const head=pgEl('div','dhead');
@@ -2774,6 +2779,84 @@ function dRender(force){
     const k=JSON.stringify(out.slice(-6));if(k!==dFeedK){dFeedK=k;dW.feed.innerHTML='';out.slice(-6).forEach(([n,t,o])=>{const d=pgEl('div',o?'ok':'');d.appendChild(pgEl('b','',n));d.appendChild(document.createTextNode(' '+t));dW.feed.appendChild(d);});}}
   const sc=g?dScores(g,ps,ph==='end'?g.order.length-1:ph==='rev'?i:(i??0)-1):null,top=sc?Math.max(0,...Object.values(sc)):0;
   pgStrip(dW,ps,sc?p=>(sc[p.peer]||0)+' P':null,g&&ph==='draw'?p=>p.peer===drawer?'#f2a33a':(dOk(g,i,ps)[p.peer]!==undefined?'#3f9a4a':null):null,ph==='end'?p=>top>0&&sc[p.peer]===top:null);
+}
+
+/* ---- alone: the computer draws, you guess ----
+   Small hand-pixelled pictures (16x12, shown at double size). The computer draws them stroke by stroke. */
+const DRAW_BOT={
+ SONNE:['.......y','...y...y...y','....y.....y','......yyyy','.....yyyyyy','.yy.yyyyyyyy.yy','.....yyyyyy','......yyyy','....y.....y','...y...y...y','.......y'],
+ HAUS:['.......rr','......rrrr','.....rrrrrr','....rrrrrrrr','...rrrrrrrrrr','....oooooooo','....obbooooo','....obboonno','....oooonno','....oooonno','....oooonno','gggggggggggggggg'],
+ BAUM:['......ggg','....ggggggg','...ggggggggg','..ggggggrgggg','..ggggggggggg','...ggrgggggg','....ggggggg','......nn','......nn','......nn','.....nnnn','gggggggggggggggg'],
+ KATZE:['','...k.......k','...kk.....kk','...kkkkkkkkk','..kkkkkkkkkkk','..kkgkkkkkgkk','..kkkkkkkkkkk','kkkkkkkikkkkkkk','..kkkkkkkkkkk','...kkkkkkkkk'],
+ FISCH:['','','.....bbbbb','...bbbbbbbb...b','..bbkbbbbbbb.bb','.bbbbbbbbbbbbbb','..bbbbbbbbbb.bb','...bbbbbbbb...b','.....bbbbb'],
+ AUTO:['','','.....rrrrrr','....rbbrrbbr','...rrbbrrbbrr','.rrrrrrrrrrrrrr','.rrrrrrrrrrrrrr','.rrkkkrrrrkkkrr','...kkk....kkk'],
+ BLUME:['......ii','.....iiii','....ii..ii','....iiyyii','....ii..ii','.....iiii','......ii','.......g','....gg.g','.....ggg','.......g','.......g'],
+ APFEL:['.......n','.......n.gg','......nggg','....rrrrrrr','...rrrrrrrrr','...rrirrrrrr','...rrrrrrrrr','...rrrrrrrrr','....rrrrrrr','.....rr.rr'],
+ HERZ:['','...rrr...rrr','..rrrrr.rrrrr','..rrirrrrrrrr','..rrrrrrrrrrr','...rrrrrrrrr','....rrrrrrr','.....rrrrr','......rrr','.......r'],
+ STERN:['.......y','.......y','......yyy','.yyyyyyyyyyyyy','...yyyyyyyyy','....yyyyyyy','....yyy.yyy','...yyy...yyy','...y.......y'],
+ MOND:['','.....yyyy','...yyyy','..yyy','.yyy','.yyy','.yyy','..yyy','...yyyy','.....yyyy'],
+ WOLKE:['','','.....bbb','....bbbbb.bb','..bbbbbbbbbbbb','.bbbbbbbbbbbbbb','.bbbbbbbbbbbbbb','..bbbbbbbbbbbb'],
+ SCHIFF:['.......k','.......kr','.......krr','.......krrr','.......k','..nnnnnnnnnnnn','...nnnnnnnnnn','....nnnnnnnn','bbbbbbbbbbbbbbbb','.b.b.b.b.b.b.b.b'],
+ PILZ:['.....rrrrrr','...rrrrrrrrrr','..rr.rrrrr.rrr','.rrrrrrrrrrrrrr','.....kkkkk','.....kooook','.....kooook','.....kkkkk','gggggggggggggggg'],
+ EIS:['.....ii','....iiii','...iiiiii','....bbbb','...bbbbbb','....oooo','....oooo','.....oo','.....oo','......o'],
+ BALLON:['.....rrrr','....rrrrrr','...rrrirrrr','...rrrrrrrr','...rrrrrrrr','....rrrrrr','.....rrrr','.......r','.......k','......k','.......k','......k'],
+ KERZE:['.......o','......oyo','.......y','......kk','.....iiii','.....iiii','.....iiii','.....iiii','....nnnnnn'],
+ TASSE:['','....o.o.o','.....o.o','...bbbbbbb','...bbbbbbbbb','...bbbbbb.bb','...bbbbbbbbb','...bbbbbbb','....bbbbb','..nnnnnnnnnn'],
+ KIRSCHE:['........g','.......gg','......g.g','.....g...g','....g.....g','...rr....rr','..rrrr..rrrr','..rirr..rirr','..rrrr..rrrr','...rr....rr'],
+ REGENSCHIRM:['.......k','....pppppp','..pppppppppp','.pppppppppppp','pppppppppppppp','.......k','.......k','.......k','.....k.k','......k'],
+};
+const DB_COL={k:1,r:2,o:3,y:4,g:5,b:6,p:7,n:8,i:9}, DB_N=8, DB_T=40000, DB_DRAW=18000, DB_REV=3000;
+let dBot=null;
+// the picture as pixels on the 32x24 canvas, and the order the computer draws them in: colour by colour, always to the nearest next pixel
+function dBotPic(word){
+  const rows=DRAW_BOT[word],cells=[];
+  rows.forEach((r,y)=>[...r].forEach((ch,x)=>{const c=DB_COL[ch];if(!c)return;for(let dy=0;dy<2;dy++)for(let dx=0;dx<2;dx++)cells.push({x:x*2+dx,y:y*2+dy+1,c});}));
+  const order=[],byCol={};cells.forEach(p=>(byCol[p.c]=byCol[p.c]||[]).push(p));
+  Object.keys(byCol).sort((a,b)=>(a==1)-(b==1)||byCol[b].length-byCol[a].length).forEach(c=>{const L=byCol[c].slice();let cur=L.shift();order.push(cur);
+    while(L.length){let bi=0,bd=1e9;L.forEach((p,i)=>{const d=Math.abs(p.x-cur.x)+Math.abs(p.y-cur.y);if(d<bd){bd=d;bi=i;}});cur=L.splice(bi,1)[0];order.push(cur);}});
+  return order;
+}
+function dBotStart(){const now=Date.now();dBot={words:shuffled(Object.keys(DRAW_BOT)).slice(0,DB_N),i:0,S:now+D_LEAD,fin:0,got:{},last:''};dBot.order=dBotPic(dBot.words[0]);Sfx.click();dRender(true);}
+function dBotNext(){dBot.i++;dBot.fin=0;dBot.last='';if(dBot.i<dBot.words.length){dBot.S=Date.now()+600;dBot.order=dBotPic(dBot.words[dBot.i]);}}
+function dBotScore(){let s=0;for(const k in dBot.got)s+=40+Math.round(60*(1-dBot.got[k]/DB_T));return s;}
+function dBotGuess(t){if(!dBot||dBot.fin||Date.now()<dBot.S)return;t=String(t||'').trim();if(!t)return;dBot.last=t;
+  if(dNorm(t)===dNorm(dBot.words[dBot.i])){dBot.got[dBot.i]=Date.now()-dBot.S;dBot.fin=Date.now();try{Sfx.yay(.5);}catch(e){}}else{try{Sfx.beep(false,.5);}catch(e){}}
+  dRender(true);}
+function dBotTick(){if(!dBot||!dOpen)return;const now=Date.now();
+  if(dBot.i<dBot.words.length){if(!dBot.fin&&now-dBot.S>DB_T)dBot.fin=now;if(dBot.fin&&now-dBot.fin>DB_REV)dBotNext();}
+  if(now<dBot.S&&dBot.i===0){const n=Math.ceil((dBot.S-now)/1000);if(n<=3&&dBeepK!=='bot'+n){dBeepK='bot'+n;try{Sfx.beep(false);}catch(e){}}}
+  else if(dBeepK!=='bot'+dBot.i&&now>=dBot.S&&!dBot.fin&&dBot.i<dBot.words.length){dBeepK='bot'+dBot.i;try{Sfx.beep(true);}catch(e){}}}
+setInterval(dBotTick,150);
+function dRenderBot(force){
+  const now=Date.now(),B=dW.body,b=dBot,done=b.i>=b.words.length,count=!done&&now<b.S,word=done?'':b.words[b.i];
+  const set=(e,t)=>{if(e.textContent!==t)e.textContent=t;};
+  set(dW.info,done||count?'':b.fin?'':Math.max(0,Math.ceil((b.S+DB_T-now)/1000))+' S');
+  const key=['bot',b.i,count?1:0,b.fin?1:0,done?1:0].join('|');
+  if(force||B.dataset.k!==key){B.dataset.k=key;B.innerHTML='';dW.cv=null;dW.hint=null;dW.feed=null;
+    if(done){const s=dBotScore(),n=Object.keys(b.got).length;B.appendChild(pgEl('div','gres ok',n+' von '+b.words.length+' erraten'));B.appendChild(pgEl('div','qnote',s+' Punkte'));
+      if(n>=b.words.length/2&&dDone!=='bot'+b.S){dDone='bot'+b.S;qConfetti();}
+      const row=pgEl('div','gstart');row.appendChild(pgBtn('btn dark gbig','Nochmal',()=>dBotStart()));B.appendChild(row);
+      B.appendChild(pgBtn('qlink','Zurück',()=>{dBot=null;dRender(true);}));}
+    else if(count){B.appendChild(pgEl('div','gres ok',String(Math.max(1,Math.ceil((b.S-now)/1000)))));B.appendChild(pgEl('div','qnote','Der Computer malt, du rätst.'));}
+    else{
+      const head=pgEl('div','dhead');
+      if(b.fin)head.appendChild(pgEl('div','dword',(b.got[b.i]!==undefined?'Richtig: ':'Das war: ')+word));
+      else{head.appendChild(pgEl('div','qnote','Bild '+(b.i+1)+' von '+b.words.length+': der Computer malt'));const h=pgEl('div','dhint');head.appendChild(h);dW.hint=h;}
+      B.appendChild(head);
+      const cv=pgEl('canvas','dcanvas');cv.width=D_GW;cv.height=D_GH;B.appendChild(cv);dW.cv=cv;
+      if(!b.fin){const row=pgEl('div','row');const inp=pgEl('input','inp');inp.maxLength=30;inp.placeholder='Was ist das?';inp.autocomplete='off';inp.setAttribute('aria-label','Raten');
+        const go=pgBtn('btn dark','Raten',()=>{dBotGuess(inp.value);});inp.addEventListener('keydown',e=>{if(e.key==='Enter')go.click();});
+        row.appendChild(inp);row.appendChild(go);B.appendChild(row);setTimeout(()=>inp.focus(),0);
+        if(b.last)B.appendChild(pgEl('div','qnote','„'+b.last+'“ war es nicht.'));}
+    }
+  }
+  // the picture grows while the computer draws; letters show up as hints after a while
+  if(dW.cv&&!done){const X=dW.cv.getContext('2d'),k=b.fin?1:clamp((now-b.S)/DB_DRAW,0,1),n=Math.round(b.order.length*k);
+    for(let y=0;y<D_GH;y++)for(let x=0;x<D_GW;x++){X.fillStyle=(x+y)%2?'#fffdf7':'#f5efe2';X.fillRect(x,y,1,1);}
+    for(let j=0;j<n;j++){const p=b.order[j];X.fillStyle=DRAW_PAL[p.c];X.fillRect(p.x,p.y,1,1);}
+    if(!b.fin&&n<b.order.length){const p=b.order[n];X.fillStyle='#1d1238';X.fillRect(p.x,p.y,1,1);}}
+  if(dW.hint&&!b.fin){const el=now-b.S,show=el>22000?2:el>14000?1:0;set(dW.hint,[...word].map((c,j)=>j<show?c:'_').join(' '));}
+  pgStrip(dW,[pgMe(),{peer:'bot',n:'Computer',l:cleanLook({hair:'#9aa0b0',top:'#4f7fe0'}),j:{}}],p=>p.peer==='bot'?'':dBotScore()+' P',p=>p.peer==='bot'&&!b.fin&&!done&&!count?'#f2a33a':null,null);
 }
 /* ================= live: see friends walking around ================= */
 let lobby=null, room=null, roomInit=false, roomDead=false, roomUp=false, roomT0=0, roomErr='', lastPres='', lastPresT=0;
@@ -4773,7 +4856,7 @@ function maybeAutoVisit(){
 #gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gAlt{display:flex;flex-direction:column;gap:10px;margin-top:4px}#gAlt[hidden],.galt[hidden]{display:none}.gor{margin:6px 0 0;font-size:14px;opacity:.6}.galt{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;color:#2a2430;cursor:pointer}.galt:active{transform:translate(2px,2px)}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;outline:none;border-radius:0;-webkit-appearance:none;appearance:none;box-shadow:none;-webkit-tap-highlight-color:transparent}#gEmail:focus,#gTok:focus{outline:none;background:#fff8e6}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
 #gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795700098"></script>
+<script src="config.js?v=1795700270"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -4804,7 +4887,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '26.11. 14:34';
+  const BUILD = '26.11. 14:37';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -5066,7 +5149,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 26.11. 14:34';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 26.11. 14:37';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid', 'garden-pending').forEach(k => localStorage.removeItem(k)); } catch (e) {}
