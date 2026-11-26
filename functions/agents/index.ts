@@ -54,7 +54,8 @@ Regeln:
 ${avoid.length ? '- Diese Fragen gab es schon, stelle andere: ' + avoid.join(' / ') + '\n' : ''}Antworte nur mit JSON: [{"q":"Frage","o":["A","B","C"],"a":0}]. "a" ist der Index der richtigen Antwort.`;
 
 // ask the model; returns its text or null
-async function ask(prompt: string, maxTokens: number, system?: string): Promise<string | null> {
+// fast: for quiz questions people are waiting for. The quickest model goes first, each try has a hard time limit.
+async function ask(prompt: string, maxTokens: number, system?: string, fast = false): Promise<string | null> {
   if (KEY) {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -67,10 +68,15 @@ async function ask(prompt: string, maxTokens: number, system?: string): Promise<
   }
   // Free Gemini models get overloaded (503) or hit their daily quota (429) often, and a model name can disappear (404).
   // So: try a few models in turn, with thinking off (thinking can use up the whole output budget and leave no answer).
-  const models = [...new Set([GMODEL, 'gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-2.5-flash'])];
+  const models = fast
+    ? [...new Set(['gemini-3.5-flash-lite', 'gemini-flash-lite-latest', GMODEL, 'gemini-2.5-flash'])]
+    : [...new Set([GMODEL, 'gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-2.5-flash'])];
+  const until = Date.now() + (fast ? 20000 : 60000);
   for (const model of models) {
-    for (const think of [false, true]) {
-      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent', {
+    for (const think of (fast ? [false] : [false, true])) {
+      if (Date.now() > until) return null;
+      let r: Response;
+      try { r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent', {
         method: 'POST',
         headers: { 'x-goog-api-key': GKEY!, 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -78,15 +84,16 @@ async function ask(prompt: string, maxTokens: number, system?: string): Promise<
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
           // newer Gemini models no longer accept temperature, so it is left out here
           generationConfig: {
-            maxOutputTokens: Math.max(4096, maxTokens * 4), responseMimeType: 'application/json',
+            maxOutputTokens: fast ? maxTokens * 2 : Math.max(4096, maxTokens * 4), responseMimeType: 'application/json',
             ...(think ? {} : { thinkingConfig: { thinkingBudget: 0 } }),
           },
         }),
-      });
+        signal: AbortSignal.timeout(fast ? 9000 : 30000),
+      }); } catch { console.error('gemini', model, 'too slow'); break; }
       if (!r.ok) {
         const t = (await r.text()).slice(0, 300);
         console.error('gemini', model, think ? 'thinking' : 'no-thinking', r.status, t);
-        if (r.status === 400 && !think) continue;   // this model may not accept thinkingBudget 0: try again without it
+        if (r.status === 400 && !think && !fast) continue;   // this model may not accept thinkingBudget 0: try again without it
         break;                                      // 429, 503, 404 ...: next model
       }
       const j: any = await r.json();
@@ -152,7 +159,7 @@ if (isQuiz) {
     const n = Math.min(10, Math.max(4, num(body?.n) || 8));
     const avoid = (Array.isArray(body?.avoid) ? body.avoid : []).slice(-30).map((x: unknown) => s(x, 140)).filter(Boolean);
     const level = ['leicht', 'mittel', 'schwer'].includes(body?.level) ? body.level : 'mittel';
-    const tq = await ask(QUIZ(s(body?.topic, 80).trim(), level, n, avoid), 1600);
+    const tq = await ask(QUIZ(s(body?.topic, 80).trim(), level, n, avoid), 1600, undefined, true);
     if (tq === null) return out({ error: 'ai' });
     const mq = tq.match(/\[[\s\S]*\]/);
     let arr: any; try { arr = JSON.parse(mq ? mq[0] : ''); } catch {
