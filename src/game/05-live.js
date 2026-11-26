@@ -23,6 +23,7 @@ function sendPresence(now){
   if(!room||now-lastPresT<60) return;
   const st={g:gardenKey(),u:myId||null,sw:av.swim||av.jump?1:0,say:(mySay&&mySay.until>performance.now())?{n:mySay.n,t:mySay.t}:null,ty:(document.activeElement===chatIn&&chatIn.value.trim()&&now-typingAt<5000)?1:0,x:Math.round(av.x*2)/2,y:Math.round((av.y-(av.kh||0))*2)/2,act:myAct,al:riding?1:0,pl:passOf||0,sl:slide?(slide.ph==='climb'?1:2):0,sg:mySeat===null?null:{s:mySeat,a:Math.round(swA*100)/100},s:scene==='house'?'h':scene==='island'?'i':'g',b:av.back?1:0,m:av.moving?1:0,r:av.run&&av.moving?1:0,n:(me().name||'Friend').slice(0,14),l:me().look,w:av.water>0?1:0,nap:napping&&scene==='house'?1:0};
   if(scene==='island')st.il=isleMine.length;
+  {const fp=fishPresence();if(fp)st.fi=fp;}
   if(scene==='garden'&&alpIdle()&&alpLeader().me)st.ap=[Math.round(alp.x),Math.round(alp.y),alp.dir>0?1:-1,alp.moving?1:0];
   const k=JSON.stringify(st); if(k===lastPres&&now-lastPresT<2500) return;
   lastPres=k; lastPresT=now; try{const pr=room.presence(st);if(pr&&pr.catch)pr.catch(()=>{});}catch(e){}
@@ -68,7 +69,7 @@ function livePeers(){
     const sgq=q.sg&&(q.sg.s===0||q.sg.s===1)?{s:q.sg.s,a:clamp(num(q.sg.a,0),-1.2,1.2)}:null;
     if(gh.pxx!==undefined&&Math.abs(gh.x-gh.pxx)>.02)gh.dir=gh.x>gh.pxx?1:-1;else if(gh.pxx===undefined&&Math.abs(tx-gh.x)>.6)gh.dir=tx>gh.x?1:-1;gh.pxx=gh.x;
     const apq=Array.isArray(q.ap)&&q.ap.length===4&&q.ap.slice(0,2).every(v=>typeof v==='number')?[clamp(q.ap[0],-OX+14,CW+OX-14),clamp(q.ap[1],0,600),q.ap[2],q.ap[3]]:null;
-    out.push({pl:typeof q.pl==='string'&&q.pl?q.pl.slice(0,64):null,ap:apq,nap:q.nap===1&&q.s==='h'?1:0,sl:q.sl===1||q.sl===2?q.sl:0,ride:!!q.al,sg:sgq,say:gh.sayUntil>now?gh.sayT:'',typing:!!q.ty&&!(gh.sayUntil>now),id:p.peer,by:p.by,x:gh.x,y:gh.y,scene:q.s==='h'?'house':q.s==='i'?'island':'garden',back:!!q.b,moving:!!q.m||now-(gh.mvT||0)<150,run:!!q.r,swim:!!q.sw,water:!!q.w,name:str(q.n,14)||'Friend',look:cleanLook(q.l)});
+    out.push({fi:Array.isArray(q.fi)&&q.fi.length>=4&&q.fi.length<=5&&q.fi.every(v=>Number.isFinite(v))?q.fi.slice(0,5):null,pl:typeof q.pl==='string'&&q.pl?q.pl.slice(0,64):null,ap:apq,nap:q.nap===1&&q.s==='h'?1:0,sl:q.sl===1||q.sl===2?q.sl:0,ride:!!q.al,sg:sgq,say:gh.sayUntil>now?gh.sayT:'',typing:!!q.ty&&!(gh.sayUntil>now),id:p.peer,by:p.by,x:gh.x,y:gh.y,scene:q.s==='h'?'house':q.s==='i'?'island':'garden',back:!!q.b,moving:!!q.m||now-(gh.mvT||0)<150,run:!!q.r,swim:!!q.sw,water:!!q.w,name:str(q.n,14)||'Friend',look:cleanLook(q.l)});
   }
   return out;
 }

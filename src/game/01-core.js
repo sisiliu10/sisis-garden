@@ -7,7 +7,9 @@ const KIND_LABEL={tree:'Tree',sunflower:'Sunflower',lantern:'Lantern plant',plum
 const SLOTS=[[120,174],[36,214],[198,202],[34,258],[206,258],[66,318],[104,330],[166,276]];
 const TOPS={sunflower:[5,10,15,23,34],lantern:[5,10,13,19,22],plum:[5,10,14,27,28],tea:[5,10,8,12,17],tree:[5,10,18,27,39],bamboo:[5,10,13,20,27],beet:[5,10,11,16,21]};
 const FOUNT={x:120,y:258};
-const WORLD_H=486, BED_W=46, BED_H=28;
+const WORLD_H=570, BED_W=46, BED_H=28;
+// the pond at the end of the path, with a little wooden dock to fish from
+const POND={x:120,y:530,rx:76,ry:23}, DOCK={x0:112,x1:128,y0:496,y1:527};
 const POOL={x0:150,x1:208,y0:298,y1:334}, BOARD={x0:204,x1:230,y:316};
 const BED_SLOTS=[[30,390],[84,390],[30,436],[84,436]];
 const FLOWERS=['peony','tulip','daisy','lavender','cornflower','marigold'];

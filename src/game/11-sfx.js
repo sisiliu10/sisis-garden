@@ -132,6 +132,13 @@ const Sfx=(()=>{
     [['square',.5],['triangle',1]].forEach(([ty,m])=>{const o=c.createOscillator(),g=c.createGain();o.type=ty;o.frequency.setValueAtTime(f,t);
       g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v*m,t+.006);g.gain.setValueAtTime(v*m,t+d*.7);g.gain.exponentialRampToValueAtTime(.0004,t+d);
       o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+d+.02);});}
-  return {beep,click,join,splash,whee,yay,pour,grow,sit,quack,door,preload:()=>{const c=Snd.started()&&Snd.get();if(c)loadDoor(c);}};
+  // fishing: a soft whoosh when you cast, a low "blub" when something bites, quick reel clicks when you pull
+  function cast(){const c=ready();if(!c)return;const t=c.currentTime+.01,b=c.createBufferSource();b.buffer=noiseBuf(c,.4);const bp=c.createBiquadFilter();bp.type='bandpass';bp.Q.value=1.2;bp.frequency.setValueAtTime(900,t);bp.frequency.exponentialRampToValueAtTime(2800,t+.3);
+    const g=c.createGain();g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.12,t+.08);g.gain.exponentialRampToValueAtTime(.001,t+.38);b.connect(bp);bp.connect(g);g.connect(c.destination);b.start(t);b.stop(t+.4);}
+  function plop(){const c=ready();if(!c)return;const t=c.currentTime+.01,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(520,t);o.frequency.exponentialRampToValueAtTime(150,t+.14);
+    g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.22,t+.01);g.gain.exponentialRampToValueAtTime(.001,t+.2);o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+.22);}
+  function reel(){const c=ready();if(!c)return;const t0=c.currentTime+.01;for(let i=0;i<9;i++){const t=t0+i*.045,o=c.createOscillator(),g=c.createGain();o.type='square';o.frequency.value=1800+i*60;
+    g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.03,t+.003);g.gain.exponentialRampToValueAtTime(.0005,t+.025);o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+.03);}}
+  return {cast,plop,reel,beep,click,join,splash,whee,yay,pour,grow,sit,quack,door,preload:()=>{const c=Snd.started()&&Snd.get();if(c)loadDoor(c);}};
 })();
 

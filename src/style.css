@@ -543,3 +543,12 @@
 #clTip{position:fixed;display:none;z-index:7;gap:10px;align-items:center;background:var(--paper);border:2px solid var(--ink);box-shadow:3px 3px 0 rgba(42,36,48,.25);padding:6px 6px 6px 10px;font-size:15px;max-width:min(300px,calc(100vw - 12px))}#clTip.show{display:flex}#clTip span{overflow-wrap:anywhere}
 #actMenu{position:fixed;display:none;gap:6px;z-index:7}#actMenu.show{display:flex}#actMenu .btn{white-space:nowrap}
 #bMusic.off{opacity:.45;text-decoration:line-through}
+
+/* aquarium */
+#fishM .aqp{width:min(440px,100%)}
+#aqCv{display:block;width:100%;aspect-ratio:2/1;margin-top:12px;image-rendering:pixelated;border:3px solid #2f3e46;box-shadow:inset 0 0 0 2px #46585f;background:#6cb9d3}
+.aqgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}
+.aqf{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 4px 6px;background:#fff;border:2px solid var(--ink);font-size:14px;line-height:1.15;text-align:center}
+.aqf canvas{width:48px;height:24px;image-rendering:pixelated}
+.aqf .c{font-size:13px;color:#6d6472;min-height:15px}
+.aqf.no{background:transparent;border-style:dashed;border-color:#b9b0a4;color:#9a919e}

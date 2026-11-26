@@ -12,6 +12,7 @@ function drawBubbles(){
   const sc=scene==='house'?'house':scene==='island'?'island':'garden';
   const toS=(x,y)=>sc==='island'?[(IX+x)*S,(IY+y)*S]:sc==='house'?[(RX+x)*S,(RY+y)*S]:[(OX+x)*S,(OY+y-camR)*S];
   if(mySay&&mySay.until>now) items.push({id:'me',x:av.x,y:av.y,t:mySay.t});
+  else if(fishSay&&fishSay.until>now&&sc==='garden') items.push({id:'me',x:av.x,y:av.y-(fish&&fish.ph==='show'?16:0),t:fishSay.t});
   else if(document.activeElement===chatIn&&chatIn.value.trim()&&now-typingAt<5000) items.push({id:'me~ty',x:av.x,y:av.y,ty:true});
   livePeers().forEach(p=>{if(p.scene!==sc)return;if(p.say)items.push({id:p.id,x:p.x,y:p.y,t:p.say});else if(p.typing)items.push({id:p.id+'~ty',x:p.x,y:p.y,ty:true});});
   const keep=new Set();
@@ -63,6 +64,7 @@ function updateRest(dt,t){
   if(scene==='house'){houseUpdate(dt,t);return;}
   if(scene==='island'){isleUpdate(dt,t);islandSparkTick(dt);return;}
   if(av.x>55&&av.x<65&&av.y<150.5){if(riding)dismount();enterHouse();return;}
+  fishUpdate(dt);
   setPrompt(av.x>46&&av.x<74&&av.y<172&&!editing?'Go inside':null,'↑');
   smokeT+=dt;if(smokeT>.45){smokeT=0;spawn({kind:'smoke',x:HC+10+Math.random()*2,y:HB-42,vx:3+Math.random()*3,vy:-6-Math.random()*3,life:2.2});}
   let best=null,bd=1e9;
@@ -126,7 +128,8 @@ function render(t){
     if(moving.bed){R(x-BED_W/2,y-BED_H/2,BED_W,BED_H,ok?'#8f5a38':'#e8506c');}else{ell(x,y,9,3,ok?'#ffffff':'#e8506c');R(x,y-10,1,10,ok?'#ffffff':'#e8506c');}g.globalAlpha=1;}
   if(av.target&&!av.target.plant){const tx=Math.round(av.target.x),ty=Math.round(av.target.y);R(tx-2,ty,1,1,'#fff');R(tx+2,ty,1,1,'#fff');R(tx,ty-1,1,1,'#fff');R(tx,ty+1,1,1,'#fff');}
   const list=projects().map(p=>({y:posOf(p)[1],d:()=>withBounce(p,posOf(p)[1],()=>drawPlant(p,t))})).concat(skills().map(b=>({y:posOf(b)[1]+BED_H/2-2,d:()=>withBounce(b,posOf(b)[1]+BED_H/2,()=>drawBed(b,t))})));
-  drawPool(t);
+  drawPool(t);drawPond(t);
+  REEDS.forEach(([x,y,i])=>list.push({y,d:()=>drawReeds(x,y,i,t)}));
   list.push({y:FOUNT.y,d:()=>drawFountain(t)});
   list.push({y:SL.y,d:()=>drawSlide(t)});
   for(let r0=0;r0<lineRows();r0++)list.push({y:CLN.rows[r0],d:()=>drawLineRow(r0,t)});
@@ -151,6 +154,7 @@ function render(t){
   const sleeping=visiting&&!hostLive();
   if(sleeping) list.push({y:host.y+6,d:()=>drawSleeper(t)});
   list.sort((a,b)=>a.y-b.y).forEach(o=>o.d());
+  drawMyFishing(t);livePeers().forEach(p=>{if(p.scene==='garden'&&p.fi)drawPeerFishing(p,t);});
   items().forEach(p=>{const s=scaleOf(p);drawFlies(p,fliesOf(p),t,s);drawThirst(p,t);});
   drawCan();
   parts.forEach(q=>{

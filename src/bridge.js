@@ -250,6 +250,19 @@
     },
   };
 
+  /* ---------- fishing: your own catches, anyone signed in can look at a garden's aquarium ---------- */
+  window.__fish = {
+    async load(id) {
+      const who = id || uid; if (!who || !/^[\w-]{1,64}$/.test(who)) return null;
+      try { const d = await getDoc('gardens/' + who + '/x/fish'); return d.exists ? (d.data() || null) : null; } catch (e) { return null; }
+    },
+    async save(o) {
+      if (!uid || !o || typeof o.c !== 'object') return false;
+      const c = {}; for (const k in o.c) { const v = +o.c[k]; if (/^[a-z]{2,6}$/.test(k) && Number.isFinite(v) && v > 0) c[k] = Math.min(9999, Math.floor(v)); }
+      try { await setDoc('gardens/' + uid + '/x/fish', { c }); return true; } catch (e) { return false; }
+    },
+  };
+
   /* ---------- AI quiz questions for an own topic (limits are enforced on the server) ---------- */
   window.__quiz = {
     // the server already tries several models, so one call is enough

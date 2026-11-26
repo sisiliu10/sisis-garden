@@ -20,9 +20,10 @@ function drawBG(){
   for(let i=0;i<n;i++){const x=Math.floor(r()*W),y=gt+4+Math.floor(r()*(TH-gt-4)),c=r()<.5?'#6bb35c':'#8fd17c';R(x,y,1,2,c);R(x+2,y,1,2,c);R(x+1,y+1,1,1,c);if(r()<.3){R(x+4,y-1,1,2,c);R(x+3,y,1,1,c);}}
   for(let i=0;i<n/5;i++){const x=Math.floor(r()*W),y=gt+6+Math.floor(r()*(TH-gt-6)),c=['#e85a5a','#5a86e8','#ffffff','#ffffff','#f2c94c'][Math.floor(r()*5)];R(x,y,1,1,c);if(r()<.4)R(x+1,y+2,1,1,'#ffffff');}
   // skills area: path, hedge with a gate
-  const fy=OY+356, px0=OX+113;
-  R(px0,fy,14,TH-fy,'#d8c08f');R(px0,fy,1,TH-fy,'#c4a978');R(px0+13,fy,1,TH-fy,'#c4a978');
-  for(let i=0;i<(TH-fy)/5;i++){R(px0+2+Math.floor(r()*10),fy+Math.floor(r()*(TH-fy)),2,1,'#bfa577');}
+  const fy=OY+356, px0=OX+113, pe=OY+DOCK.y0+2;
+  R(px0,fy,14,pe-fy,'#d8c08f');R(px0,fy,1,pe-fy,'#c4a978');R(px0+13,fy,1,pe-fy,'#c4a978');
+  for(let i=0;i<(pe-fy)/5;i++){R(px0+2+Math.floor(r()*10),fy+Math.floor(r()*(pe-fy-2)),2,1,'#bfa577');}
+  drawPondBG(r);
   for(let x=-4;x<W+8;x+=6){if(x>OX+98&&x<OX+142)continue;disc(x,fy,4,'#3c8a3a');disc(x-1,fy-1,3,'#4f9e43');R(x-1,fy-3,2,1,'#6cbc58');if(r()<.25){R(x+1,fy-2,1,1,'#e2483c');}}
   [OX+100,OX+137].forEach(gx=>{R(gx,fy-7,3,11,'#7a4a2c');R(gx,fy-7,3,1,'#a8714a');R(gx+2,fy-6,1,10,'#5a3420');});
   // pool deck in the middle of the garden

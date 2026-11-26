@@ -1,13 +1,14 @@
 /* ================= cottage (inside) ================= */
 const RW=196, RH=172, WALL=54;
 let scene='garden', RX=0, RY=0, houseNear=null, napT=0, napping=false;
-const HCOL=[[5,0,35,69],[39,0,99,77],[100,0,122,65],[120,0,158,91],[156,0,192,69],[5,118,33,152],[166,148,190,164]];
+const HCOL=[[5,0,35,69],[39,0,99,77],[100,0,122,65],[120,0,158,91],[156,0,192,69],[5,118,33,152],[166,148,190,164],[158,108,194,130]];
 const HOBJ=[
   {x:66,y:84,label:'Open dashboard',act:()=>openDash(),box:[40,30,100,78]},
   {x:139,y:97,get label(){return napping?'Get up':(bedSleepers().length?'Lie down next to '+(livePeers().find(p=>p.scene==='house'&&p.nap)||{name:'them'}).name:'Take a nap');},act:()=>{napping=!napping;napT=napping?.01:0;av.target=null;av.moving=false;av.back=false;},box:[120,32,158,92]},
   {x:20,y:76,label:'Open bookshelf',act:()=>openBooks(),box:[4,16,36,68]},
   {x:42,y:140,label:'Play a game',act:()=>askQuiz(),box:[4,100,34,152]},
   // the wardrobe: only in your own cottage, it is where you change your outfit
+  {x:152,y:124,label:'Watch the fish',act:()=>openAquarium(),box:[158,84,194,130]},
   {x:174,y:78,own:true,label:'Open wardrobe',act:()=>{if(!visiting)openCreator(true);},box:[156,12,192,68]},
 ];
 function roomOrigin(){RX=Math.floor((W-RW)/2);RY=Math.max(52,Math.floor((H-RH)/2)+6);}
@@ -153,6 +154,7 @@ function renderHouse(t){
       R(8,128,22,7,'#53318a');R(12,129,2,4,'#2a2430');R(11,128,4,2,'#e8506c');R(19,130,3,2,'#f2c94c');R(24,130,3,2,'#4fb3e8');
       R(9,135,20,14,'#5b3690');R(13,138,12,7,'#4a2a78');R(17,140,4,1,'#f2c94c');R(7,149,24,1,'#2a2430');
     }},
+    {y:129,d:()=>drawRoomTank(t)},
     {y:163,d:()=>{ // plant
       R(170,150,16,13,'#a8462c');R(169,150,18,3,'#d9744c');R(171,153,14,1,'#c0573a');
       disc(178,142,6,'#3c8a3a');disc(173,144,4,'#4f9e43');disc(183,143,4,'#4f9e43');disc(178,137,4,'#58a84a');R(176,135,2,1,'#78c65e');R(181,140,2,1,'#78c65e');
