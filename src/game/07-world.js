@@ -59,12 +59,11 @@ function drawAtmosphere(t){
   wxParticles(t,wx,OY+142-camR);wxOver(t,wx);
 }
 
-/* ================= real weather in Munich, the real moon ================= */
+/* ================= real weather (shown only as rain, snow and sky, no place or temperature), the real moon ================= */
 const WX={c:-1,temp:null,at:0};
 function wxKind(c){if(typeof c!=='number'||c<0)return '';if([71,73,75,77,85,86].includes(c))return 'snow';if(c>=95)return 'storm';if((c>=51&&c<=67)||(c>=80&&c<=82))return 'rain';if(c===45||c===48)return 'fog';if(c===3)return 'cloud';return 'clear';}
 function wxRainAmt(c){return (c>=51&&c<=57)?.45:(c===61||c===80)?.7:1;}
-function applyWx(o){if(!o||typeof o.c!=='number')return;WX.c=o.c;WX.temp=typeof o.t==='number'?o.t:null;WX.at=o.at||Date.now();
-  const el=document.getElementById('tWx');if(el)el.textContent=WX.temp===null?'':'München '+Math.round(WX.temp)+'°C';}
+function applyWx(o){if(!o||typeof o.c!=='number')return;WX.c=o.c;WX.temp=typeof o.t==='number'?o.t:null;WX.at=o.at||Date.now();}
 async function loadWx(){
   try{const f=localStorage.getItem('garden-wx-test');if(f){applyWx(JSON.parse(f));return;}}catch(e){}
   let old=null;try{old=JSON.parse(localStorage.getItem('garden-wx')||'null');}catch(e){}

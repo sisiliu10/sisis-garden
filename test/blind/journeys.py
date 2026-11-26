@@ -384,12 +384,10 @@ def weather(pw, chk, device):
         c = Ctx(pw, device, code=code, temp=temp); pg = c.pg
         try:
             c.enter(); pg.wait_for_timeout(1500)
-            if code == 2:
-                chk("weather line 'München 5°C' (4.6 rounded)", seen(pg.get_by_text("München 5°C")),
-                    re.findall(r"[^\n]*°C", c.text()))
-            if code == 71:
-                chk("weather line 'München -2°C' (-2.4 rounded)",
-                    re.search(r"München\s*[-−]2\s*°C", c.text()) is not None, re.findall(r"[^\n]*°C", c.text()))
+            if code in (2, 71):
+                # the garden shows the weather only as sky, rain and snow: no city, no temperature
+                chk(f"no city or temperature shown (weather code {code})",
+                    "München" not in c.text() and "°C" not in c.text(), re.findall(r"[^\n]*(?:°C|München)[^\n]*", c.text()))
             rates[code] = moving_pixels(pg, clip)
         finally:
             c.close()

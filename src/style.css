@@ -472,8 +472,6 @@
   .fl{font-family:Silkscreen,monospace;font-size:10px;color:var(--muted);margin:8px 0 3px}
   #dForm h3{font-size:18px}
 
-  .title .wx{font-family:Silkscreen,monospace;font-size:4.5px;letter-spacing:1px;margin-top:4px;opacity:.85;text-shadow:0 1px 0 #4f86c9}
-  .title .wx:empty{display:none}
   #live .all{color:var(--muted,#8a8378);font-weight:500;margin-left:8px}
   #isleHud{position:fixed;left:50%;top:54px;transform:translate(-50%,-100%);z-index:4;text-align:center;color:#fff;pointer-events:none;text-shadow:0 2px 0 #2f6ea8;white-space:nowrap}
   #isleHud[hidden]{display:none}
