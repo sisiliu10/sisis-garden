@@ -220,6 +220,32 @@ Wer schrieb „Die Leiden des jungen Werthers“?|Goethe|Schiller|Heine
 Wer malte „Das Mädchen mit dem Perlenohrring“?|Jan Vermeer|Rembrandt|Rubens
 Wie heißt die Kunstrichtung von Picasso mit eckigen Formen?|Kubismus|Impressionismus|Barock`],
 ];
+
+/* ---- little hand-made pixel icons (categories, answer shapes, medals) ---- */
+function pxIco(rows,pal){
+  const w=Math.max(...rows.map(r=>r.length)),h=rows.length,c=document.createElement('canvas');c.width=w+1;c.height=h+1;const X=c.getContext('2d');
+  rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='.')return;X.fillStyle='rgba(29,18,56,.55)';X.fillRect(x+1,y+1,1,1);}));
+  rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='.')return;X.fillStyle=pal[ch]||'#fffdf7';X.fillRect(x,y,1,1);}));
+  return c.toDataURL();
+}
+const QI_PAL={'#':'#fffdf7',a:'#f2c94c',r:'#e8506c',b:'#4f7fe0',g:'#7cf08a',s:'#c9c2d6',o:'#c98a1e'};
+const QI={
+ mix:['....#....','....#....','...###...','#########','.#######.','..#####..','..##.##..','.##...##.','.#.....#.'],
+ geo:['..#####..','.##.#.##.','##..#..##','#########','##..#..##','#########','##..#..##','.##.#.##.','..#####..'],
+ his:['#########','.#.....#.','.##...##.','..##.##..','...#a#...','..#.a.#..','.#.aaa.#.','.#aaaaa#.','#########'],
+ nat:['......###','....#####','..######.','.#####.#.','.####.##.','.###.###.','.##.###..','.#.###...','#........'],
+ sci:['...###...','....#....','....#....','...#.#...','..#...#..','.#aaaaa#.','#aaaaaaa#','#aaaaaaa#','.#######.'],
+ food:['......#.#','.....#.#.','....#.#..','#########','#########','.#######.','..#####..','...###...'],
+ pop:['...######','...######','...#....#','...#....#','...#....#','.###..###','####.####','.##...##.'],
+ sport:['..#####..','.##.#.##.','#..###..#','#.#####.#','#########','#.#####.#','#..###..#','.##.#.##.','..#####..'],
+ tech:['#########','#.......#','#.aa....#','#.......#','#.......#','#########','...###...','.#######.'],
+ art:['..#####..','.#######.','##r##b###','#########','###..####','##a###...','.#####...','..##.....'],
+};
+const QI_OPT=[['...#...','..###..','..###..','.#####.','.#####.','#######'],['...#...','..###..','.#####.','#######','.#####.','..###..','...#...'],['..###..','.#####.','#######','#######','#######','.#####.','..###..']];
+const QI_MED=[['.rb.br.','..rbr..','...r...','..aaa..','.aa#aa.','.a#aaa.','.aaaaa.','..aaa..'],['.rb.br.','..rbr..','...r...','..sss..','.ss#ss.','.s#sss.','.sssss.','..sss..'],['.rb.br.','..rbr..','...r...','..ooo..','.oo#oo.','.o#ooo.','.ooooo.','..ooo..']];
+const qIcon={};
+function qImg(src,cls){const i=document.createElement('img');i.src=src;i.alt='';i.className=cls;i.draggable=false;return i;}
+function qIco(k){return qIcon[k]||(qIcon[k]=k.startsWith('opt')?pxIco(QI_OPT[+k[3]],QI_PAL):k.startsWith('med')?pxIco(QI_MED[+k[3]],QI_PAL):pxIco(QI[k],QI_PAL));}
 const QB={};Q_CATS.forEach(([k,,s])=>{if(s)QB[k]=s.trim().split('\n').map(l=>l.trim().split('|')).filter(x=>x.length===4&&x.every(Boolean));});
 const QCAT_NAME=Object.fromEntries(Q_CATS.map(c=>[c[0],c[1]]));
 const Q_N=8, Q_T=12000, Q_R=2800, Q_LEAD=3200, Q_GEN=30000;
@@ -371,13 +397,13 @@ function qRender(force){
   const playing=P.ph==='count'||P.ph==='q'||P.ph==='rev';
   board.classList.toggle('big',P.ph==='count');board.classList.toggle('small',!playing);
   set(info,playing?(P.ph==='count'?String(g.top).toUpperCase():`FRAGE ${P.i+1}/${g.qs.length}`):'');
-  bar.hidden=P.ph!=='q';if(P.ph==='q'){document.getElementById('qBarI').style.width=(100*P.left/Q_T).toFixed(1)+'%';bar.classList.toggle('low',P.left<3500);}
+  bar.hidden=P.ph!=='q';if(P.ph==='q'){if(bar.children.length!==12){bar.innerHTML='';for(let k=0;k<12;k++)bar.appendChild(document.createElement('b'));}const on=Math.ceil(P.left/1000);[...bar.children].forEach((e,k)=>e.classList.toggle('on',k<on));bar.classList.toggle('low',P.left<3500);}
   if(P.ph==='count'){pop(board,String(Math.ceil(P.left/1000)));keyed(opts,'',()=>{});keyed(lobby,'c'+g.id,()=>{const d=document.createElement('div');d.className='qnote';d.textContent=g.mine?'Gleich geht’s los.':`${g.by} hat „${g.top}“ gestartet.`;lobby.appendChild(d);});}
   else if(P.ph==='q'||P.ph==='rev'){
     const q=g.qs[P.i],mine=qMy.id===g.id&&qMy.a[P.i]?qMy.a[P.i][0]:-1,joined=qMy.id===g.id;
     pop(board,q[0]);keyed(lobby,'',()=>{});
     keyed(opts,[g.id,P.i,P.ph,mine,joined?1:0].join('|'),()=>{
-      q[1].forEach((o,i)=>{const b=document.createElement('button');b.type='button';b.className='qopt c'+i;b.textContent=o;
+      q[1].forEach((o,i)=>{const b=document.createElement('button');b.type='button';b.className='qopt c'+i;b.appendChild(qImg(qIco('opt'+i),'qshape'));b.appendChild(document.createElement('span')).textContent=o;
         if(i===mine)b.classList.add('mine');
         if(P.ph==='rev'){b.disabled=true;b.classList.add(i===q[2]?'right':'wrong');}else if(mine>=0||!joined)b.disabled=true;
         b.onclick=()=>qAnswer(i);opts.appendChild(b);});});
@@ -391,13 +417,13 @@ function qRender(force){
     keyed(lobby,['L',gen?g.id:'',ended?g.id+rank.map(r=>r.p.peer+r.s).join():'',qErr].join('|'),(v,f)=>{
       if(ended&&rank.length){const R=document.createElement('div');R.className='qrank';
         rank.forEach((r,i)=>{const d=document.createElement('div'),a=document.createElement('span'),b=document.createElement('span');
-          a.textContent=(['🥇','🥈','🥉'][i]||(i+1)+'.')+' '+(r.p.me?'Du':r.p.n);b.textContent=r.s+' Punkte';d.appendChild(a);d.appendChild(b);R.appendChild(d);});
+          if(i<3&&r.s>0)a.appendChild(qImg(qIco('med'+i),'qmed'));else a.appendChild(document.createElement('i')).textContent=(i+1)+'.';a.appendChild(document.createTextNode(' '+(r.p.me?'Du':r.p.n)));b.textContent=r.s+' Punkte';d.appendChild(a);d.appendChild(b);R.appendChild(d);});
         lobby.appendChild(R);}
       if(gen){const d=document.createElement('div');d.className='qnote';d.textContent=g.mine?'Die KI schreibt gerade die Fragen.':`${g.by} hat das Thema ausgesucht.`;lobby.appendChild(d);
         if(g.mine){const x=document.createElement('button');x.type='button';x.className='qlink';x.textContent='Abbrechen';x.onclick=()=>{qMine=null;qPub();qRender(true);};lobby.appendChild(x);}
         return;}
       const C=document.createElement('div');C.className='qcats';
-      Q_CATS.forEach(([k,n],i)=>{const b=document.createElement('button');b.type='button';b.className='qcat k'+(i%4);b.textContent=n;b.onclick=()=>qStartCat(k);C.appendChild(b);});
+      Q_CATS.forEach(([k,n],i)=>{const b=document.createElement('button');b.type='button';b.className='qcat k'+(i%4);b.appendChild(qImg(qIco(k),'qico'));b.appendChild(document.createElement('span')).textContent=n;b.onclick=()=>qStartCat(k);C.appendChild(b);});
       lobby.appendChild(C);
       const row=document.createElement('div');row.className='row';
       const inp=document.createElement('input');inp.className='inp';inp.maxLength=60;inp.autocomplete='off';inp.placeholder='Oder eigenes Thema';inp.value=v;inp.setAttribute('aria-label','Eigenes Thema');
@@ -420,11 +446,12 @@ function qDrawStage(g,P,players,upto){
   for(let x=4;x<W;x+=8){X.fillStyle=(Math.floor(t/300)+x/8)%2?'#f2c94c':'#8a6a20';X.fillRect(x,2,2,2);}
   X.fillStyle='#e8506c';X.fillRect(0,66,W,14);X.fillStyle='#b8335a';for(let x=0;x<W;x+=4)X.fillRect(x,70+((x/4)%2),2,1);
   const inQ=play&&(P.ph==='q'||P.ph==='rev'),end=play&&P.ph==='end',n=Math.max(1,players.length);
+  const L0=22,LW=W-44;  // the stage between the curtains
   const sc=players.map(p=>play?qScore(g,p.a,upto):0),top=Math.max(0,...sc);
   const order=sc.map((v,i)=>i).sort((a,b)=>sc[b]-sc[a]);
   const revAt=P.ph==='rev'?P.T.R[P.i]:0;
   players.forEach((p,i)=>{
-    const cx=Math.round((i+.5)*W/n),win=end&&top>0&&sc[i]===top,place=order.indexOf(i);
+    const cx=Math.round(L0+(i+.5)*LW/n),win=end&&top>0&&sc[i]===top,place=order.indexOf(i);
     // after the round: a podium, the winner highest, in a spotlight
     const lift=end?(win?10:place===1?5:place===2?2:0):0;
     if(win){X.fillStyle='rgba(255,240,190,.16)';X.beginPath();X.moveTo(cx-5,4);X.lineTo(cx+5,4);X.lineTo(cx+17,66);X.lineTo(cx-17,66);X.fill();}
@@ -443,9 +470,22 @@ function qDrawStage(g,P,players,upto){
       if(ok){const k=clamp((Date.now()-revAt)/1400,0,1),gain=100+Math.round(50*clamp(1-x[1]/Q_T,0,1));
         X.globalAlpha=1-k*k;X.font='bold 7px monospace';X.textAlign='center';X.fillStyle='#1d1238';X.fillText('+'+gain,cx+1,17-k*10);X.fillStyle='#f2c94c';X.fillText('+'+gain,cx,16-k*10);X.globalAlpha=1;X.textAlign='start';}}
     // confetti keeps raining on the winner
+    if(win){const ty=Math.round(24-lift+Math.sin(t/260)*1.5);X.fillStyle='#1d1238';X.fillRect(cx-5,ty-1,11,10);
+      X.fillStyle='#f2c94c';X.fillRect(cx-4,ty,9,4);X.fillRect(cx-3,ty+4,7,1);X.fillRect(cx-1,ty+5,3,2);X.fillRect(cx-3,ty+7,7,1);X.fillRect(cx-6,ty+1,2,1);X.fillRect(cx+5,ty+1,2,1);X.fillRect(cx-6,ty+1,1,2);X.fillRect(cx+6,ty+1,1,2);
+      X.fillStyle='#fff3c4';X.fillRect(cx-3,ty+1,1,2);}
     if(win)for(let k=0;k<26;k++){const sp=16+(k%5)*5,yy=((t/1000*sp+k*17)%62)-2,xx=cx-16+((k*29)%33)+Math.round(Math.sin(t/380+k)*2);
       X.fillStyle=Q_CONF[k%Q_CONF.length];if((Math.floor(t/150)+k)%3)X.fillRect(xx,yy,2,1);else X.fillRect(xx,yy,1,2);}
   });
+  // red curtains on both sides, with a scalloped pelmet on top
+  for(const side of [0,1]){for(let x=0;x<20;x++){const xx=side?W-1-x:x,f=(x+Math.floor(Math.sin(t/900+x*.7)*0))%5;
+      X.fillStyle=f===0?'#6a1430':f===1||f===4?'#a52a4c':'#c8385e';const bot=66-Math.round(Math.max(0,(x-12))*1.2);X.fillRect(xx,6,1,bot-6);}
+    X.fillStyle='#f2c94c';X.fillRect(side?W-15:13,38,3,2);}
+  X.fillStyle='#8a1f3c';X.fillRect(0,0,W,5);for(let x=0;x<W;x+=10){X.fillStyle='#8a1f3c';X.fillRect(x+1,5,8,2);X.fillRect(x+3,7,4,1);X.fillStyle='#f2c94c';X.fillRect(x+4,8,2,1);}
+  // the audience: dark heads at the front that jump when an answer is revealed or someone wins
+  const cheer=P.ph==='rev'||end;
+  for(let x=4,k=0;x<W;x+=11,k++){const hop=cheer?Math.max(0,Math.round(Math.sin(t/(130+(k%3)*25)+k)*2)):0,y=73-hop;
+    X.fillStyle=k%2?'#160d33':'#1d1240';X.fillRect(x,y,8,9);X.fillRect(x+1,y-1,6,1);X.fillRect(x-1,y+4,10,6);
+    if(cheer&&k%3===0){X.fillRect(x-2,y-3-hop,2,5);X.fillRect(x+8,y-3-hop,2,5);}}
   const names=document.getElementById('qNames');
   const nk=players.map((p,i)=>p.peer+':'+p.n+':'+(p.me?1:0)+':'+(play?sc[i]:'')+':'+(end&&top>0&&sc[i]===top?1:0)).join(',');
   if(names.dataset.k!==nk){names.dataset.k=nk;names.innerHTML='';
