@@ -266,8 +266,8 @@ def _board(c):
     raw = cols.evaluate_all("""cs=>cs.map(c=>[...c.children].map(x=>{const s=getComputedStyle(x);const m=(s.backgroundColor.match(/\\d+/g)||[0,0,0]).map(Number);return m}))""")
     def cls(rgb):
         r, g, b = rgb[:3]
-        if r > 170 and g < 150: return 1      # player disc (reddish)
-        if r > 170 and g >= 150: return 2     # computer disc (yellowish)
+        if r > 170 and g < 150 and b < 160: return 1      # player disc (reddish)
+        if r > 170 and g >= 150 and b < 160: return 2     # computer disc (yellowish); empty holes are cream (high blue)
         return 0
     return [[cls(x) for x in col] for col in raw]   # board[col][row], row 0 = top
 
