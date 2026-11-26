@@ -72,7 +72,8 @@ function c4Tick(){
     if(H.ph==='end'&&H.p2&&!H.bot){const p=ps.find(x=>x.peer===H.p2[0]);const r=p&&p.presence.c4r;if(r&&r.id===H.id&&r.n===H.rd+1)c4Reset();}
     if(room){const st=c4Pub(),k=JSON.stringify(st);if(k!==c4LastPub||now-c4LastPubT>3000){c4LastPub=k;c4LastPubT=now;room.presence({c4:st}).catch(()=>{});}}
   }
-  {const st=c4State(),role=c4MyRole(st);if(st&&st.ph==='end'&&st.p2&&!st.bot&&role){const key=st.id+'|'+st.rd;if(!c4Rec[key]){c4Rec[key]=1;c4Record(st.w===3?'d':st.w===role?'w':'l');}}}
+  {const st=c4State(),role=c4MyRole(st);if(st&&st.ph==='end'&&st.p2&&!st.bot&&role){const key=st.id+'|'+st.rd;if(!c4Rec[key]){c4Rec[key]=1;c4Record(st.w===3?'d':st.w===role?'w':'l');if(st.w===role)coinsForWin(10);}}
+   else if(st&&st.ph==='end'&&st.bot&&role&&st.w===role){const key='b'+st.id+'|'+st.rd;if(!c4Rec[key]){c4Rec[key]=1;coinsForWin(3);}}}
   if(c4M.classList.contains('show'))renderC4();
   const L=c4Leader(),st=L.self?null:c4State();
   const showJ=!!(st&&st.ph==='wait'&&!st.p2&&!c4M.classList.contains('show')&&scene==='house');

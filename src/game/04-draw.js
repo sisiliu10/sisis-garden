@@ -83,7 +83,7 @@ function dRender(force){
       if(ph==='end'){const sc=dScores(g,ps,g.order.length-1),R=ps.slice().sort((a,b)=>sc[b.peer]-sc[a.peer]),top=R.length?sc[R[0].peer]:0;
         B.appendChild(pgEl('div','gres ok',R.length>1&&sc[R[1].peer]===top?'Unentschieden!':R[0]&&R[0].me?'Du gewinnst!':R[0]?R[0].n+' gewinnt!':'Fertig'));
         const rk=pgEl('div','qrank');R.forEach((p,k)=>{const d=pgEl('div');d.appendChild(pgEl('span','',(k+1)+'. '+(p.me?'Du':p.n)));d.appendChild(pgEl('span','',sc[p.peer]+' Punkte'));rk.appendChild(d);});B.appendChild(rk);
-        if(top>0&&dDone!==g.id&&dMy.id===g.id&&R.some(p=>p.me&&sc[p.peer]===top)){dDone=g.id;qConfetti();}}
+        if(top>0&&dDone!==g.id&&dMy.id===g.id&&R.some(p=>p.me&&sc[p.peer]===top)){dDone=g.id;qConfetti();coinsForWin(8);}}
       const n=ps.filter(p=>!p.gone).length,row=pgEl('div','gstart');
       if(n>=2){row.appendChild(pgBtn('btn dark gbig',ph==='end'?'Nochmal':'Runde starten',()=>dStart()));}
       else row.appendChild(pgBtn('btn dark gbig','Gegen den Computer',()=>dBotStart()));
@@ -177,7 +177,7 @@ function dRenderBot(force){
   const key=['bot',b.i,count?1:0,b.fin?1:0,done?1:0].join('|');
   if(force||B.dataset.k!==key){B.dataset.k=key;B.innerHTML='';dW.cv=null;dW.hint=null;dW.feed=null;
     if(done){const s=dBotScore(),n=Object.keys(b.got).length;B.appendChild(pgEl('div','gres ok',n+' von '+b.words.length+' erraten'));B.appendChild(pgEl('div','qnote',s+' Punkte'));
-      if(n>=b.words.length/2&&dDone!=='bot'+b.S){dDone='bot'+b.S;qConfetti();}
+      if(n>=b.words.length/2&&dDone!=='bot'+b.S){dDone='bot'+b.S;qConfetti();coinsForWin(3);}
       const row=pgEl('div','gstart');row.appendChild(pgBtn('btn dark gbig','Nochmal',()=>dBotStart()));B.appendChild(row);
       B.appendChild(pgBtn('qlink','Zurück',()=>{dBot=null;dRender(true);}));}
     else if(count){B.appendChild(pgEl('div','gres ok',String(Math.max(1,Math.ceil((b.S-now)/1000)))));B.appendChild(pgEl('div','qnote','Der Computer malt, du rätst.'));}

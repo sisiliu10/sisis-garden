@@ -17,6 +17,7 @@ function houseBlocked(x,y){
   if(x<8||x>RW-8||y<WALL+10) return true;
   if(y>RH-3&&!inDoor) return true;
   for(const [a,b,c,d] of HCOL) if(x>a&&x<c&&y>b&&y<d) return true;
+  if(hereOwns('lamp')&&x>32&&x<46&&y>124&&y<133) return true;
   return false;
 }
 function enterHouse(){hideHomeHint(false);
@@ -104,7 +105,8 @@ function renderHouse(t){
   // sticky notes + a small frame
   R(80,16,5,5,'#f6d860');R(86,20,5,5,'#9fc4ef');R(82,24,5,5,'#f4a7b9');
   // rug
-  ell(98,118,36,12,'#d9708f');ell(98,118,33,10,'#f2a8bc');ell(98,118,22,6,'#d9708f');ell(98,118,20,5,'#f7c7d4');
+  {const k=rugColors();ell(98,118,36,12,k[0]);ell(98,118,33,10,k[1]);ell(98,118,22,6,k[2]);ell(98,118,20,5,k[3]);}
+  if(hereOwns('poster'))drawPoster();
   // door mat
   R(RW/2-9,RH-7,18,6,'#b95a5a');R(RW/2-8,RH-6,16,4,'#d47c6a');
   // furniture + avatar, depth-sorted
@@ -157,6 +159,7 @@ function renderHouse(t){
       R(9,135,20,14,'#5b3690');R(13,138,12,7,'#4a2a78');R(17,140,4,1,'#f2c94c');R(7,149,24,1,'#2a2430');
     }},
     {y:129,d:()=>drawRoomTank(t)},
+    {y:hereOwns('lamp')?130:-99,d:()=>{if(hereOwns('lamp'))drawFloorLamp(nt>.3);}},
     {y:163,d:()=>{ // plant
       R(170,150,16,13,'#a8462c');R(169,150,18,3,'#d9744c');R(171,153,14,1,'#c0573a');
       disc(178,142,6,'#3c8a3a');disc(173,144,4,'#4f9e43');disc(183,143,4,'#4f9e43');disc(178,137,4,'#58a84a');R(176,135,2,1,'#78c65e');R(181,140,2,1,'#78c65e');

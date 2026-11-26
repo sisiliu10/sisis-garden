@@ -143,6 +143,9 @@ const Sfx=(()=>{
   function woof(){const c=ready();if(!c)return;const t0=c.currentTime+.01;[[0,1],[.17,.8]].forEach(([dt,v])=>{const t=t0+dt,o=c.createOscillator(),g=c.createGain(),lp=c.createBiquadFilter();o.type='sawtooth';
     o.frequency.setValueAtTime(420,t);o.frequency.exponentialRampToValueAtTime(260,t+.09);lp.type='lowpass';lp.frequency.value=1400;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.09*v,t+.012);g.gain.exponentialRampToValueAtTime(.001,t+.12);
     o.connect(lp);lp.connect(g);g.connect(c.destination);o.start(t);o.stop(t+.13);});}
-  return {woof,cast,plop,reel,beep,click,join,splash,whee,yay,pour,grow,sit,quack,door,preload:()=>{const c=Snd.started()&&Snd.get();if(c)loadDoor(c);}};
+  // a coin: two quick bright notes (three for a big win)
+  function coin(big){const c=ready();if(!c)return;const t0=c.currentTime+.01;(big?[988,1319,1976]:[988,1319]).forEach((f,i)=>{const t=t0+i*.07,o=c.createOscillator(),g=c.createGain();o.type='square';o.frequency.value=f;
+    g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.045,t+.005);g.gain.exponentialRampToValueAtTime(.0005,t+(i===(big?2:1)?.28:.08));o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+.3);});}
+  return {coin,woof,cast,plop,reel,beep,click,join,splash,whee,yay,pour,grow,sit,quack,door,preload:()=>{const c=Snd.started()&&Snd.get();if(c)loadDoor(c);}};
 })();
 

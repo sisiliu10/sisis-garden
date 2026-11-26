@@ -263,6 +263,21 @@
     },
   };
 
+  /* ---------- coins: your own wallet and what you bought; visitors can read it to show your decorations ---------- */
+  window.__coins = {
+    async load(id) {
+      const who = id || uid; if (!who || !/^[\w-]{1,64}$/.test(who)) return null;
+      try { const d = await getDoc('gardens/' + who + '/x/coins'); return d.exists ? (d.data() || null) : null; } catch (e) { return null; }
+    },
+    async save(o) {
+      if (!uid || !o) return false;
+      const n = v => (Number.isFinite(+v) && +v > 0 ? Math.min(999999, Math.floor(+v)) : 0);
+      const doc = { n: n(o.n), v: n(o.v), own: (Array.isArray(o.own) ? o.own : []).filter(x => typeof x === 'string' && /^[a-z]{2,8}$/.test(x)).slice(0, 40), bait: Math.min(99, n(o.bait)),
+        day: String(o.day || '').slice(0, 10), dg: n(o.dg), dw: (Array.isArray(o.dw) ? o.dw : []).filter(x => typeof x === 'string').map(x => x.slice(0, 40)).slice(0, 30) };
+      try { await setDoc('gardens/' + uid + '/x/coins', doc); return true; } catch (e) { return false; }
+    },
+  };
+
   /* ---------- AI quiz questions for an own topic (limits are enforced on the server) ---------- */
   window.__quiz = {
     // the server already tries several models, so one call is enough

@@ -77,7 +77,7 @@ function hRender(force){
       else{const kb=pgEl('div','hkeys');HANG_KEYS.forEach(r=>{const row=pgEl('div','hrow');r.split('').forEach(c=>{const ok=st.set.has(c);const b=pgBtn('hkey'+(ok?(g.w.includes(c)?' hit':' miss'):''),c,()=>hGuess(c));b.disabled=ok;row.appendChild(b);});kb.appendChild(row);});B.appendChild(kb);}
     } else {
       if(g){const won=st.solved;B.appendChild(pgEl('div','gres '+(won?'ok':'bad'),won?'Geschafft! Die Blume blüht.':'Verwelkt. Das Wort war '+g.w+'.'));
-        if(won&&hDone!==g.id&&hMy.id===g.id){hDone=g.id;qConfetti();}}
+        if(won&&hDone!==g.id&&hMy.id===g.id){hDone=g.id;qConfetti();coinsForWin(5);}}
       const row=pgEl('div','gstart');row.appendChild(pgBtn('btn dark gbig','Zufallswort',()=>hStart('',false)));B.appendChild(row);
       const r2=pgEl('div','row');const inp=pgEl('input','inp');inp.maxLength=20;inp.placeholder='Oder Wort für die anderen ausdenken';inp.autocomplete='off';inp.setAttribute('aria-label','Eigenes Wort');
       const go=pgBtn('btn','Los',()=>hStart(inp.value,true));inp.addEventListener('keydown',e=>{if(e.key==='Enter')go.click();});r2.appendChild(inp);r2.appendChild(go);B.appendChild(r2);

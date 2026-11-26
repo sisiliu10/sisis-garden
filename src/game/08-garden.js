@@ -122,7 +122,7 @@ function doWater(p,text){
   const weeds=weedsOf(p), before=waterOf(p);
   waterFx={p,from:before,t0:performance.now(),m:av.x<=posOf(p)[0]?1:-1,done:false};
   dlg.classList.add('pouring'); Sfx.pour(.3);
-  p.w=100; p.t=Date.now(); p.last=Date.now();
+  p.w=100; p.t=Date.now(); p.last=Date.now(); coinsForWatering(p);
   // every watering is real work logged, so the plant grows: +4% (the slider can still set any value by hand)
   const st0=stageOf(p),pr0=p.progress,pr1=Math.min(100,pr0+(pr0<100?4:0)),grew=pr1-pr0,stUp=stageOf({progress:pr1})>st0; waterFx.grow=pr1;
   const msg=stUp?`${p.code} grew into a ${(p.bed?BED_STAGES:STAGE_NAMES)[stageOf({progress:pr1})].toLowerCase()}! Now at ${pr1}%.`:catNews?'7 days in a row: a cat moved in! It will follow you around now.':weeds?`Pulled ${weeds} weed${weeds>1?'s':''} and watered. Welcome back to ${p.code}.`:
@@ -184,6 +184,7 @@ function blocked(x,y){
   if(scene==='garden'&&Math.hypot(x-(SL.x+15),(y-(SL.y-1))*1.5)<7) return true;
   if(scene==='garden'&&lineBlocked(x,y)) return true;
   if(scene==='garden'&&pondBlocked(x,y)) return true;
+  if(decoBlocked(x,y)) return true;
   if(scene==='garden'&&x>COMP.x-14&&x<COMP.x+19&&y>COMP.y-6&&y<COMP.y+2) return true;
   if(visiting&&Math.abs(x-host.x)<14&&Math.abs(y-host.y)<5) return true;
   for(const p of projects()){const s=Math.min(scaleOf(p),1.6),[px,py]=posOf(p),rx=(p.kind==='tree'?7:6)*s;const ex=(x-px)/rx,ey=(y-py)/(4*s);if(ex*ex+ey*ey<1)return true;}
@@ -248,7 +249,7 @@ function buildCreator(){
     const o=document.createElement('div');o.className='opt gen';
     o.innerHTML=`<div class="k">${label}</div><div class="sw ${type==='tx'?'tx':''}"></div>`;
     const box=o.querySelector('.sw');
-    (isOwner?OPT[k]:(EXTRA_LOOK[k]||[]).concat(OPT[k])).forEach(v=>{
+    (isOwner?OPT[k]:(EXTRA_LOOK[k]||[]).filter(v=>!SHOP_ACC.includes(v)).concat(OPT[k])).concat(k==='acc'?SHOP_ACC.filter(owns):[]).forEach(v=>{
       const b=document.createElement('button');b.type='button';
       if(type==='sw'){b.style.background=v;b.setAttribute('aria-label',v);}
       else b.textContent=k==='acc'?ACC_LABEL[v]:k==='hair'?HAIR_LABEL[v]:v[0].toUpperCase()+v.slice(1);
@@ -292,7 +293,7 @@ const gardensM=document.getElementById('gardens');
 document.getElementById('bGardens').onclick=()=>{renderGardens();gardensM.classList.add('show');};
 document.getElementById('gClose').onclick=()=>gardensM.classList.remove('show');
 document.getElementById('bHome').onclick=()=>{hideHomeHint(true);goHome();};
-function closeModals(){if(fishM.classList.contains('show'))closeAquarium();document.querySelectorAll('.modal.pgm.show').forEach(m=>m._close());compM.classList.remove('show');mapM.classList.remove('show');isleM.classList.remove('show');lineM.classList.remove('show');askM.classList.remove('show');if(quizM.classList.contains('show'))closeQuiz();if(c4M.classList.contains('show'))closeC4();stillM.classList.remove('show');dashM.classList.remove('show');booksM.classList.remove('show');if(creator.classList.contains('show'))closeCreator();help.classList.remove('show');gardensM.classList.remove('show');addM.classList.remove('show');}
+function closeModals(){shopM.classList.remove('show');if(fishM.classList.contains('show'))closeAquarium();document.querySelectorAll('.modal.pgm.show').forEach(m=>m._close());compM.classList.remove('show');mapM.classList.remove('show');isleM.classList.remove('show');lineM.classList.remove('show');askM.classList.remove('show');if(quizM.classList.contains('show'))closeQuiz();if(c4M.classList.contains('show'))closeC4();stillM.classList.remove('show');dashM.classList.remove('show');booksM.classList.remove('show');if(creator.classList.contains('show'))closeCreator();help.classList.remove('show');gardensM.classList.remove('show');addM.classList.remove('show');}
 
 /* ================= gardens (visiting) ================= */
 function renderNeighbours(){

@@ -38,7 +38,8 @@ function fishImg(id,sil){
   if(!sil&&f.t!=='b'){c.fillStyle='rgba(255,255,255,.55)';const ey=rows.findIndex(r=>r.includes('e')),ex=rows[ey].indexOf('e');c.fillRect(ex,ey-1,1,1);}
   return fishCache[k]=cv;
 }
-function pickFish(){const all=FISH.concat([BOOT]);let s=all.reduce((a,f)=>a+f.w,0)*Math.random();for(const f of all){s-=f.w;if(s<=0)return f;}return FISH[0];}
+// bait: rare fish three times as likely, no boots
+function pickFish(bait){const all=bait?FISH:FISH.concat([BOOT]),wt=f=>bait&&f.w<=9?f.w*3:f.w;let s=all.reduce((a,f)=>a+wt(f),0)*Math.random();for(const f of all){s-=wt(f);if(s<=0)return f;}return FISH[0];}
 
 /* ---------- your fish book (local first, then your own row in the database) ---------- */
 let fishBooks={}, visFish={};
@@ -83,7 +84,7 @@ function castLine(){
   av.back=false;av.target=null;
   let side=Math.random()<.5?-1:1,bx=0,by=0;
   for(let k=0;k<20;k++){bx=FSPOT.x+side*(16+Math.random()*28);by=POND.y+5+Math.random()*12;if(inPond(bx,by,-6))break;}
-  const sp=pickFish(),wait=1.6+Math.random()*4.4;
+  const sp=pickFish(useBait()),wait=1.6+Math.random()*4.4;
   fish={ph:'cast',t:0,bx,by,side,wait,sp,nib:[],dip:0};
   if(Math.random()<.7)fish.nib.push(.5+Math.random()*Math.max(.3,wait-1.1));
   if(Math.random()<.3)fish.nib.push(.5+Math.random()*Math.max(.3,wait-1.1));

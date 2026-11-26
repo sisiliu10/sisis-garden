@@ -37,7 +37,7 @@ const OPT={
   acc:['none','shades','headband','clip'],
 };
 const DEF_LOOK={skin:OPT.skin[1],hair:'long',hairColor:OPT.hairColor[0],top:OPT.top[0],bottom:'skirt',bottomColor:OPT.bottomColor[0],acc:'none'};
-const ACC_LABEL={none:'None',glasses:'Glasses',shades:'Sunglasses',headband:'Pearl band',clip:'Hair clip'};
+const ACC_LABEL={none:'None',glasses:'Glasses',shades:'Sunglasses',headband:'Pearl band',clip:'Hair clip',bow:'Bow',cap:'Cap',straw:'Straw hat',crown:'Crown'};
 const HAIR_LABEL={long:'Long',bob:'Bob',bun:'Bun',pony:'Ponytail',short:'Short'};
 
 /* ================= helpers ================= */
@@ -56,7 +56,7 @@ function mix(a,b,t){const A=hex(a),B=hex(b);return toHex(A.map((v,i)=>v+(B[i]-v)
 function shade(c,amt){return amt<0?mix(c,'#000000',-amt):mix(c,'#ffffff',amt);}
 
 /* ================= data model ================= */
-const EXTRA_LOOK={hairColor:['#c27a42'],top:['#2b3550'],acc:['glasses']};
+const EXTRA_LOOK={hairColor:['#c27a42'],top:['#2b3550'],acc:['glasses','bow','cap','straw','crown']};
 function cleanLook(l){const o={};for(const k in DEF_LOOK){const ok=(OPT[k]||[]).concat(EXTRA_LOOK[k]||[]);o[k]=(l&&ok.includes(l[k]))?l[k]:DEF_LOOK[k];}return o;}
 const LINK_TITLES={'https://claude.ai/artifact/CJPuQdDQXnnWkWCnHuHcux':'Recruiting landing page','https://claude.ai/artifact/YB33W7TjgC9V4cnaaG5YYB':'Product Education landing page','https://claude.ai/artifact/UW8b7bF8Rk5wKHQ7k9Hveh':'Freiraum website'};
 function cleanLinks(p){

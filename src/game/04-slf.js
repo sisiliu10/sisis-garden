@@ -78,7 +78,7 @@ function sRender(force){
       if(ph==='end'){const R=ps.slice().sort((a,b)=>sc[b.peer]-sc[a.peer]),top=R.length?sc[R[0].peer]:0;
         B.appendChild(pgEl('div','gres ok',R.length>1&&sc[R[1].peer]===top?'Unentschieden!':R[0]&&R[0].me?'Du gewinnst!':R[0]?R[0].n+' gewinnt!':'Fertig'));
         const rk=pgEl('div','qrank');R.forEach((p,i)=>{const d=pgEl('div');d.appendChild(pgEl('span','',(i+1)+'. '+(p.me?'Du':p.n)));d.appendChild(pgEl('span','',sc[p.peer]+' Punkte'));rk.appendChild(d);});B.appendChild(rk);
-        if(top>0&&sDone!==g.id&&sMy.id===g.id&&R.some(p=>p.me&&sc[p.peer]===top)){sDone=g.id;qConfetti();}}
+        if(top>0&&sDone!==g.id&&sMy.id===g.id&&R.some(p=>p.me&&sc[p.peer]===top)){sDone=g.id;qConfetti();coinsForWin(R.length>1?8:3);}}
       else B.appendChild(pgEl('div','qnote','Prüft zusammen: Tipp auf eine Antwort, die nicht zählen soll.'));
       const L=pgEl('div','svote');
       SLF_CATS.forEach((c,i)=>{const card=pgEl('div','scat');card.appendChild(pgEl('b','',c+' mit '+g.L));

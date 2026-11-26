@@ -361,7 +361,7 @@ function qTick(){
     const sk=g?g.id+P.ph+(P.i??''):'';
     if(sk!==qSoundK){qSoundK=sk;try{if(P.ph==='rev'&&qMy.id===g.id&&qMy.a[P.i]&&qMy.a[P.i][0]===g.qs[P.i][2])Sfx.yay(.5);else if(P.ph==='end'&&qMy.id===g.id){Sfx.quack(.5);qTalk=performance.now()+500;}}catch(e){}}
     if(P.ph==='end'&&g.ph==='play'&&qConfId!==g.id&&qMy.id===g.id){qConfId=g.id;const up=g.qs.length-1,ps=qPlayers(g),sc=ps.map(p=>qScore(g,p.a,up)),top=Math.max(0,...sc);
-      if(top>0&&ps.some((p,i)=>p.me&&sc[i]===top))qConfetti();}
+      if(top>0&&ps.some((p,i)=>p.me&&sc[i]===top)){qConfetti();coinsForWin(ps.length>1?10:3);}}
     qRender();}
   const show=!qOpen&&scene==='house'&&g&&!g.mine&&g.ph==='play'&&qPhase(g,now).ph!=='end';
   if(qJoin.hidden===!!show)qJoin.hidden=!show;
