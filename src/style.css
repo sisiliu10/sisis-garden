@@ -253,15 +253,12 @@
   .qopts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
   .qopts:empty{display:none}
   .qopt{font-family:"Pixelify Sans",sans-serif;font-size:16px;font-weight:600;color:#fff;border:3px solid var(--ink);box-shadow:3px 3px 0 rgba(0,0,0,.4);padding:10px 8px;cursor:pointer;min-height:52px;line-height:1.2;min-width:0;overflow-wrap:break-word;-webkit-hyphens:auto;hyphens:auto}
-  .qopt.c0{background:#3f9a4a}.qopt.c1{background:#d94a7a}.qopt.c2{background:#3f7fd0}
   .qopt:hover:not([disabled]){filter:brightness(1.1)}
   .qopt[disabled]{cursor:default}
-  .qopt.mine{outline:3px solid #f2c94c;outline-offset:2px}
-  .qopt.right{background:#3f9a4a;box-shadow:0 0 0 4px #b8f0a8}
   .qopt.wrong{opacity:.35}
   .qstagewrap{margin-top:12px;border:3px solid var(--ink);background:#2a1a55}
   #qStage{display:block;width:100%;height:auto;image-rendering:pixelated}
-  .qnames{display:flex;justify-content:space-around;gap:4px;padding:6px 4px;background:#1d1238;font-family:Silkscreen,monospace;font-size:11px;text-align:center}
+  .qnames{display:flex;justify-content:space-around;gap:4px;padding:6px 4px;background:#1d1238;font-family:Silkscreen,monospace;font-size:13px;text-align:center}
   .qnames div{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .qnames b{display:block;color:#f2c94c;font-weight:400}
   .qlobby{margin-top:12px;font-size:15px;color:#e9e1ff;display:flex;flex-direction:column;gap:8px}
@@ -273,13 +270,11 @@
   .qboard.big{font-family:Silkscreen,monospace;font-size:44px;font-weight:400;color:#e8506c}
   .qbar{height:8px;margin-top:8px;background:#1d1238;border:2px solid var(--ink)}
   .qbar i{display:block;height:100%;width:100%;background:#f2c94c;transition:width .1s linear}
-  .qcats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+  .qcats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
   .qcat{font-family:"Pixelify Sans",sans-serif;font-size:15px;font-weight:600;color:#fff;border:3px solid var(--ink);box-shadow:3px 3px 0 rgba(0,0,0,.4);padding:10px 6px;min-height:46px;line-height:1.15;cursor:pointer;min-width:0;overflow-wrap:break-word}
-  .qcat.k0{background:#3f9a4a}.qcat.k1{background:#d94a7a}.qcat.k2{background:#3f7fd0}.qcat.k3{background:#c98a1e}
   .qcat:hover{filter:brightness(1.1)}.qcat:active,.qopt:active:not([disabled]){transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,.4)}
   .qnote{color:#e3d8ff;font-size:15px;text-align:center}
   .qlink{background:none;border:0;padding:2px 0;font:inherit;font-size:15px;color:#c9b8f0;cursor:pointer;text-decoration:underline dotted 1px;text-underline-offset:3px;align-self:center}
-  @media (max-width:560px){.qcats{grid-template-columns:repeat(2,minmax(0,1fr))}.qcat{min-height:42px;padding:8px 6px}}
   @media (max-width:440px){.qopts{grid-template-columns:1fr;gap:6px}.qopt{min-height:44px;padding:8px}}
   .qboard.pop{animation:qpop .3s ease-out}
   @keyframes qpop{from{transform:scale(.93);opacity:.3}to{transform:none;opacity:1}}
@@ -355,12 +350,19 @@
   #qBar.low b.on{background:#e8506c;box-shadow:inset 0 -2px 0 #9a2a4a;animation:qlow .5s steps(1) infinite}
   @keyframes qlow{50%{background:#ff8aa8}}
   .qopt,.qcat{box-shadow:inset 3px 3px 0 rgba(255,255,255,.28),inset -3px -3px 0 rgba(0,0,0,.25),3px 3px 0 rgba(0,0,0,.45)}
-  .qopt{display:flex;align-items:center;justify-content:center;gap:9px;text-align:center}
+  .qopt{display:flex;align-items:center;justify-content:center;gap:9px;text-align:center;background:#fffdf7;color:var(--ink);box-shadow:inset -3px -3px 0 #d9cdb3,inset 3px 3px 0 #fff,3px 3px 0 rgba(0,0,0,.45)}
+  .qopt.mine{background:#f2c94c;outline:0;box-shadow:inset -3px -3px 0 #c99a2a,inset 3px 3px 0 #ffe68a,3px 3px 0 rgba(0,0,0,.45)}
+  .qopt.bad{background:#e8506c;color:#fff;box-shadow:inset -3px -3px 0 #a8304c,inset 3px 3px 0 #ff8aa8,3px 3px 0 rgba(0,0,0,.45)}
   .qopt .qshape{width:16px;height:14px;flex:0 0 auto;image-rendering:pixelated;object-fit:contain}
-  .qopt.wrong{opacity:1;color:rgba(255,255,255,.45);background-image:repeating-conic-gradient(rgba(14,10,36,.62) 0 25%,transparent 0 50%);background-size:4px 4px}
-  .qopt.right{box-shadow:inset 3px 3px 0 rgba(255,255,255,.35),inset -3px -3px 0 rgba(0,0,0,.2),0 0 0 4px #fff3c4,0 0 0 7px var(--ink)}
-  .qcat{display:flex;align-items:center;gap:8px;text-align:left}
-  .qcat .qico{width:20px;height:20px;flex:0 0 auto;image-rendering:pixelated;object-fit:contain}
+  .qopt.wrong{opacity:1;color:rgba(42,36,48,.4);background-image:repeating-conic-gradient(rgba(14,10,36,.62) 0 25%,transparent 0 50%);background-size:4px 4px}
+  .qopt.right{background:#3f9a4a;color:#fff;box-shadow:inset 3px 3px 0 rgba(255,255,255,.35),inset -3px -3px 0 rgba(0,0,0,.2),0 0 0 4px #fff3c4,0 0 0 7px var(--ink)}
+  .qcat{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-align:center;background:#2d1c60;color:#fff3c4;font-size:13.5px;min-height:64px;padding:8px 4px}
+  .qcat:hover{background:#3b2a7e;filter:none}
+  .qcat .qico,.qmix .qico{width:22px;height:22px;flex:0 0 auto;image-rendering:pixelated;object-fit:contain}
+  .qmix{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;font-family:"Pixelify Sans",sans-serif;font-size:18px;font-weight:700;color:var(--ink);background:#f2c94c;border:3px solid var(--ink);cursor:pointer;box-shadow:inset 3px 3px 0 rgba(255,255,255,.45),inset -3px -3px 0 rgba(0,0,0,.2),3px 3px 0 rgba(0,0,0,.45)}
+  .qmix:hover{background:#ffd860}.qmix:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,.45)}
+  .qhd{font-family:Silkscreen,monospace;font-size:11px;color:#c9b8f0;text-align:center;margin-top:2px}
+  .qfb{text-align:center;font-size:17px;font-weight:700;padding:4px 0}.qfb.ok{color:#7cf08a}.qfb.bad{color:#ff8aa8}.qfb.wait{color:#c9b8f0;font-weight:500;font-size:15px}
   .qrank span{display:flex;align-items:center;gap:6px}.qrank i{font-style:normal;width:16px;text-align:center;color:#c9b8f0}
   .qmed{width:16px;height:18px;image-rendering:pixelated;object-fit:contain}
   .qrank div{background:#2a1d5c;box-shadow:inset 2px 2px 0 rgba(255,255,255,.08),inset -2px -2px 0 rgba(0,0,0,.25)}

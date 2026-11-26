@@ -245,7 +245,8 @@ const QI_OPT=[['...#...','..###..','..###..','.#####.','.#####.','#######'],['..
 const QI_MED=[['.rb.br.','..rbr..','...r...','..aaa..','.aa#aa.','.a#aaa.','.aaaaa.','..aaa..'],['.rb.br.','..rbr..','...r...','..sss..','.ss#ss.','.s#sss.','.sssss.','..sss..'],['.rb.br.','..rbr..','...r...','..ooo..','.oo#oo.','.o#ooo.','.ooooo.','..ooo..']];
 const qIcon={};
 function qImg(src,cls){const i=document.createElement('img');i.src=src;i.alt='';i.className=cls;i.draggable=false;return i;}
-function qIco(k){return qIcon[k]||(qIcon[k]=k.startsWith('opt')?pxIco(QI_OPT[+k[3]],QI_PAL):k.startsWith('med')?pxIco(QI_MED[+k[3]],QI_PAL):pxIco(QI[k],QI_PAL));}
+const QI_OPTC=['#e8506c','#4f7fe0','#f2a33a'];
+function qIco(k){return qIcon[k]||(qIcon[k]=k.startsWith('opt')?pxIco(QI_OPT[+k[3]],Object.assign({},QI_PAL,{'#':QI_OPTC[+k[3]]})):k.startsWith('med')?pxIco(QI_MED[+k[3]],QI_PAL):pxIco(QI[k],QI_PAL));}
 const QB={};Q_CATS.forEach(([k,,s])=>{if(s)QB[k]=s.trim().split('\n').map(l=>l.trim().split('|')).filter(x=>x.length===4&&x.every(Boolean));});
 const QCAT_NAME=Object.fromEntries(Q_CATS.map(c=>[c[0],c[1]]));
 const Q_N=8, Q_T=12000, Q_R=2800, Q_LEAD=3200, Q_GEN=30000;
@@ -268,9 +269,9 @@ function qClean(g){
   const cut=(Array.isArray(g.cut)?g.cut:[]).slice(0,10).map(v=>Number.isFinite(v)?v:0);
   const ph=g.ph==='gen'?'gen':'play';
   if(ph==='play'&&!qs.length)return null;
-  return {id:g.id,ph,top:str(g.top,40),by:str(g.by,14)||'Friend',t0:num(g.t0,0),qs,cut,at:num(g.at,0)};
+  return {id:g.id,ph,top:str(g.top,40),ck:QB[g.ck]?g.ck:'',by:str(g.by,14)||'Friend',t0:num(g.t0,0),qs,cut,at:num(g.at,0)};
 }
-function qPub(){if(room)room.presence({qs:qMine?{id:qMine.id,ph:qMine.ph,top:qMine.top,by:qMine.by,t0:qMine.t0,qs:qMine.qs,cut:qMine.cut,at:qMine.at}:null}).catch(()=>{});}
+function qPub(){if(room)room.presence({qs:qMine?{id:qMine.id,ph:qMine.ph,top:qMine.top,ck:qMine.ck,by:qMine.by,t0:qMine.t0,qs:qMine.qs,cut:qMine.cut,at:qMine.at}:null}).catch(()=>{});}
 function qPubMe(){if(room)room.presence({qz:qOpen?{id:qMy.id,a:qMy.a,h:qSeen.slice(-100)}:null}).catch(()=>{});}
 function qAns(a){const o={};if(a&&typeof a==='object')for(const k in a){const i=+k,x=a[k];if(Number.isInteger(i)&&i>=0&&i<10&&Array.isArray(x)&&Number.isInteger(x[0])&&x[0]>=0&&x[0]<3)o[i]=[x[0],clamp(num(x[1],Q_T),0,Q_T)];}return o;}
 // how far a friend's clock is from mine: the smallest gap between their send time and my receive time
@@ -321,9 +322,9 @@ function qPick(cat){
   const sc=shuffled(pool).map(x=>({x,n:seen.reduce((k,S)=>k+(S.has(qHash(x[0]))?1:0),0)}));sc.sort((a,b)=>a.n-b.n);
   return sc.slice(0,Q_N).map(({x:[q,r,w1,w2]})=>{const o=shuffled([r,w1,w2]);return [q,o,o.indexOf(r)];});
 }
-function qNew(ph,top,qs){const now=Date.now();qMine={id:'q'+now.toString(36)+Math.random().toString(36).slice(2,5),ph,top,by:(me().name||'Friend').slice(0,14),t0:ph==='play'?now+Q_LEAD:0,qs:qs||[],cut:[],at:now};qErr='';qPub();qTick();}
+function qNew(ph,top,qs,ck){const now=Date.now();qMine={id:'q'+now.toString(36)+Math.random().toString(36).slice(2,5),ph,top,ck:ck||'',by:(me().name||'Friend').slice(0,14),t0:ph==='play'?now+Q_LEAD:0,qs:qs||[],cut:[],at:now};qErr='';qPub();qTick();}
 function qCanStart(){return qOpen&&!qOpenRounds(Date.now()).length;}
-function qStartCat(cat){if(!qCanStart())return;Sfx.click();qNew('play',QCAT_NAME[cat]||'Gemischt',qPick(cat));}
+function qStartCat(cat){if(!qCanStart())return;Sfx.click();qNew('play',QCAT_NAME[cat]||'Gemischt',qPick(cat),cat);}
 async function qStartTopic(t){
   t=String(t||'').trim().slice(0,60);if(!t||!qCanStart())return;
   const make=window.__quiz&&window.__quiz.make;if(!make){qErr='Eigene Themen gehen hier gerade nicht. Nimm eine Kategorie.';qRender(true);return;}
@@ -401,11 +402,16 @@ function qRender(force){
   if(P.ph==='count'){pop(board,String(Math.ceil(P.left/1000)));keyed(opts,'',()=>{});keyed(lobby,'c'+g.id,()=>{const d=document.createElement('div');d.className='qnote';d.textContent=g.mine?'Gleich geht’s los.':`${g.by} hat „${g.top}“ gestartet.`;lobby.appendChild(d);});}
   else if(P.ph==='q'||P.ph==='rev'){
     const q=g.qs[P.i],mine=qMy.id===g.id&&qMy.a[P.i]?qMy.a[P.i][0]:-1,joined=qMy.id===g.id;
-    pop(board,q[0]);keyed(lobby,'',()=>{});
+    pop(board,q[0]);
+    // right under the answers: saved / who we wait for / right or wrong with the points
+    let fb='',fc='';const x=joined&&qMy.a[P.i];
+    if(P.ph==='q'&&x){const wait=players.filter(p=>!p.gone&&!p.me&&!p.a[P.i]).map(p=>p.n);fb=wait.length?'Gespeichert. Warte auf '+wait.slice(0,3).join(', ')+(wait.length>3?' …':''):'Gespeichert.';fc='wait';}
+    else if(P.ph==='rev'){if(x&&x[0]===q[2]){fb='Richtig! +'+(100+Math.round(50*clamp(1-x[1]/Q_T,0,1)))+' Punkte';fc='ok';}else{fb=(x?'Leider falsch. ':'Zu spät. ')+'Richtig ist: '+q[1][q[2]];fc='bad';}}
+    keyed(lobby,'fb|'+fc+fb,()=>{if(fb){const d=document.createElement('div');d.className='qfb '+fc;d.textContent=fb;lobby.appendChild(d);}});
     keyed(opts,[g.id,P.i,P.ph,mine,joined?1:0].join('|'),()=>{
-      q[1].forEach((o,i)=>{const b=document.createElement('button');b.type='button';b.className='qopt c'+i;b.appendChild(qImg(qIco('opt'+i),'qshape'));b.appendChild(document.createElement('span')).textContent=o;
+      q[1].forEach((o,i)=>{const b=document.createElement('button');b.type='button';b.className='qopt';b.appendChild(qImg(qIco('opt'+i),'qshape'));b.appendChild(document.createElement('span')).textContent=o;
         if(i===mine)b.classList.add('mine');
-        if(P.ph==='rev'){b.disabled=true;b.classList.add(i===q[2]?'right':'wrong');}else if(mine>=0||!joined)b.disabled=true;
+        if(P.ph==='rev'){b.disabled=true;b.classList.add(i===q[2]?'right':i===mine?'bad':'wrong');}else if(mine>=0||!joined)b.disabled=true;
         b.onclick=()=>qAnswer(i);opts.appendChild(b);});});
   } else {
     // lobby: pick a category, or type an own topic. After a round its results stay on top.
@@ -413,7 +419,7 @@ function qRender(force){
     const ended=P.ph==='end'&&g;let rank=[];
     if(ended)rank=players.map(p=>({p,s:qScore(g,p.a,upto)})).sort((a,b)=>b.s-a.s);
     const gen=P.ph==='gen';
-    pop(board,gen?`Fragen zu „${g.top}“ kommen gleich …`:ended?(rank.length>1&&rank[0].s===rank[1].s?'Unentschieden!':rank.length?(rank[0].p.me?'Du gewinnst!':`${rank[0].p.n} gewinnt!`):'Fertig!'):'Such dir ein Thema aus');
+    pop(board,gen?`Fragen zu „${g.top}“ kommen gleich …`:ended?(rank.length>1&&rank[0].s===rank[1].s?'Unentschieden!':rank.length?(rank[0].p.me?'Du gewinnst!':`${rank[0].p.n} gewinnt!`):'Fertig!'):'Bereit für die Show?');
     keyed(lobby,['L',gen?g.id:'',ended?g.id+rank.map(r=>r.p.peer+r.s).join():'',qErr].join('|'),(v,f)=>{
       if(ended&&rank.length){const R=document.createElement('div');R.className='qrank';
         rank.forEach((r,i)=>{const d=document.createElement('div'),a=document.createElement('span'),b=document.createElement('span');
@@ -422,8 +428,11 @@ function qRender(force){
       if(gen){const d=document.createElement('div');d.className='qnote';d.textContent=g.mine?'Die KI schreibt gerade die Fragen.':`${g.by} hat das Thema ausgesucht.`;lobby.appendChild(d);
         if(g.mine){const x=document.createElement('button');x.type='button';x.className='qlink';x.textContent='Abbrechen';x.onclick=()=>{qMine=null;qPub();qRender(true);};lobby.appendChild(x);}
         return;}
+      const again=ended&&g.ck?g.ck:'mix',big=document.createElement('button');big.type='button';big.className='qmix';
+      big.appendChild(qImg(qIco(again),'qico'));big.appendChild(document.createElement('span')).textContent=ended?'Nochmal: '+QCAT_NAME[again]:'Gemischt spielen';big.onclick=()=>qStartCat(again);lobby.appendChild(big);
+      const hd=document.createElement('div');hd.className='qhd';hd.textContent=ended?'Oder ein anderes Thema':'Oder ein Thema aussuchen';lobby.appendChild(hd);
       const C=document.createElement('div');C.className='qcats';
-      Q_CATS.forEach(([k,n],i)=>{const b=document.createElement('button');b.type='button';b.className='qcat k'+(i%4);b.appendChild(qImg(qIco(k),'qico'));b.appendChild(document.createElement('span')).textContent=n;b.onclick=()=>qStartCat(k);C.appendChild(b);});
+      Q_CATS.forEach(([k,n])=>{if(k==='mix'&&!ended)return;if(ended&&k===again)return;const b=document.createElement('button');b.type='button';b.className='qcat';b.appendChild(qImg(qIco(k),'qico'));b.appendChild(document.createElement('span')).textContent=n;b.onclick=()=>qStartCat(k);C.appendChild(b);});
       lobby.appendChild(C);
       const row=document.createElement('div');row.className='row';
       const inp=document.createElement('input');inp.className='inp';inp.maxLength=60;inp.autocomplete='off';inp.placeholder='Oder eigenes Thema';inp.value=v;inp.setAttribute('aria-label','Eigenes Thema');
