@@ -221,32 +221,6 @@ Wer malte „Das Mädchen mit dem Perlenohrring“?|Jan Vermeer|Rembrandt|Rubens
 Wie heißt die Kunstrichtung von Picasso mit eckigen Formen?|Kubismus|Impressionismus|Barock`],
 ];
 
-/* ---- little hand-made pixel icons (categories, answer shapes, medals) ---- */
-function pxIco(rows,pal){
-  const w=Math.max(...rows.map(r=>r.length)),h=rows.length,c=document.createElement('canvas');c.width=w+1;c.height=h+1;const X=c.getContext('2d');
-  rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='.')return;X.fillStyle='rgba(29,18,56,.55)';X.fillRect(x+1,y+1,1,1);}));
-  rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='.')return;X.fillStyle=pal[ch]||'#fffdf7';X.fillRect(x,y,1,1);}));
-  return c.toDataURL();
-}
-const QI_PAL={'#':'#fffdf7',a:'#f2c94c',r:'#e8506c',b:'#4f7fe0',g:'#7cf08a',s:'#c9c2d6',o:'#c98a1e'};
-const QI={
- mix:['....#....','....#....','...###...','#########','.#######.','..#####..','..##.##..','.##...##.','.#.....#.'],
- geo:['..#####..','.##.#.##.','##..#..##','#########','##..#..##','#########','##..#..##','.##.#.##.','..#####..'],
- his:['#########','.#.....#.','.##...##.','..##.##..','...#a#...','..#.a.#..','.#.aaa.#.','.#aaaaa#.','#########'],
- nat:['......###','....#####','..######.','.#####.#.','.####.##.','.###.###.','.##.###..','.#.###...','#........'],
- sci:['...###...','....#....','....#....','...#.#...','..#...#..','.#aaaaa#.','#aaaaaaa#','#aaaaaaa#','.#######.'],
- food:['......#.#','.....#.#.','....#.#..','#########','#########','.#######.','..#####..','...###...'],
- pop:['...######','...######','...#....#','...#....#','...#....#','.###..###','####.####','.##...##.'],
- sport:['..#####..','.##.#.##.','#..###..#','#.#####.#','#########','#.#####.#','#..###..#','.##.#.##.','..#####..'],
- tech:['#########','#.......#','#.aa....#','#.......#','#.......#','#########','...###...','.#######.'],
- art:['..#####..','.#######.','##r##b###','#########','###..####','##a###...','.#####...','..##.....'],
-};
-const QI_OPT=[['...#...','..###..','..###..','.#####.','.#####.','#######'],['...#...','..###..','.#####.','#######','.#####.','..###..','...#...'],['..###..','.#####.','#######','#######','#######','.#####.','..###..']];
-const QI_MED=[['.rb.br.','..rbr..','...r...','..aaa..','.aa#aa.','.a#aaa.','.aaaaa.','..aaa..'],['.rb.br.','..rbr..','...r...','..sss..','.ss#ss.','.s#sss.','.sssss.','..sss..'],['.rb.br.','..rbr..','...r...','..ooo..','.oo#oo.','.o#ooo.','.ooooo.','..ooo..']];
-const qIcon={};
-function qImg(src,cls){const i=document.createElement('img');i.src=src;i.alt='';i.className=cls;i.draggable=false;return i;}
-const QI_OPTC=['#e8506c','#4f7fe0','#f2a33a'];
-function qIco(k){return qIcon[k]||(qIcon[k]=k.startsWith('opt')?pxIco(QI_OPT[+k[3]],Object.assign({},QI_PAL,{'#':QI_OPTC[+k[3]]})):k.startsWith('med')?pxIco(QI_MED[+k[3]],QI_PAL):pxIco(QI[k],QI_PAL));}
 const QB={};Q_CATS.forEach(([k,,s])=>{if(s)QB[k]=s.trim().split('\n').map(l=>l.trim().split('|')).filter(x=>x.length===4&&x.every(Boolean));});
 const QCAT_NAME=Object.fromEntries(Q_CATS.map(c=>[c[0],c[1]]));
 const Q_N=8, Q_T=12000, Q_R=2800, Q_LEAD=3200, Q_GEN=30000;
@@ -377,7 +351,7 @@ function qTick(){
 }
 setInterval(qTick,100);
 
-function openQuiz(){qOpen=true;qErr='';quizM.classList.add('show');qPubMe();qTick();qRender(true);}
+function openQuiz(){qOpen=true;qErr='';qOwn=false;quizM.classList.add('show');qPubMe();qTick();qRender(true);}
 function closeQuiz(){
   quizM.classList.remove('show');qConf.hidden=true;qOpen=false;qCur=null;qPubMe();
   // a round with friends in it keeps running without me; an empty one or one still being written ends
@@ -386,119 +360,81 @@ function closeQuiz(){
 document.getElementById('qClose').onclick=closeQuiz;
 qJoin.onclick=()=>{qJoin.hidden=true;openQuiz();};
 
-/* ---- drawing ---- */
+/* ---- drawing: calm and plain. Night blue, cream, one yellow; green and red only for right and wrong ---- */
 const qStage=document.getElementById('qStage'),qsx=qStage.getContext('2d');
 function qRender(force){
   if(!quizM.classList.contains('show'))return;
   const now=Date.now(),g=qRound(),P=qPhase(g,now),players=qPlayers(g),upto=g&&g.ph==='play'?qUpto(g,P):-1;
   const board=document.getElementById('qBoard'),opts=document.getElementById('qOpts'),lobby=document.getElementById('qLobby'),info=document.getElementById('qInfo'),bar=document.getElementById('qBar');
-  const set=(el,t)=>{if(el.textContent!==t)el.textContent=t;};
-  const pop=(el,t)=>{if(el.textContent===t)return;el.textContent=t;el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');};
-  const keyed=(el,k,build)=>{if(!force&&el.dataset.k===k)return;el.dataset.k=k;const old=el.querySelector('input'),v=old?old.value:'',f=!!old&&document.activeElement===old;el.innerHTML='';build(v,f);};
+  const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!==undefined)e.textContent=x;return e;};
+  const pop=(e,t)=>{if(e.textContent===t)return;e.textContent=t;e.classList.remove('pop');void e.offsetWidth;e.classList.add('pop');};
+  const keyed=(e,k,build)=>{if(!force&&e.dataset.k===k)return;e.dataset.k=k;const old=e.querySelector('input'),v=old?old.value:'',f=!!old&&document.activeElement===old;e.innerHTML='';build(v,f);};
   const playing=P.ph==='count'||P.ph==='q'||P.ph==='rev';
-  board.classList.toggle('big',P.ph==='count');board.classList.toggle('small',!playing);
-  set(info,playing?(P.ph==='count'?String(g.top).toUpperCase():`FRAGE ${P.i+1}/${g.qs.length}`):'');
-  bar.hidden=P.ph!=='q';if(P.ph==='q'){if(bar.children.length!==12){bar.innerHTML='';for(let k=0;k<12;k++)bar.appendChild(document.createElement('b'));}const on=Math.ceil(P.left/1000);[...bar.children].forEach((e,k)=>e.classList.toggle('on',k<on));bar.classList.toggle('low',P.left<3500);}
-  if(P.ph==='count'){pop(board,String(Math.ceil(P.left/1000)));keyed(opts,'',()=>{});keyed(lobby,'c'+g.id,()=>{const d=document.createElement('div');d.className='qnote';d.textContent=g.mine?'Gleich geht’s los.':`${g.by} hat „${g.top}“ gestartet.`;lobby.appendChild(d);});}
+  board.className='qboard'+(P.ph==='count'?' big':'')+(board.classList.contains('pop')?' pop':'');
+  // progress: one small square per question
+  keyed(info,playing&&P.ph!=='count'?'d'+g.qs.length+'|'+P.i+P.ph:playing?'t'+g.top:'',()=>{
+    if(!playing)return;if(P.ph==='count'){info.textContent=String(g.top).toUpperCase();return;}
+    for(let k=0;k<g.qs.length;k++)info.appendChild(el('i',k<P.i||(k===P.i&&P.ph==='rev')?'done':k===P.i?'now':''));});
+  bar.hidden=P.ph!=='q';
+  if(P.ph==='q'){bar.style.setProperty('--w',(100*P.left/Q_T).toFixed(1)+'%');bar.classList.toggle('low',P.left<3500);}
+  if(P.ph==='count'){pop(board,String(Math.ceil(P.left/1000)));keyed(opts,'',()=>{});keyed(lobby,'c'+g.id,()=>lobby.appendChild(el('div','qnote',g.mine?'Gleich geht’s los':`${g.by} hat „${g.top}“ gestartet`)));}
   else if(P.ph==='q'||P.ph==='rev'){
-    const q=g.qs[P.i],mine=qMy.id===g.id&&qMy.a[P.i]?qMy.a[P.i][0]:-1,joined=qMy.id===g.id;
+    const q=g.qs[P.i],joined=qMy.id===g.id,x=joined&&qMy.a[P.i],mine=x?x[0]:-1;
     pop(board,q[0]);
-    // right under the answers: saved / who we wait for / right or wrong with the points
-    let fb='',fc='';const x=joined&&qMy.a[P.i];
-    if(P.ph==='q'&&x){const wait=players.filter(p=>!p.gone&&!p.me&&!p.a[P.i]).map(p=>p.n);fb=wait.length?'Gespeichert. Warte auf '+wait.slice(0,3).join(', ')+(wait.length>3?' …':''):'Gespeichert.';fc='wait';}
-    else if(P.ph==='rev'){if(x&&x[0]===q[2]){fb='Richtig! +'+(100+Math.round(50*clamp(1-x[1]/Q_T,0,1)))+' Punkte';fc='ok';}else{fb=(x?'Leider falsch. ':'Zu spät. ')+'Richtig ist: '+q[1][q[2]];fc='bad';}}
-    keyed(lobby,'fb|'+fc+fb,()=>{if(fb){const d=document.createElement('div');d.className='qfb '+fc;d.textContent=fb;lobby.appendChild(d);}});
     keyed(opts,[g.id,P.i,P.ph,mine,joined?1:0].join('|'),()=>{
-      q[1].forEach((o,i)=>{const b=document.createElement('button');b.type='button';b.className='qopt';b.appendChild(qImg(qIco('opt'+i),'qshape'));b.appendChild(document.createElement('span')).textContent=o;
-        if(i===mine)b.classList.add('mine');
-        if(P.ph==='rev'){b.disabled=true;b.classList.add(i===q[2]?'right':i===mine?'bad':'wrong');}else if(mine>=0||!joined)b.disabled=true;
+      q[1].forEach((o,i)=>{const b=el('button','qopt',o);b.type='button';
+        if(P.ph==='rev'){b.disabled=true;b.classList.add(i===q[2]?'right':i===mine?'bad':'wrong');}
+        else{if(i===mine)b.classList.add('mine');if(mine>=0||!joined)b.disabled=true;}
         b.onclick=()=>qAnswer(i);opts.appendChild(b);});});
+    // one quiet line: saved, who we wait for, right or wrong
+    let fb='',fc='';
+    if(P.ph==='q'&&x){const wait=players.filter(p=>!p.gone&&!p.me&&!p.a[P.i]).map(p=>p.n);fb=wait.length?'Warte auf '+wait.slice(0,3).join(', '):'';fc='wait';}
+    else if(P.ph==='rev'){if(x&&x[0]===q[2]){fb='Richtig  +'+(100+Math.round(50*clamp(1-x[1]/Q_T,0,1)));fc='ok';}else{fb=x?'Leider falsch':'Zu spät';fc='bad';}}
+    keyed(lobby,'fb|'+fc+fb,()=>{if(fb)lobby.appendChild(el('div','qfb '+fc,fb));});
   } else {
-    // lobby: pick a category, or type an own topic. After a round its results stay on top.
     keyed(opts,'',()=>{});
-    const ended=P.ph==='end'&&g;let rank=[];
+    const ended=P.ph==='end'&&g,gen=P.ph==='gen';let rank=[];
     if(ended)rank=players.map(p=>({p,s:qScore(g,p.a,upto)})).sort((a,b)=>b.s-a.s);
-    const gen=P.ph==='gen';
-    pop(board,gen?`Fragen zu „${g.top}“ kommen gleich …`:ended?(rank.length>1&&rank[0].s===rank[1].s?'Unentschieden!':rank.length?(rank[0].p.me?'Du gewinnst!':`${rank[0].p.n} gewinnt!`):'Fertig!'):'Bereit für die Show?');
-    keyed(lobby,['L',gen?g.id:'',ended?g.id+rank.map(r=>r.p.peer+r.s).join():'',qErr].join('|'),(v,f)=>{
-      if(ended&&rank.length){const R=document.createElement('div');R.className='qrank';
-        rank.forEach((r,i)=>{const d=document.createElement('div'),a=document.createElement('span'),b=document.createElement('span');
-          if(i<3&&r.s>0)a.appendChild(qImg(qIco('med'+i),'qmed'));else a.appendChild(document.createElement('i')).textContent=(i+1)+'.';a.appendChild(document.createTextNode(' '+(r.p.me?'Du':r.p.n)));b.textContent=r.s+' Punkte';d.appendChild(a);d.appendChild(b);R.appendChild(d);});
-        lobby.appendChild(R);}
-      if(gen){const d=document.createElement('div');d.className='qnote';d.textContent=g.mine?'Die KI schreibt gerade die Fragen.':`${g.by} hat das Thema ausgesucht.`;lobby.appendChild(d);
-        if(g.mine){const x=document.createElement('button');x.type='button';x.className='qlink';x.textContent='Abbrechen';x.onclick=()=>{qMine=null;qPub();qRender(true);};lobby.appendChild(x);}
-        return;}
-      const again=ended&&g.ck?g.ck:'mix',big=document.createElement('button');big.type='button';big.className='qmix';
-      big.appendChild(qImg(qIco(again),'qico'));big.appendChild(document.createElement('span')).textContent=ended?'Nochmal: '+QCAT_NAME[again]:'Gemischt spielen';big.onclick=()=>qStartCat(again);lobby.appendChild(big);
-      const hd=document.createElement('div');hd.className='qhd';hd.textContent=ended?'Oder ein anderes Thema':'Oder ein Thema aussuchen';lobby.appendChild(hd);
-      const C=document.createElement('div');C.className='qcats';
-      Q_CATS.forEach(([k,n])=>{if(k==='mix'&&!ended)return;if(ended&&k===again)return;const b=document.createElement('button');b.type='button';b.className='qcat';b.appendChild(qImg(qIco(k),'qico'));b.appendChild(document.createElement('span')).textContent=n;b.onclick=()=>qStartCat(k);C.appendChild(b);});
+    const tie=rank.length>1&&rank[0].s===rank[1].s;
+    pop(board,gen?`„${g.top}“`:ended?(tie?'Unentschieden':rank.length?(rank[0].p.me?'Du gewinnst':`${rank[0].p.n} gewinnt`):'Fertig'):'Was spielen wir?');
+    keyed(lobby,['L',gen?g.id:'',ended?g.id+rank.map(r=>r.p.peer+r.s).join():'',qErr,qOwn?1:0].join('|'),(v,f)=>{
+      if(gen){lobby.appendChild(el('div','qnote',g.mine?'Die Fragen werden geschrieben …':`${g.by} hat ein Thema ausgesucht …`));
+        if(g.mine){const c=el('button','qlink','Abbrechen');c.type='button';c.onclick=()=>{qMine=null;qPub();qRender(true);};lobby.appendChild(c);}return;}
+      if(ended&&rank.length){const R=el('ol','qrank');rank.forEach((r,i)=>{const li=el('li',i===0&&!tie&&r.s>0?'win':'');li.appendChild(el('span','',(r.p.me?'Du':r.p.n)));li.appendChild(el('b','',String(r.s)));R.appendChild(li);});lobby.appendChild(R);}
+      const again=ended&&g.ck?g.ck:'mix',go=el('button','qgo',ended?'Nochmal':'Los geht’s');go.type='button';go.onclick=()=>qStartCat(again);lobby.appendChild(go);
+      const C=el('div','qchips');
+      Q_CATS.forEach(([k,n])=>{if(k==='mix')return;const b=el('button','',n);b.type='button';b.onclick=()=>qStartCat(k);C.appendChild(b);});
+      const own=el('button','own',qOwn?'×':'Eigenes Thema …');own.type='button';own.onclick=()=>{qOwn=!qOwn;qRender(true);};C.appendChild(own);
       lobby.appendChild(C);
-      const row=document.createElement('div');row.className='row';
-      const inp=document.createElement('input');inp.className='inp';inp.maxLength=60;inp.autocomplete='off';inp.placeholder='Oder eigenes Thema';inp.value=v;inp.setAttribute('aria-label','Eigenes Thema');
-      const go=document.createElement('button');go.className='btn dark';go.type='button';go.textContent='Los';go.onclick=()=>qStartTopic(inp.value);
-      inp.addEventListener('keydown',e=>{if(e.key==='Enter')go.click();});
-      row.appendChild(inp);row.appendChild(go);lobby.appendChild(row);
-      if(qErr){const e=document.createElement('div');e.className='qnote';e.textContent=qErr;lobby.appendChild(e);}
-      if(f)inp.focus();
+      if(qOwn){const row=el('div','row'),inp=el('input','inp');inp.maxLength=60;inp.autocomplete='off';inp.placeholder='Thema eintippen';inp.value=v;inp.setAttribute('aria-label','Eigenes Thema');
+        const b=el('button','btn dark','Los');b.type='button';b.onclick=()=>qStartTopic(inp.value);inp.addEventListener('keydown',e=>{if(e.key==='Enter')b.click();});
+        row.appendChild(inp);row.appendChild(b);lobby.appendChild(row);setTimeout(()=>{if(qOwn&&!f)inp.focus();},0);if(f)inp.focus();}
+      if(qErr)lobby.appendChild(el('div','qnote',qErr));
     });
   }
   qStageArgs=[g,P,players,upto];
 }
-let qStageArgs=null,qConfAt=0,qConfId='';
+let qOwn=false,qStageArgs=null,qConfAt=0,qConfId='';
 const Q_CONF=['#f2c94c','#e8506c','#4fb3e8','#7cf08a','#ffffff','#c98aff','#ff9a3c'];
-(function qFrame(){requestAnimationFrame(qFrame);if(!qStageArgs||!quizM.classList.contains('show'))return;const [g,P0,players,upto]=qStageArgs;qDrawStage(g,qPhase(g,Date.now()),players,upto);qDrawConf();})();
+(function qFrame(){requestAnimationFrame(qFrame);if(!qStageArgs||!quizM.classList.contains('show'))return;const [g,,players,upto]=qStageArgs;qDrawStage(g,qPhase(g,Date.now()),players,upto);qDrawConf();})();
+// the players: avatars on one line, a small mark over a head when they answered, the winner hops with a crown
 function qDrawStage(g,P,players,upto){
-  const W=240,H=80,X=qsx,t=performance.now(),play=g&&g.ph==='play';
-  X.fillStyle='#2a1a55';X.fillRect(0,0,W,H);
-  for(let i=0;i<12;i++){X.fillStyle=i%2?'#33206a':'#2d1c60';X.beginPath();X.moveTo(W/2,-10);X.lineTo(i*22-10,H);X.lineTo(i*22+12,H);X.fill();}
-  for(let x=4;x<W;x+=8){X.fillStyle=(Math.floor(t/300)+x/8)%2?'#f2c94c':'#8a6a20';X.fillRect(x,2,2,2);}
-  X.fillStyle='#e8506c';X.fillRect(0,66,W,14);X.fillStyle='#b8335a';for(let x=0;x<W;x+=4)X.fillRect(x,70+((x/4)%2),2,1);
-  const inQ=play&&(P.ph==='q'||P.ph==='rev'),end=play&&P.ph==='end',n=Math.max(1,players.length);
-  const L0=22,LW=W-44;  // the stage between the curtains
-  const sc=players.map(p=>play?qScore(g,p.a,upto):0),top=Math.max(0,...sc);
-  const order=sc.map((v,i)=>i).sort((a,b)=>sc[b]-sc[a]);
-  const revAt=P.ph==='rev'?P.T.R[P.i]:0;
+  const W=160,H=36,X=qsx,t=performance.now(),play=g&&g.ph==='play',end=play&&P.ph==='end';
+  X.clearRect(0,0,W,H);X.fillStyle='#3a3266';for(let x=2;x<W;x+=4)X.fillRect(x,30,2,1);
+  const n=Math.max(1,players.length),sc=players.map(p=>play?qScore(g,p.a,upto):0),top=Math.max(0,...sc),tie=sc.filter(v=>v===top).length>1;
+  const inQ=play&&(P.ph==='q'||P.ph==='rev'),revAt=P.ph==='rev'?P.T.R[P.i]:0;
   players.forEach((p,i)=>{
-    const cx=Math.round(L0+(i+.5)*LW/n),win=end&&top>0&&sc[i]===top,place=order.indexOf(i);
-    // after the round: a podium, the winner highest, in a spotlight
-    const lift=end?(win?10:place===1?5:place===2?2:0):0;
-    if(win){X.fillStyle='rgba(255,240,190,.16)';X.beginPath();X.moveTo(cx-5,4);X.lineTo(cx+5,4);X.lineTo(cx+17,66);X.lineTo(cx-17,66);X.fill();}
-    const x=inQ&&p.a[P.i],ok=x&&P.ph==='rev'?x[0]===g.qs[P.i][2]:null;
-    const hop=ok?Math.round(Math.abs(Math.sin((Date.now()-revAt)/140))*3*Math.max(0,1-(Date.now()-revAt)/1600)):0;
-    X.fillStyle='#1d1238';X.fillRect(cx-11,54-lift,22,13+lift);X.fillStyle='#3b2a6e';X.fillRect(cx-10,55-lift,20,11+lift);
-    if(win){X.fillStyle='#f2c94c';X.fillRect(cx-2,59-lift,4,4);X.fillStyle='#b5552a';X.fillRect(cx-1,60-lift,2,2);}
-    if(!p.gone)drawAvatar(X,cx,56-lift-hop,p.l,{blink:false,t:0});
-    if(!lift){X.fillStyle='#e8506c';X.fillRect(cx-3,52,6,2);X.fillStyle='#ff8aa8';X.fillRect(cx-2,52,2,1);}
-    if(x){const y=22;
-      X.fillStyle='#fffdf7';X.fillRect(cx-4,y,9,8);X.fillStyle=ok===null?'#4f7fe0':ok?'#3f9a4a':'#e8506c';
-      if(ok===null){X.fillRect(cx,y+1,1,4);X.fillRect(cx,y+6,1,1);}
-      else if(ok){X.fillRect(cx-2,y+4,1,1);X.fillRect(cx-1,y+5,1,1);X.fillRect(cx,y+4,1,1);X.fillRect(cx+1,y+3,1,1);X.fillRect(cx+2,y+2,1,1);}
-      else for(let k=0;k<5;k++){X.fillRect(cx-2+k,y+1+k,1,1);X.fillRect(cx+2-k,y+1+k,1,1);}
-      // the points float up for a right answer
-      if(ok){const k=clamp((Date.now()-revAt)/1400,0,1),gain=100+Math.round(50*clamp(1-x[1]/Q_T,0,1));
-        X.globalAlpha=1-k*k;X.font='bold 7px monospace';X.textAlign='center';X.fillStyle='#1d1238';X.fillText('+'+gain,cx+1,17-k*10);X.fillStyle='#f2c94c';X.fillText('+'+gain,cx,16-k*10);X.globalAlpha=1;X.textAlign='start';}}
-    // confetti keeps raining on the winner
-    if(win){const ty=Math.round(24-lift+Math.sin(t/260)*1.5);X.fillStyle='#1d1238';X.fillRect(cx-5,ty-1,11,10);
-      X.fillStyle='#f2c94c';X.fillRect(cx-4,ty,9,4);X.fillRect(cx-3,ty+4,7,1);X.fillRect(cx-1,ty+5,3,2);X.fillRect(cx-3,ty+7,7,1);X.fillRect(cx-6,ty+1,2,1);X.fillRect(cx+5,ty+1,2,1);X.fillRect(cx-6,ty+1,1,2);X.fillRect(cx+6,ty+1,1,2);
-      X.fillStyle='#fff3c4';X.fillRect(cx-3,ty+1,1,2);}
-    if(win)for(let k=0;k<26;k++){const sp=16+(k%5)*5,yy=((t/1000*sp+k*17)%62)-2,xx=cx-16+((k*29)%33)+Math.round(Math.sin(t/380+k)*2);
-      X.fillStyle=Q_CONF[k%Q_CONF.length];if((Math.floor(t/150)+k)%3)X.fillRect(xx,yy,2,1);else X.fillRect(xx,yy,1,2);}
+    const cx=Math.round((i+.5)*W/n),win=end&&top>0&&!tie&&sc[i]===top,x=inQ&&p.a[P.i],ok=x&&P.ph==='rev'?x[0]===g.qs[P.i][2]:null;
+    const hop=win?Math.round(Math.abs(Math.sin(t/220))*4):ok?Math.round(Math.abs(Math.sin((Date.now()-revAt)/140))*3*Math.max(0,1-(Date.now()-revAt)/1500)):0;
+    if(!p.gone)drawAvatar(X,cx,29-hop,p.l,{blink:false,t:0});
+    if(win){const y=3-hop;X.fillStyle='#f2c94c';X.fillRect(cx-4,y+2,9,3);X.fillRect(cx-4,y,1,2);X.fillRect(cx,y-1,1,3);X.fillRect(cx+4,y,1,2);
+      for(let k=0;k<16;k++){const yy=((t/1000*(12+k%4*4)+k*9)%30),xx=cx-12+((k*19)%25);X.fillStyle=Q_CONF[k%Q_CONF.length];X.fillRect(xx,yy,(k+Math.floor(t/150))%3?2:1,1);}}
+    else if(x){X.fillStyle=ok===null?'#fff6e0':ok?'#7cf08a':'#e8506c';X.fillRect(cx+5,5,3,3);}
   });
-  // red curtains on both sides, with a scalloped pelmet on top
-  for(const side of [0,1]){for(let x=0;x<20;x++){const xx=side?W-1-x:x,f=(x+Math.floor(Math.sin(t/900+x*.7)*0))%5;
-      X.fillStyle=f===0?'#6a1430':f===1||f===4?'#a52a4c':'#c8385e';const bot=66-Math.round(Math.max(0,(x-12))*1.2);X.fillRect(xx,6,1,bot-6);}
-    X.fillStyle='#f2c94c';X.fillRect(side?W-15:13,38,3,2);}
-  X.fillStyle='#8a1f3c';X.fillRect(0,0,W,5);for(let x=0;x<W;x+=10){X.fillStyle='#8a1f3c';X.fillRect(x+1,5,8,2);X.fillRect(x+3,7,4,1);X.fillStyle='#f2c94c';X.fillRect(x+4,8,2,1);}
-  // the audience: dark heads at the front that jump when an answer is revealed or someone wins
-  const cheer=P.ph==='rev'||end;
-  for(let x=4,k=0;x<W;x+=11,k++){const hop=cheer?Math.max(0,Math.round(Math.sin(t/(130+(k%3)*25)+k)*2)):0,y=73-hop;
-    X.fillStyle=k%2?'#160d33':'#1d1240';X.fillRect(x,y,8,9);X.fillRect(x+1,y-1,6,1);X.fillRect(x-1,y+4,10,6);
-    if(cheer&&k%3===0){X.fillRect(x-2,y-3-hop,2,5);X.fillRect(x+8,y-3-hop,2,5);}}
   const names=document.getElementById('qNames');
-  const nk=players.map((p,i)=>p.peer+':'+p.n+':'+(p.me?1:0)+':'+(play?sc[i]:'')+':'+(end&&top>0&&sc[i]===top?1:0)).join(',');
+  const nk=players.map((p,i)=>p.peer+':'+p.n+':'+(p.me?1:0)+':'+(play?sc[i]:'')).join(',');
   if(names.dataset.k!==nk){names.dataset.k=nk;names.innerHTML='';
-    players.forEach((p,i)=>{const d=document.createElement('div');if(end&&top>0&&sc[i]===top)d.className='win';d.textContent=p.me?'Du':p.n;const b=document.createElement('b');b.textContent=play?sc[i]+' P':'';d.appendChild(b);names.appendChild(d);});}
+    players.forEach((p,i)=>{const d=document.createElement('div');d.textContent=p.me?'Du':p.n;if(play){const b=document.createElement('b');b.textContent=sc[i];d.appendChild(b);}names.appendChild(d);});}
 }
 // whoever wins gets confetti over the whole screen
 const qConf=document.getElementById('qConf'),qcx=qConf.getContext('2d');let qBits=[];
