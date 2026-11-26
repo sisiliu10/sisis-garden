@@ -277,6 +277,21 @@
   .c4lb canvas{width:30px;height:30px;border:2px solid var(--ink);image-rendering:pixelated;flex:0 0 auto}
   .c4lb .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .c4lb b{font-family:Silkscreen,monospace;font-weight:400;font-size:12px}
+  /* Vier gewinnt: a wooden crate on the meadow, the leaderboard on a sign */
+  .c4p{background:#8cc46c repeating-linear-gradient(90deg,transparent 0 13px,rgba(58,122,58,.3) 13px 14px,transparent 14px 23px,rgba(176,224,140,.6) 23px 24px) 0 0/31px 9px;padding-top:14px}
+  .c4p .bunt{display:none}
+  .c4p .qtop{background:#c98a5a;border:3px solid var(--ink);box-shadow:inset 0 -4px 0 #a86c40,inset 0 3px 0 #e0a878;padding:8px 10px;margin-top:0}
+  .c4p .c4logo{color:#fff6e0;text-shadow:2px 2px 0 #7a4a2a}.c4p .c4logo span{color:#ffe08a}
+  .c4p .c4who div{background:#fff6e0;border-color:var(--ink)}.c4p .c4who .off{background:rgba(255,246,224,.6)}
+  .c4p .c4st{background:#fff6e0;border:3px solid var(--ink);padding:4px 8px;width:fit-content;max-width:100%;margin:10px auto 0}
+  .c4p .c4b{background:#4f9a94;box-shadow:0 0 0 6px #c98a5a,0 0 0 9px var(--ink),inset 0 -5px 0 #3a7a74;margin-top:18px;margin-bottom:8px}
+  .c4p .c4c:not(.p1):not(.p2){background:#e8f4e0}
+  .c4p .c4row{margin-top:16px}.c4p .c4row button:not(.go){background:#fff6e0;border:2px solid var(--ink);color:var(--ink)}
+  .c4p .c4lbh{display:none}
+  .c4p .c4lb{background:#fff6e0;border:3px solid var(--ink);padding:8px;margin-top:14px}
+  .c4p .c4lb::before{content:'Bestenliste';display:block;font-family:Silkscreen,monospace;font-size:12px;letter-spacing:2px;color:#3a7a3a;margin-bottom:2px}
+  .c4p .c4lb li{background:#fff;border-color:#d6efc6}.c4p .c4lb li.top{background:#fbe8a6;border-color:#e6c46a}.c4p .c4lb li.me{border-color:var(--ink)}
+  .c4p .c4lb .rk{color:#3a7a3a}
   @media (max-height:500px){.c4p{padding:0 14px 10px}.c4who{margin-top:4px}.c4b{width:calc(min(100%,420px,calc((100dvh - 150px)*7/6)) - 18px);min-width:0}}
   /* party games: one frame, a colour per game */
   .gpnl{width:min(560px,100%);max-height:100%;overflow:auto;border:4px solid var(--ink);box-shadow:6px 6px 0 rgba(0,0,0,.35);padding:14px;color:#fff;background:linear-gradient(var(--g1),var(--g2))}
@@ -328,6 +343,43 @@
   .dsw.er{background:repeating-conic-gradient(#fffdf7 0 25%,#d9cdb3 0 50%) 0 0/8px 8px!important}
   .dfeed{display:flex;flex-direction:column;gap:3px;font-size:14px;min-height:20px}
   .dfeed div{background:rgba(0,0,0,.2);padding:3px 8px}.dfeed b{color:#ffe3b0}.dfeed .ok{color:#7cf08a}
+  /* every party game its own little world */
+  .gpnl .c4logo{color:#fff6e0;text-shadow:2px 2px 0 rgba(0,0,0,.35)}.gpnl .c4logo span{color:#f2c94c}
+  .gpnl .qtop .btn{background:#fff;color:var(--ink)}
+  /* Galgenmännchen: a flower bed in the garden */
+  .gpnl.t-hang{background:#7cbc5f repeating-linear-gradient(90deg,transparent 0 13px,rgba(58,122,58,.35) 13px 14px,transparent 14px 23px,rgba(160,214,128,.5) 23px 24px) 0 0/31px 9px;color:var(--ink)}
+  .gpnl.t-hang .c4logo{color:#fff;text-shadow:2px 2px 0 #3a7a3a}.gpnl.t-hang .c4logo span{color:#f49ab8}
+  .gpnl.t-hang .hflower{border:4px solid #7a4a2a;box-shadow:0 0 0 3px var(--ink),4px 6px 0 3px rgba(0,0,0,.2)}
+  .gpnl.t-hang .hword span{background:#c98a5a;color:#fff6e0;border-color:#5a3418;box-shadow:inset 0 -4px 0 #a86c40,inset 0 2px 0 #e0a878}
+  .gpnl.t-hang .hword span.on{background:#e0a878;color:var(--ink)}.gpnl.t-hang .hword span.miss{color:#ffd0dc}
+  .gpnl.t-hang .hkey{background:#fff6e0}.gpnl.t-hang .hkey.hit{background:#f49ab8}.gpnl.t-hang .hkey.miss{background:#5a7a4a;color:#a8c49a}
+  .gpnl.t-hang .gres,.gpnl.t-hang .qnote{color:#fff;text-shadow:2px 2px 0 #3a7a3a}
+  .gpnl.t-hang .inp{border:3px solid var(--ink)}
+  /* Stadt Land Fluss: a squared notepad with a spiral and a red margin */
+  .gpnl.t-slf{background:#fffdf7;background-image:linear-gradient(90deg,transparent 30px,#f2a3a3 30px 32px,transparent 32px),linear-gradient(#d6e4f5 1px,transparent 1px),linear-gradient(90deg,#d6e4f5 1px,transparent 1px);background-size:100% 100%,16px 16px,16px 16px;color:#25407a;padding-top:22px;position:relative}
+  .gpnl.t-slf::before{content:'';position:absolute;left:10px;right:10px;top:6px;height:10px;background:radial-gradient(circle at 50% 50%,#8a8fa0 3px,transparent 4px) 0 0/18px 10px repeat-x}
+  .gpnl.t-slf .c4logo{color:#25407a;text-shadow:none}.gpnl.t-slf .c4logo span{color:#e8506c}
+  .gpnl.t-slf .sL{color:#e8506c;border-color:#e8506c;background:#fff;box-shadow:3px 3px 0 rgba(232,80,108,.25);transform:rotate(-4deg)}
+  .gpnl.t-slf .sfield{color:#25407a}.gpnl.t-slf .sfield .inp{background:transparent;border:0;border-bottom:2px solid #25407a;border-radius:0;padding-left:2px;color:#1a2f5a}
+  .gpnl.t-slf .qnote,.gpnl.t-slf .gres{color:#25407a;text-shadow:none}
+  .gpnl.t-slf .qbar{background:#d6e4f5}.gpnl.t-slf .qbar i{background:#25407a}.gpnl.t-slf .qbar.low i{background:#e8506c}
+  .gpnl.t-slf .scat{background:rgba(255,255,255,.85);border:2px solid #25407a}.gpnl.t-slf .scat b{color:#e8506c}
+  .gpnl.t-slf .qrank div{background:#fff;color:#25407a;border:2px solid #d6e4f5}
+  /* Montagsmaler: an atelier, the canvas on an easel and a wooden palette */
+  .gpnl.t-draw{background:#f3e3c8 repeating-linear-gradient(90deg,#f3e3c8 0 18px,#efdcbc 18px 20px);color:var(--ink)}
+  .gpnl.t-draw .c4logo{color:var(--ink);text-shadow:none}.gpnl.t-draw .c4logo span{color:#4f7fe0;text-shadow:2px 2px 0 #f2c94c}
+  .gpnl.t-draw .dcanvas{border:7px solid #8a5a36;box-shadow:0 0 0 3px var(--ink),5px 7px 0 3px rgba(90,52,24,.25)}
+  .gpnl.t-draw .dpal{background:#c98a5a;border:3px solid var(--ink);border-radius:40px 40px 40px 12px;padding:8px 12px;box-shadow:inset 0 -4px 0 #a86c40}
+  .gpnl.t-draw .dsw{border-radius:50%}.gpnl.t-draw .dsw.er{border-radius:4px}
+  .gpnl.t-draw .dpal .qlink{color:#fff6e0}
+  .gpnl.t-draw .dword{color:var(--ink)}.gpnl.t-draw .dhint{color:#4f7fe0}.gpnl.t-draw .dhint.ok{color:#3a8a3e}
+  .gpnl.t-draw .qnote,.gpnl.t-draw .gres{color:var(--ink);text-shadow:none}
+  .gpnl.t-draw .dfeed div{background:#fffaf0;border:2px solid #e6d3b0}.gpnl.t-draw .dfeed b{color:#b03a72}.gpnl.t-draw .dfeed .ok{color:#3a8a3e}
+  .gpnl.t-draw .qrank div{background:#fffaf0;color:var(--ink)}
+  .gpnl .pstrip .qnames{color:#fff6e0}
+  .gpnl.t-slf .qinfo,.gpnl.t-draw .qinfo{color:var(--ink);font-weight:600}.gpnl.t-hang .qinfo{color:#fff;text-shadow:1px 1px 0 #3a7a3a}
+  .gpnl.t-slf .pstrip{border-color:#25407a}.gpnl.t-slf .pstrip .qnames{background:#25407a}
+  .gpnl.t-draw .pstrip .qnames{background:#7a4a2a}.gpnl.t-hang .pstrip .qnames{background:#3a7a3a}
   @media (max-width:440px){.sform,.svote{grid-template-columns:1fr}.hkey{height:40px;font-size:13px}.hword{gap:3px}.hword span{height:30px;font-size:14px;border-width:2px}}
   /* quiz show: cosy. Cream paper like the other windows, bunting, the duck hosts, each topic its own soft colour, a wooden stage */
   #quizM .qpanel{width:min(500px,100%);max-height:100%;overflow:auto;background:#fff6e0;border:4px solid var(--ink);box-shadow:6px 6px 0 rgba(0,0,0,.35);padding:0 18px 0;color:var(--ink);position:relative}

@@ -39,6 +39,8 @@ function pgEl(tag,cls,txt){const e=document.createElement(tag);if(cls)e.classNam
 function pgBtn(cls,txt,fn){const b=pgEl('button',cls,txt);b.type='button';b.onclick=fn;return b;}
 
 /* a game window: dark panel with a pixel logo, the same frame for every party game */
+// each game has its own little world; the strip of players stands on its floor
+const PG_FLOOR={def:['#1d1238','#241748'],'t-hang':['#5a9a48','#4a8a3c'],'t-slf':['#e9f0fa','#cfdcf0'],'t-draw':['#b7804e','#9a6a40']};
 function pgWindow(id,logoA,logoB,theme,onClose){
   const m=pgEl('div','modal pgm');m.id=id;
   const p=pgEl('div','gpnl '+theme);p.setAttribute('role','dialog');p.setAttribute('aria-label',logoA+' '+logoB);
@@ -48,12 +50,12 @@ function pgWindow(id,logoA,logoB,theme,onClose){
   const body=pgEl('div','gbody');p.appendChild(body);
   const strip=pgEl('div','pstrip'),cv=pgEl('canvas');cv.width=240;cv.height=34;const nm=pgEl('div','qnames');strip.appendChild(cv);strip.appendChild(nm);p.appendChild(strip);
   m.appendChild(p);document.body.appendChild(m);m._close=onClose;
-  return {m,info,body,cv,nm,ctx:cv.getContext('2d'),k:''};
+  return {m,info,body,cv,nm,ctx:cv.getContext('2d'),k:'',floor:PG_FLOOR[theme]||PG_FLOOR.def};
 }
 // a row of players with their avatars: marks(p) can put a small badge over a head, score(p) a number under the name
 function pgStrip(W,players,score,mark,win){
   const X=W.ctx,w=240,h=34,t=performance.now();
-  X.fillStyle='#1d1238';X.fillRect(0,0,w,h);for(let x=0;x<w;x+=6){X.fillStyle='#241748';X.fillRect(x,30,3,4);}
+  X.fillStyle=W.floor[0];X.fillRect(0,0,w,h);for(let x=0;x<w;x+=6){X.fillStyle=W.floor[1];X.fillRect(x,30,3,4);}
   const n=Math.max(1,players.length);
   players.forEach((p,i)=>{const cx=Math.round((i+.5)*w/n),wi=win&&win(p);
     if(wi)for(let k=0;k<14;k++){const yy=((t/1000*(14+k%4*5)+k*11)%30),xx=cx-10+((k*23)%21);X.fillStyle=Q_CONF[k%Q_CONF.length];X.fillRect(xx,yy,(k+Math.floor(t/150))%3?2:1,1);}
