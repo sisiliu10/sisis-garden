@@ -26,6 +26,7 @@ function enterHouse(){hideHomeHint(false);
   closePanel(); editing=false;
   worldEl.style.visibility='hidden'; bJump.hidden=true; setPrompt(null);
   cat.x=RW/2+14; cat.y=RH-10;
+  shiba.x=RW/2-30;shiba.y=RH-14;shiba.mode='walk';shiba.tx=RW/2-8;shiba.ty=RH-20;shiba.dir=1;shiba.run=true;shiba.after=null;
 }
 function exitHouse(){
   scene='garden'; worldEl.style.visibility='';
@@ -35,6 +36,7 @@ function exitHouse(){
 }
 function goToDoor(){ if(scene==='garden') av.target={x:HX,y:167,onArrive:()=>{av.target={x:HX,y:148,onArrive:enterHouse};}}; }
 function housePointer(lx,ly){
+  if(shibaAt(lx,ly)){av.target={x:clamp(shiba.x+(av.x<shiba.x?-14:14),12,RW-12),y:shiba.y+1,onArrive:petShiba};return;}
   if(ly>RH-14&&Math.abs(lx-RW/2)<14){av.target={x:RW/2,y:RH+4};return;}
   for(const o of HOBJ){ if(o.own&&visiting)continue; const b=o.box; if(b?(lx>=b[0]&&lx<=b[2]&&ly>=b[1]&&ly<=b[3]):(Math.abs(lx-o.x)<14&&Math.abs(ly-o.y)<10)){ av.target={x:o.x,y:o.y,onArrive:o.act}; return; } }
   av.target={x:clamp(lx,9,RW-9),y:clamp(ly,WALL+11,RH-4)};
@@ -168,6 +170,7 @@ function renderHouse(t){
         return;
       }
       const rn=av.run&&av.moving,fr=av.moving?(rn?[1,2][Math.floor(t*10)%2]:[1,0,2,0][Math.floor(t*8)%4]):0;drawAvatar(g,av.x,av.y-(rn&&fr===1?1:0),myLook,{frame:fr,back:av.back,blink,t,run:rn});}},
+    {y:shibaHere()?shiba.y:-99,d:()=>{if(shibaHere())drawShiba(t);}},
     {y:hasCat()?cat.y:-99,d:()=>{if(hasCat())drawCat(t);}},
     ...(!napping&&bedSleepers().length?[{y:91,d:()=>{bedSleepers().forEach(z=>drawAvatar(g,z.x,78,z.look,{frame:0,back:false,blink:true,t:0,shadow:false}));
         R(123,65,32,23,'#8fb6ea');R(123,65,32,3,'#c7defa');for(let y=70;y<86;y+=5)for(let x=127;x<153;x+=6)R(x+(y%10?3:0),y,1,1,'#ffffff');}}]:[]),

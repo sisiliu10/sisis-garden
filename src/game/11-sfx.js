@@ -139,6 +139,10 @@ const Sfx=(()=>{
     g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.22,t+.01);g.gain.exponentialRampToValueAtTime(.001,t+.2);o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+.22);}
   function reel(){const c=ready();if(!c)return;const t0=c.currentTime+.01;for(let i=0;i<9;i++){const t=t0+i*.045,o=c.createOscillator(),g=c.createGain();o.type='square';o.frequency.value=1800+i*60;
     g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.03,t+.003);g.gain.exponentialRampToValueAtTime(.0005,t+.025);o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+.03);}}
-  return {cast,plop,reel,beep,click,join,splash,whee,yay,pour,grow,sit,quack,door,preload:()=>{const c=Snd.started()&&Snd.get();if(c)loadDoor(c);}};
+  // a small, friendly "wuff"
+  function woof(){const c=ready();if(!c)return;const t0=c.currentTime+.01;[[0,1],[.17,.8]].forEach(([dt,v])=>{const t=t0+dt,o=c.createOscillator(),g=c.createGain(),lp=c.createBiquadFilter();o.type='sawtooth';
+    o.frequency.setValueAtTime(420,t);o.frequency.exponentialRampToValueAtTime(260,t+.09);lp.type='lowpass';lp.frequency.value=1400;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.09*v,t+.012);g.gain.exponentialRampToValueAtTime(.001,t+.12);
+    o.connect(lp);lp.connect(g);g.connect(c.destination);o.start(t);o.stop(t+.13);});}
+  return {woof,cast,plop,reel,beep,click,join,splash,whee,yay,pour,grow,sit,quack,door,preload:()=>{const c=Snd.started()&&Snd.get();if(c)loadDoor(c);}};
 })();
 

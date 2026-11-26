@@ -61,7 +61,7 @@ function update(dt,t){
   return updateRest(dt,t);
 }
 function updateRest(dt,t){
-  if(scene==='house'){houseUpdate(dt,t);return;}
+  if(scene==='house'){houseUpdate(dt,t);shibaUpdate(dt);return;}
   if(scene==='island'){isleUpdate(dt,t);islandSparkTick(dt);return;}
   if(av.x>55&&av.x<65&&av.y<150.5){if(riding)dismount();enterHouse();return;}
   fishUpdate(dt);
