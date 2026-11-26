@@ -229,7 +229,7 @@ let qMine=null,      // the round I started: what I publish as presence "qs"
     qOpen=false,     // my quiz window is open: I am playing
     qMy={id:'',a:{}},// my answers in the round I play
     qCur=null,       // the round I play, kept when its starter goes away
-    qErr='', qOff={}, qBook={}, qLastK='', qSoundK='', qBusy=false;
+    qErr='', qOff={}, qBook={}, qSoundK='', qBeepK='';
 function qHash(t){let h=5381;t=String(t);for(let i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return (h>>>0).toString(36).slice(-6);}
 const qSeen=(()=>{try{const a=JSON.parse(localStorage.getItem('garden-quiz-seen')||'[]');return Array.isArray(a)?a.filter(x=>typeof x==='string'&&x.length<=6).slice(-300):[];}catch(e){return [];}})();
 const qAsked=(()=>{try{const a=JSON.parse(localStorage.getItem('garden-quiz-asked')||'[]');return Array.isArray(a)?a.filter(x=>typeof x==='string').slice(-30):[];}catch(e){return [];}})();
@@ -336,8 +336,11 @@ function qTick(){
   if(g&&g.ph==='play')qPlayers(g).forEach(p=>{if(p.gone)return;(qBook[g.id]=qBook[g.id]||{})[p.peer]={n:p.n,l:p.l,a:p.a};});
   if(qOpen){const P=qPhase(g,now);
     if(P.ph==='q'&&qMy.id===g.id)qMarkSeen(g.qs[P.i][0]);
+    // 3, 2, 1, go
+    if(P.ph==='count'){const n=Math.ceil(P.left/1000);if(n<=3&&qBeepK!==g.id+n){qBeepK=g.id+n;try{Sfx.beep(false);}catch(e){}}}
+    else if(P.ph==='q'&&P.i===0&&qBeepK!==g.id+'go'&&P.T.S[0]>now-600){qBeepK=g.id+'go';try{Sfx.beep(true);}catch(e){}}
     const sk=g?g.id+P.ph+(P.i??''):'';
-    if(sk!==qSoundK){qSoundK=sk;try{if(P.ph==='rev'&&qMy.id===g.id&&qMy.a[P.i]&&qMy.a[P.i][0]===g.qs[P.i][2])Sfx.yay(.5);else if(P.ph==='count')Sfx.join();}catch(e){}}
+    if(sk!==qSoundK){qSoundK=sk;try{if(P.ph==='rev'&&qMy.id===g.id&&qMy.a[P.i]&&qMy.a[P.i][0]===g.qs[P.i][2])Sfx.yay(.5);}catch(e){}}
     if(P.ph==='end'&&g.ph==='play'&&qConfId!==g.id&&qMy.id===g.id){qConfId=g.id;const up=g.qs.length-1,ps=qPlayers(g),sc=ps.map(p=>qScore(g,p.a,up)),top=Math.max(0,...sc);
       if(top>0&&ps.some((p,i)=>p.me&&sc[i]===top))qConfetti();}
     qRender();}

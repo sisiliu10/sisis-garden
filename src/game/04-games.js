@@ -175,17 +175,6 @@ setInterval(()=>{
   if(stillDone||document.querySelector('.modal.show')||creator.classList.contains('show')||!document.getElementById('loading').hidden)return;
   const p=stillCandidate();if(p){stillDone=true;setTimeout(()=>{if(!document.querySelector('.modal.show')&&stillCandidate()===p)stillAsk(p);else stillDone=false;},2500);}
 },4000);
-function askQuiz(){
-  const q=quizState(),c=c4State(),L=c4Leader();
-  const qS=document.getElementById('gQuizS'),cS=document.getElementById('gC4S');
-  const qLive=!!(q&&!q.mine);
-  qS.textContent=qLive?`Läuft gerade bei ${q.by}: mitmachen`:'Mit Freunden, startet sofort';qS.classList.toggle('live',qLive);
-  const cLive=!L.self&&c;
-  cS.textContent=cLive?(c.ph==='wait'?`${c.p1[1]} sucht jemanden: mitspielen`:`${c.p1[1]} gegen ${c.p2?c.p2[1]:'?'}: zuschauen`):'Zu zweit oder gegen den Computer';cS.classList.toggle('live',!!cLive);
-  askM.classList.add('show'); setTimeout(()=>document.getElementById(qLive||!cLive?'gQuiz':'gC4').focus(),30);
-}
-document.getElementById('gQuiz').onclick=()=>{askM.classList.remove('show');openQuiz();};
-document.getElementById('gC4').onclick=()=>{askM.classList.remove('show');openC4();};
 document.getElementById('askNo').onclick=()=>askM.classList.remove('show');
 (()=>{const c=document.getElementById('askGrass').getContext('2d');c.fillStyle='#7dc46c';c.fillRect(0,4,160,8);c.fillStyle='#5aa84a';c.fillRect(0,4,160,1);
   for(let x=1;x<160;x+=3){const h=2+((x*7)%4);c.fillStyle=x%2?'#6bb35c':'#8fd17c';c.fillRect(x,6-h+2,1,h);}

@@ -193,8 +193,8 @@
   const room = {
     peers: () => snap,
     presence: async patch => { for (const k in patch) { if (patch[k] === null) delete mine[k]; else mine[k] = patch[k]; }
-      // quiz moves (new question, an answer, the reveal) go out at once, also as presence, so a friend never waits for them
-      if ('qs' in patch || 'qz' in patch) { rebuild(); cast(); flush(); return; }
+      // game moves (quiz, party games: a new round, an answer, a stroke) go out at once, also as presence, so a friend never waits for them
+      if ('qs' in patch || 'qz' in patch || 'pg' in patch || 'pj' in patch) { rebuild(); cast(); flush(); return; }
       schedule(); },
     connected: () => connected,
     onConnection: (fn) => { connFns.push(fn); setTimeout(() => fn(connected), 0); return () => { connFns = connFns.filter(f => f !== fn); }; },

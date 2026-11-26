@@ -127,6 +127,11 @@ const Sfx=(()=>{
   function join(){window.__joins=(window.__joins||0)+1;if(document.hidden)return;const c=Snd.get();if(!c)return;const t=c.currentTime+.01;
     [[659,0],[988,.11]].forEach(([f,d])=>{const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(f,t+d);
       g.gain.setValueAtTime(.0001,t+d);g.gain.linearRampToValueAtTime(.13,t+d+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d+.42);o.connect(g);g.connect(c.destination);o.start(t+d);o.stop(t+d+.45);});}
-  return {click,join,splash,whee,yay,pour,grow,sit,quack,door,preload:()=>{const c=Snd.started()&&Snd.get();if(c)loadDoor(c);}};
+  // game-show countdown: a short 8-bit beep for 3, 2, 1 and a higher, longer one for "go"
+  function beep(go,vol){const c=ready();if(!c)return;const t=c.currentTime+.01,v=(vol===undefined?1:vol)*.09,f=go?1319:659,d=go?.38:.13;
+    [['square',.5],['triangle',1]].forEach(([ty,m])=>{const o=c.createOscillator(),g=c.createGain();o.type=ty;o.frequency.setValueAtTime(f,t);
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v*m,t+.006);g.gain.setValueAtTime(v*m,t+d*.7);g.gain.exponentialRampToValueAtTime(.0004,t+d);
+      o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+d+.02);});}
+  return {beep,click,join,splash,whee,yay,pour,grow,sit,quack,door,preload:()=>{const c=Snd.started()&&Snd.get();if(c)loadDoor(c);}};
 })();
 
