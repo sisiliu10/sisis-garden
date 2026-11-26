@@ -121,7 +121,7 @@
   <div class="askp" role="dialog" aria-labelledby="askT">
     <div class="askt" id="askT">Mini Games</div>
     <div class="gpick">
-      <button class="gopt" id="gQuiz" type="button"><span class="gn">Quiz Show</span><span class="gs" id="gQuizS">Bis zu 6 Leute, Fragen zu jedem Thema</span></button>
+      <button class="gopt" id="gQuiz" type="button"><span class="gn">Quiz Show</span><span class="gs" id="gQuizS">Mit Freunden, startet sofort</span></button>
       <button class="gopt" id="gC4" type="button"><span class="gn">Vier gewinnt</span><span class="gs" id="gC4S">Zu zweit oder gegen den Computer</span></button>
     </div>
     <button class="gclose" id="askNo" type="button">Schließen</button>
@@ -130,14 +130,16 @@
 </div>
 
 <div class="modal" id="quizM">
-  <div class="qpanel" role="dialog" aria-label="Quiz show">
-    <div class="qtop"><div class="qlogo">QUIZ<span>SHOW</span></div><div class="qinfo" id="qInfo"></div><button class="btn" id="qClose" type="button" aria-label="Close">×</button></div>
-    <div class="qboard" id="qBoard" lang="de"></div>
+  <div class="qpanel" role="dialog" aria-label="Quiz Show">
+    <div class="qtop"><div class="qlogo">QUIZ<span>SHOW</span></div><div class="qinfo" id="qInfo"></div><button class="btn" id="qClose" type="button" aria-label="Schließen">×</button></div>
+    <div class="qboard" id="qBoard" lang="de" aria-live="polite"></div>
+    <div class="qbar" id="qBar" hidden><i id="qBarI"></i></div>
     <div class="qopts" id="qOpts" lang="de"></div>
+    <div class="qlobby" id="qLobby" lang="de"></div>
     <div class="qstagewrap"><canvas id="qStage" width="240" height="80"></canvas><div class="qnames" id="qNames"></div></div>
-    <div class="qlobby" id="qLobby"></div>
   </div>
 </div>
+<canvas id="qConf" hidden aria-hidden="true"></canvas>
 <button class="btn dark qjoin" id="qJoin" hidden type="button">Quiz show: join</button>
 <button class="btn dark qjoin" id="c4Join" hidden type="button">Vier gewinnt: mitspielen</button>
 

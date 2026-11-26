@@ -2,6 +2,7 @@
  "01-core.js",
  "02-draw.js",
  "03-cottage.js",
+ "04-quiz.js",
  "04-games.js",
  "05-live.js",
  "06-ui.js",
