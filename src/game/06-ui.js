@@ -35,7 +35,7 @@ function refreshLabels(){
 function refreshChrome(){
   const gd=V();
   document.getElementById('tName').textContent=(gd?gd.name:'My')+"'s";
-  document.getElementById('tSub').textContent=visiting?'you are visiting':'keep your projects watered';
+  document.getElementById('tSub').textContent=visiting?'you are visiting':'';
   document.title=(gd?gd.name:'My')+"'s Garden";
   document.getElementById('bHome').hidden=!(visiting&&home); signMine.hidden=!(visiting&&home);
   document.getElementById('bAdd').hidden=!!visiting||!home||(home.projects.length>=SLOTS.length&&home.skills.length>=BED_SLOTS.length);

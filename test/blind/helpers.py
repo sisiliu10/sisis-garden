@@ -78,7 +78,8 @@ class Ctx:
 
     def home(self):
         self.press(self.btn("← Home"))
-        wait_seen(self.pg, self.pg.get_by_text("keep your projects watered"), 6000)
+        # back home the "you are visiting" line under the title goes away
+        self.pg.get_by_text("you are visiting").wait_for(state="hidden", timeout=6000)
         self.pg.wait_for_timeout(800)
 
     def text(self):
