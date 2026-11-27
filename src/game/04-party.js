@@ -76,9 +76,20 @@ const GAMES=[
 ];
 function pgLive(k){let by='';qFriends().forEach(p=>{const g=p.presence.pg;if(g&&g.k===k&&!by)by=str(g.by,14)||'Friend';});return by?`Läuft bei ${by}`:'';}
 const GART={
- quiz(X){X.fillStyle='#2a1a55';X.fillRect(0,0,48,30);for(let i=0;i<8;i++){X.fillStyle=i%2?'#33206a':'#2d1c60';X.beginPath();X.moveTo(24,-4);X.lineTo(i*7-3,30);X.lineTo(i*7+4,30);X.fill();}
-   for(let x=2;x<48;x+=4){X.fillStyle=x%8?'#f2c94c':'#8a6a20';X.fillRect(x,1,2,1);}X.fillStyle='#e8506c';X.fillRect(0,24,48,6);X.fillStyle='#3b2a6e';X.fillRect(9,17,10,7);X.fillRect(29,17,10,7);
-   X.fillStyle='#fffdf7';X.fillRect(20,5,8,10);X.fillStyle='#e8506c';[[22,7],[23,6],[24,6],[25,7],[25,8],[24,9],[24,10],[24,12]].forEach(([x,y])=>X.fillRect(x,y,1,1));},
+ // the quiz gets a wide stage (128x40): curtains, bulbs, spotlights, the duck host, the question board and a buzzer desk
+ quiz(X){const r=(x,y,w,h,c)=>{X.fillStyle=c;X.fillRect(x,y,w,h);};
+   r(0,0,128,40,'#241650');
+   for(let i=0;i<9;i++){X.fillStyle=i%2?'rgba(255,240,190,.07)':'rgba(255,240,190,.12)';X.beginPath();X.moveTo(64,-6);X.lineTo(18+i*11,33);X.lineTo(24+i*11,33);X.fill();}
+   for(let x=16;x<112;x+=5){r(x,6,2,2,(x/5)%2<1?'#f2c94c':'#ffe9a0');r(x,8,2,1,'#8a6a20');}
+   for(let x=0;x<128;x++){const sc=Math.round(Math.abs(Math.sin(x*Math.PI/16))*2);r(x,0,1,3+sc,x%4<2?'#c8344c':'#b22d43');}
+   r(0,0,128,1,'#f2c94c');
+   [[0,1],[114,-1]].forEach(([x0,d])=>{for(let i=0;i<14;i++)r(x0+i,0,1,36,(i+(d<0?1:0))%3===0?'#8e2236':i%3===1?'#c8344c':'#b22d43');r(x0+(d>0?9:2),18,3,2,'#f2c94c');});
+   r(0,33,128,7,'#b07a4a');r(0,33,128,1,'#d39a5e');for(let x=6;x<128;x+=13)r(x,35,1,4,'#8a5a36');r(0,39,128,1,'#7a4a2c');
+   r(63,24,2,9,'#5a3a22');r(56,9,16,15,'#1d1238');r(57,10,14,13,'#fffdf7');
+   X.fillStyle='#e8506c';[[62,12],[63,12],[64,12],[65,12],[61,13],[66,13],[66,14],[65,15],[64,16],[64,17],[64,20]].forEach(([x,y])=>X.fillRect(x,y,1,1));
+   try{X.drawImage(duckImg['1'][1],28,5);}catch(e){}
+   r(84,22,22,11,'#3b2a6e');r(84,22,22,2,'#5a43a0');r(87,26,16,5,'#2d1c60');r(93,19,4,3,'#e8443a');r(92,21,6,1,'#7a1e2a');r(94,19,1,1,'#ff9a8a');
+   r(86,27,3,1,'#f2c94c');r(101,27,3,1,'#f2c94c');},
  draw(X){X.fillStyle='#2f7d7a';X.fillRect(0,0,48,30);X.fillStyle='#7a4a2a';X.fillRect(14,22,2,8);X.fillRect(32,22,2,8);X.fillRect(23,2,2,4);X.fillStyle='#5a3418';X.fillRect(12,21,24,2);
    X.fillStyle='#fffdf7';X.fillRect(12,5,24,16);X.fillStyle='#f2c94c';X.fillRect(15,8,4,4);X.fillStyle='#3f9a4a';X.fillRect(12,17,24,4);X.fillStyle='#e8506c';X.fillRect(25,12,7,5);X.fillStyle='#b5552a';X.fillRect(24,10,9,2);X.fillStyle='#1d1238';X.fillRect(27,14,2,3);
    X.fillStyle='#f49ab8';X.fillRect(38,9,2,10);X.fillStyle='#1d1238';X.fillRect(38,19,2,2);},
@@ -95,7 +106,7 @@ function renderMenu(){
   const box=document.getElementById('gPick');let best=null;
   if(!box.dataset.built){box.dataset.built=1;box.innerHTML='';
     GAMES.forEach(g=>{const b=pgEl('button','mcard g-'+g.k);b.type='button';b.dataset.k=g.k;
-      const cv=pgEl('canvas');cv.width=48;cv.height=30;GART[g.k](cv.getContext('2d'));b.appendChild(cv);
+      const cv=pgEl('canvas'),wide=g.k==='quiz';cv.width=wide?128:48;cv.height=wide?40:30;GART[g.k](cv.getContext('2d'));b.appendChild(cv);
       const tx=pgEl('span','gtx');tx.appendChild(pgEl('span','gn',g.n));tx.appendChild(pgEl('span','gs',g.s));b.appendChild(tx);
       b.onclick=()=>{askM.classList.remove('show');Sfx.click();g.open();};box.appendChild(b);});}
   GAMES.forEach(g=>{const b=box.querySelector('[data-k="'+g.k+'"]'),s=b.querySelector('.gs'),lv=g.live()||'';

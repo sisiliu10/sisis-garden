@@ -216,7 +216,7 @@
   .mcard.live .gs{color:#2f8a3a;font-weight:700}
   .mcard.live::after{content:'';position:absolute;top:7px;right:7px;width:8px;height:8px;background:#7cf08a;box-shadow:0 0 0 2px var(--ink);animation:glive 1s steps(2) infinite}
   @keyframes glive{50%{background:#2f8a3a}}
-  .mcard.g-quiz{grid-column:1/-1;flex-direction:row}.mcard.g-quiz canvas{width:44%;height:auto;aspect-ratio:auto;align-self:stretch;object-fit:cover;border-bottom:0;border-right:3px solid var(--ink)}.mcard.g-quiz .gtx{align-self:center}.mcard.g-quiz .gn{font-size:19px}
+  .mcard.g-quiz{grid-column:1/-1}.mcard.g-quiz canvas{aspect-ratio:128/40}
   @media (min-width:640px){#askM .askp{width:min(560px,100%)}.gcards{grid-template-columns:repeat(3,minmax(0,1fr))}.mcard.g-quiz{grid-column:span 2}}
   @media (prefers-reduced-motion:reduce){.mcard.live::after{animation:none}}
   .gclose{display:block;margin:12px auto 10px;background:none;border:0;font:inherit;font-size:15px;color:#6d6472;cursor:pointer;text-decoration:underline dotted 1px;text-underline-offset:3px}
