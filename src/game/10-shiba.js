@@ -1,29 +1,29 @@
 /* ================= shiba (lives in Sisi's cottage) ================= */
 // a small shiba of our own design: trots around the room, naps on the rug, wags when you are close, tap it for a pat
-// facing left: head turned to you with an open smile, cream chest, curled tail with a light tip
+// facing left, small like a puppy: big head turned to you, open smile with raised corners, cream chest, curled tail with a light tip
 const SHIBA_BASE=[
-"..o....o.........",
-".odo..odo....oo..",
-"obddooddbo..ollo.",
-"obbbbbbbbo.obllo.",
-"obebbbbebo.obbo..",
-"olmllllmbooobo...",
-"ollmmmmlbbbbbo...",
-".ollllbbbbbbbo...",
-"..ollbbbbbbbbo...",
-"..obbkbbbbkbbo...",
+".o....o.......",
+"odo..odo......",
+"obdoooodbo.oo.",
+"obbbbbbbboollo",
+"obbebbebboollo",
+"ommllllbbo.obo",
+"olmlllmlbobbo.",
+".olmmmllbbbbo.",
+".ollllbbbbbbo.",
+"..obkbbbbkbbo.",
 ];
-const SHIBA_LEGS={stand:["..obokbo.okobo...","..oo.oo..oo.oo..."],walk:["..obokbo.okobo...",".oo..oo.oo..oo..."],sit:["..obbbbbbbbbbo...","..oooooooooooo..."]};
+const SHIBA_LEGS={stand:["..obokbo.okbo.","..oo.oo..oo.o."],walk:["..obokbo.okbo.",".oo..oo.oo..o."],sit:["..obbbbbbbbbo.","..ooooooooooo."]};
 const SHIBA_COL={o:'#7d2512',b:'#ff9618',d:'#ee6214',k:'#e0641a',l:'#ffe4be',e:'#28180f',m:'#5a1c14'};
 const shibaCache={};
 function shibaImg(pose,wag,sleep){
   const k=pose+wag+(sleep?'z':'');if(shibaCache[k])return shibaCache[k];
   let rows=SHIBA_BASE.concat(SHIBA_LEGS[pose]||SHIBA_LEGS.stand);
-  if(sleep){rows=rows.map((r,y)=>y===4?r.replace(/e/g,'o'):y===6?r.replace('mmmm','lmml'):r);rows=rows.slice(0,10).concat(["..oooooooooooo..."]);}
-  rows=rows.map(r=>r.padEnd(19,'.'));
-  if(wag){const sh=(r,n)=>{const a=r.slice(0,11),t=r.slice(11);return n>0?a+'.'.repeat(n)+t.slice(0,t.length-n):a+t.slice(-n)+'.'.repeat(-n);};
-    rows=rows.map((r,y)=>wag>0?(y<=2&&y>=1?sh(r,2):y===3?sh(r,1):r):(y<=2&&y>=1?sh(r,-1):r));}
-  const w=19,h=rows.length,cv=document.createElement('canvas');cv.width=w*2;cv.height=h;const c=cv.getContext('2d');
+  if(sleep){rows=rows.map((r,y)=>y===4?r.replace(/e/g,'o'):y===7?r.replace('mmm','lml'):r);rows=rows.slice(0,10).concat(["..ooooooooooo."]);}
+  rows=rows.map(r=>r.padEnd(16,'.'));
+  if(wag){const sh=(r,n)=>{const a=r.slice(0,10),t=r.slice(10);return n>0?a+'.'.repeat(n)+t.slice(0,t.length-n):a+t.slice(-n)+'.'.repeat(-n);};
+    rows=rows.map((r,y)=>wag>0?(y===2||y===3?sh(r,1):r):(y===2?sh(r,-1):r));}
+  const w=16,h=rows.length,cv=document.createElement('canvas');cv.width=w*2;cv.height=h;const c=cv.getContext('2d');
   for(let f=0;f<2;f++)rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='.')return;c.fillStyle=SHIBA_COL[ch];c.fillRect(f?w*2-1-x:x,y,1,1);}));
   return shibaCache[k]=cv;
 }
@@ -54,10 +54,10 @@ function drawShiba(t){
   const pose=sleep?'stand':S0.mode==='walk'?(Math.floor(t*(S0.run?12:8))%2?'walk':'stand'):S0.mode==='sit'?'sit':'stand';
   // petted: a happy, fast wag for a few seconds; otherwise a slow one now and then when you are close
   const wf=Math.floor(t*14)%4,wag=sleep?0:S0.wagT>0?[1,0,-1,0][wf]:(near&&Math.floor(t*3)%4===0)?1:0;
-  const im=shibaImg(pose,wag,sleep),w=19,x=Math.round(S0.x-w/2),y=Math.round(S0.y-im.height-(S0.hop>0?Math.round(Math.sin((1-S0.hop/.35)*Math.PI)*5):0));
-  g.globalAlpha=.25;ell(Math.round(S0.x)+(S0.dir>0?0:-2),Math.round(S0.y),8,2,'#5a3a20');g.globalAlpha=1;
+  const im=shibaImg(pose,wag,sleep),w=16,x=Math.round(S0.x-w/2),y=Math.round(S0.y-im.height-(S0.hop>0?Math.round(Math.sin((1-S0.hop/.35)*Math.PI)*5):0));
+  g.globalAlpha=.25;ell(Math.round(S0.x)+(S0.dir>0?0:-1),Math.round(S0.y),7,2,'#5a3a20');g.globalAlpha=1;
   g.drawImage(im,S0.dir>0?w:0,0,w,im.height,x,y,w,im.height);
-  if(sleep&&Math.floor(t*1.2)%2){const zx=x+(S0.dir>0?14:1),zy=y-4;R(zx,zy,3,1,'#ffffff');R(zx+1,zy+1,1,1,'#ffffff');R(zx,zy+2,3,1,'#ffffff');}
+  if(sleep&&Math.floor(t*1.2)%2){const zx=x+(S0.dir>0?12:1),zy=y-4;R(zx,zy,3,1,'#ffffff');R(zx+1,zy+1,1,1,'#ffffff');R(zx,zy+2,3,1,'#ffffff');}
   if(S0.heart>0){g.globalAlpha=Math.min(1,S0.heart*2);const hx=Math.round(S0.x)-1,hy=y-6-Math.round((1.2-S0.heart)*6);[[0,0],[2,0],[-1,1],[0,1],[1,1],[2,1],[3,1],[0,2],[1,2],[2,2],[1,3]].forEach(([a,b])=>R(hx+a-1,hy+b,1,1,'#e8506c'));g.globalAlpha=1;}
 }
 function shibaAt(lx,ly){return shibaHere()&&Math.abs(lx-shiba.x)<12&&ly>shiba.y-16&&ly<shiba.y+4;}
