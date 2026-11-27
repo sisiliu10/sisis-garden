@@ -120,7 +120,7 @@ function render(t){
   X=g;
   if(scene==='house'){renderHouse(t);return;}
   if(scene==='island'){renderIsland(t);return;}
-  const cr=Math.round(camY); if(cr!==camR){camR=cr;worldEl.style.transform=`scale(${S}) translateY(${-camR}px)`;updateJump();}
+  const cr=Math.round(camY); if(cr!==camR){camR=cr;worldEl.style.transform=`translateY(${snapPx(-camR*S)})`;updateJump();}
   g.drawImage(bg,0,-camR);
   clouds.forEach(cl=>drawCloud(cl.x,cl.y-camR,cl.s));
   drawRainbow(t,skyState().night);

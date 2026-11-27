@@ -11,15 +11,19 @@ function rebuildLabels(){
     const el=document.createElement('div'); el.className='label';
     const n=document.createElement('div'); if(p.lk&&!visiting){el.classList.add('lk');n.innerHTML='<svg class="lki" viewBox="0 0 5 7" fill="currentColor"><rect x="1" y="0" width="3" height="1"/><rect x="0" y="1" width="1" height="2"/><rect x="4" y="1" width="1" height="2"/><rect x="0" y="3" width="5" height="4"/></svg>';n.appendChild(document.createTextNode(p.code));}else n.textContent=p.code; el.appendChild(n);
     const wb=document.createElement('div'); wb.className='wb'; wb.appendChild(document.createElement('i')); el.appendChild(wb);
-    const [x,y]=posOf(p); el.style.left=(OX+x)+'px'; el.style.top=(OY+y+(p.bed?BED_H/2+2:3))+'px';
+    const [x,y]=posOf(p); el._x=(OX+x)*S; el.style.top=snapPx((OY+y+(p.bed?BED_H/2+2:3))*S);
     labelsEl.appendChild(el); labels[p.id]=el;
   });
-  refreshLabels();
+  placeLabels(); refreshLabels();
 }
+// centre each label on its plant, on whole screen pixels (translateX(-50%) would leave half pixels and blur the text)
+function placeLabels(){Object.values(labels).forEach(el=>{el.style.left=snapPx(el._x-el.offsetWidth/2);});}
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>placeLabels());
 function layoutWorldUI(){
-  document.getElementById('title').style.top=Math.round(Math.max(OY*.42+10,innerWidth<=480?46/S:0))+'px';
-  signEl.style.left=(OX+63)+'px'; signEl.style.top=(OY+344)+'px'; signEl2.style.left=(OX+143)+'px'; signEl2.style.top=(OY+344)+'px';
-  signMine.style.left=(OX+5)+'px'; signMine.style.top=(OY+344)+'px';
+  document.getElementById('title').style.top=snapPx(Math.round(Math.max(OY*.42+10,innerWidth<=480?46/S:0))*S);
+  const sy=snapPx((OY+344)*S);
+  signEl.style.left=snapPx((OX+63)*S); signEl.style.top=sy; signEl2.style.left=snapPx((OX+143)*S); signEl2.style.top=sy;
+  signMine.style.left=snapPx((OX+5)*S); signMine.style.top=sy;
   rebuildLabels(); placeDialog();
 }
 function gardenAvg(gd){const ps=gd?gd.projects.concat(gd.skills||[]):[];return ps.length?ps.reduce((a,p)=>a+waterOf(p),0)/ps.length:100;}

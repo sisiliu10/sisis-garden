@@ -202,6 +202,7 @@ const bg=document.createElement('canvas'), bgc=bg.getContext('2d');
 const pcv=document.createElement('canvas'); pcv.width=64; pcv.height=56; const pctx=pcv.getContext('2d');
 const worldEl=document.getElementById('world');
 let W=CW,H=CH,S=1,OX=0,OY=0,TH=CH,camY=0,camR=-1, X=g;
+const snapPx=v=>{const d=devicePixelRatio||1;return Math.round(v*d)/d+'px';};
 const R=(x,y,w,h,c)=>{X.fillStyle=c;X.fillRect(x,y,w,h);};
 function disc(cx,cy,r,c){X.fillStyle=c;for(let dy=-r;dy<=r;dy++){const w=Math.round(Math.sqrt(Math.max(0,r*r-dy*dy+r*.6)));X.fillRect(cx-w,cy+dy,2*w+1,1);}}
 function ell(cx,cy,rx,ry,c){X.fillStyle=c;for(let dy=-ry;dy<=ry;dy++){const w=Math.round(rx*Math.sqrt(Math.max(0,1-(dy*dy)/((ry+.5)*(ry+.5)))));X.fillRect(cx-w,cy+dy,2*w+1,1);}}
@@ -212,7 +213,11 @@ function resize(){
   W=Math.ceil(vw/S); H=Math.ceil(vh/S);
   OX=Math.floor((W-CW)/2); OY=Math.max(0,H-WORLD_H); TH=OY+WORLD_H+(vw<=560?Math.ceil(64/S):0); camR=-1;
   cvs.width=W; cvs.height=H; cvs.style.width=(W*S)+'px'; cvs.style.height=(H*S)+'px';
-  worldEl.style.width=W+'px'; worldEl.style.height=TH+'px';
+  worldEl.style.width=(W*S)+'px'; worldEl.style.height=(TH*S)+'px';
+  // text over the canvas is not scaled: one pixel of the pixel font is a whole number of screen pixels, so it stays sharp
+  const dpr=devicePixelRatio||1, fp=f=>Math.max(1,Math.round(f/8*S*dpr))/dpr+'px', ws=worldEl.style;
+  ws.setProperty('--s',S); ws.setProperty('--b',Math.max(1,Math.round(S*dpr))/dpr+'px');
+  ws.setProperty('--gl',fp(vw<=560?6.2:5.5)); ws.setProperty('--gt',fp(5.5)); ws.setProperty('--gs',fp(5)); ws.setProperty('--gh',fp(4.5));
   bg.width=W; bg.height=TH; drawBG();
   g.imageSmoothingEnabled=false;
   layoutWorldUI(); initClouds();

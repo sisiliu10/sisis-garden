@@ -18,21 +18,21 @@
   html,body{height:100%;overflow:hidden;background:var(--sky);font-family:"Pixelify Sans",system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
   [hidden]{display:none!important}
   #c{position:fixed;left:0;top:0;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:none;cursor:pointer}
-  #world{position:fixed;left:0;top:0;transform-origin:0 0;pointer-events:none}
-  .title{position:absolute;left:0;right:0;text-align:center;color:#fff;font-weight:700;line-height:.86;letter-spacing:.5px;text-shadow:0 2px 0 #4f86c9;transition:opacity .35s}
-  .title .t1{font-size:27px}
-  .title .t2{font-size:27px;padding-left:20px}
-  .title .sub{font-family:Silkscreen,monospace;font-size:5.5px;letter-spacing:1px;margin-top:6px;text-shadow:0 1px 0 #4f86c9}
+  #world{position:fixed;left:0;top:0;pointer-events:none}
+  /* #world is not scaled: world sizes are written as calc(Npx*var(--s)); pixel-font sizes use --g* (one font pixel, snapped to whole screen pixels) so the text stays sharp */
+  .title{position:absolute;left:0;right:0;text-align:center;color:#fff;font-weight:700;line-height:.86;letter-spacing:calc(.5px*var(--s));text-shadow:0 calc(2px*var(--s)) 0 #4f86c9;transition:opacity .35s}
+  .title .t1{font-size:calc(27px*var(--s))}
+  .title .t2{font-size:calc(27px*var(--s));padding-left:calc(20px*var(--s))}
+  .title .sub{font-family:Silkscreen,monospace;font-size:calc(var(--gt)*8);letter-spacing:var(--gt);margin-top:calc(6px*var(--s));text-shadow:0 var(--gt) 0 #4f86c9}
   .title .sub:empty{display:none}
-  .label{position:absolute;transform:translateX(-50%);text-align:center;font-family:Silkscreen,monospace;font-size:5.5px;line-height:1;color:#fff;
-    text-shadow:0 1px 0 #3d7a35,1px 0 0 #3d7a35,-1px 0 0 #3d7a35,0 -1px 0 #3d7a35;white-space:nowrap;transition:transform .2s}
-  .label .wb{width:20px;height:2px;margin:2px auto 0;background:rgba(42,36,48,.35);outline:.5px solid rgba(42,36,48,.5)}
+  .label{position:absolute;text-align:center;font-family:Silkscreen,monospace;font-size:calc(var(--gl)*8);line-height:1;color:#fff;
+    text-shadow:0 var(--gl) 0 #3d7a35,var(--gl) 0 0 #3d7a35,calc(-1*var(--gl)) 0 0 #3d7a35,0 calc(-1*var(--gl)) 0 #3d7a35;white-space:nowrap}
+  .label .wb{position:absolute;left:50%;top:100%;transform:translateX(-50%);width:calc(20px*var(--s));height:calc(2px*var(--s));margin-top:calc(2px*var(--s));background:rgba(42,36,48,.35);outline:calc(.5px*var(--s)) solid rgba(42,36,48,.5)}
   .label .wb i{display:block;height:100%;background:var(--water)}
-  @media (max-width:560px){.label{font-size:6.2px}.label:not(.low):not(.on) .wb{visibility:hidden}}
+  @media (max-width:560px){.label:not(.low):not(.on) .wb{visibility:hidden}}
   .label.low .wb i{background:#e8835a}
-  .label.on{transform:translateX(-50%) scale(1.12)}
   .sign.mine{pointer-events:auto;cursor:pointer;z-index:3}
-  .sign{position:absolute;font-family:Silkscreen,monospace;font-size:5px;line-height:1;color:#fff;background:#8a5a36;border:1px solid #5a3420;padding:2px 3px 1px;white-space:nowrap;box-shadow:1px 1px 0 rgba(0,0,0,.2)}
+  .sign{position:absolute;font-family:Silkscreen,monospace;font-size:calc(var(--gs)*8);line-height:1;color:#fff;background:#8a5a36;border:var(--b) solid #5a3420;padding:calc(var(--gs)*3) calc(var(--gs)*4) calc(var(--gs)*2);white-space:nowrap;box-shadow:var(--b) var(--b) 0 rgba(0,0,0,.2)}
 
   .hud{position:fixed;top:12px;display:flex;gap:6px;z-index:5}
   .hud.l{left:12px}.hud.r{right:12px}
@@ -42,7 +42,7 @@
   .btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(42,36,48,.25)}
   .btn.dark{background:var(--ink);color:#fff}
   .chip .h{color:#e8506c}
-  .title .hl{font-size:4.5px;margin-top:4px;opacity:.85;transition:opacity .6s}
+  .title .hl{font-size:calc(var(--gh)*8);margin-top:calc(4px*var(--s));opacity:.85;transition:opacity .6s}
   .banner{position:fixed;left:50%;bottom:112px;transform:translateX(-50%);font-size:14px;background:var(--paper);border:2px solid var(--ink);padding:6px 12px;z-index:4;max-width:calc(100vw - 24px);text-align:center}
 
 .movebar{position:fixed;left:50%;top:60px;transform:translateX(-50%);z-index:6;display:flex;gap:10px;align-items:center;background:var(--ink);color:#fff;padding:6px 6px 6px 12px;font-size:15px;max-width:calc(100vw - 24px)}
@@ -159,7 +159,7 @@
   .lockb{flex:none;align-self:center;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:2px solid transparent;background:none;color:var(--muted);cursor:pointer;border-radius:0}
   .lockb:hover{border-color:#e4dccb}.lockb.on{color:var(--ink);background:#f1ead9;border-color:var(--ink)}
   .lockb svg{width:14px;height:16px;shape-rendering:crispEdges;display:block}
-  .label .lki{display:inline-block;width:4px;height:5px;margin-right:2px;vertical-align:0;shape-rendering:crispEdges}
+  .label .lki{display:inline-block;width:calc(var(--gl)*5);height:calc(var(--gl)*7);margin-right:calc(var(--gl)*2);vertical-align:0;shape-rendering:crispEdges}
   .label.lk>div:first-child{opacity:.8}
   #dName{font-size:15px;margin-top:1px}
   #dName b{font-weight:600}
@@ -550,7 +550,7 @@
     .hud{gap:4px;top:10px}.hud.r{right:8px}
     .hud .btn{font-size:12px;padding:4px 7px}
     .hud.l{top:auto;left:12px;bottom:62px;align-items:flex-end}
-    .title .t1,.title .t2{font-size:21px}.title .t2{padding-left:14px}
+    .title .t1,.title .t2{font-size:calc(21px*var(--s))}.title .t2{padding-left:calc(14px*var(--s))}
     .prompt{bottom:106px;font-size:14px;padding:7px 12px}
     .btn.qjoin{top:48px;font-size:13px}
   }
@@ -987,6 +987,7 @@ const bg=document.createElement('canvas'), bgc=bg.getContext('2d');
 const pcv=document.createElement('canvas'); pcv.width=64; pcv.height=56; const pctx=pcv.getContext('2d');
 const worldEl=document.getElementById('world');
 let W=CW,H=CH,S=1,OX=0,OY=0,TH=CH,camY=0,camR=-1, X=g;
+const snapPx=v=>{const d=devicePixelRatio||1;return Math.round(v*d)/d+'px';};
 const R=(x,y,w,h,c)=>{X.fillStyle=c;X.fillRect(x,y,w,h);};
 function disc(cx,cy,r,c){X.fillStyle=c;for(let dy=-r;dy<=r;dy++){const w=Math.round(Math.sqrt(Math.max(0,r*r-dy*dy+r*.6)));X.fillRect(cx-w,cy+dy,2*w+1,1);}}
 function ell(cx,cy,rx,ry,c){X.fillStyle=c;for(let dy=-ry;dy<=ry;dy++){const w=Math.round(rx*Math.sqrt(Math.max(0,1-(dy*dy)/((ry+.5)*(ry+.5)))));X.fillRect(cx-w,cy+dy,2*w+1,1);}}
@@ -997,7 +998,11 @@ function resize(){
   W=Math.ceil(vw/S); H=Math.ceil(vh/S);
   OX=Math.floor((W-CW)/2); OY=Math.max(0,H-WORLD_H); TH=OY+WORLD_H+(vw<=560?Math.ceil(64/S):0); camR=-1;
   cvs.width=W; cvs.height=H; cvs.style.width=(W*S)+'px'; cvs.style.height=(H*S)+'px';
-  worldEl.style.width=W+'px'; worldEl.style.height=TH+'px';
+  worldEl.style.width=(W*S)+'px'; worldEl.style.height=(TH*S)+'px';
+  // text over the canvas is not scaled: one pixel of the pixel font is a whole number of screen pixels, so it stays sharp
+  const dpr=devicePixelRatio||1, fp=f=>Math.max(1,Math.round(f/8*S*dpr))/dpr+'px', ws=worldEl.style;
+  ws.setProperty('--s',S); ws.setProperty('--b',Math.max(1,Math.round(S*dpr))/dpr+'px');
+  ws.setProperty('--gl',fp(vw<=560?6.2:5.5)); ws.setProperty('--gt',fp(5.5)); ws.setProperty('--gs',fp(5)); ws.setProperty('--gh',fp(4.5));
   bg.width=W; bg.height=TH; drawBG();
   g.imageSmoothingEnabled=false;
   layoutWorldUI(); initClouds();
@@ -3029,15 +3034,19 @@ function rebuildLabels(){
     const el=document.createElement('div'); el.className='label';
     const n=document.createElement('div'); if(p.lk&&!visiting){el.classList.add('lk');n.innerHTML='<svg class="lki" viewBox="0 0 5 7" fill="currentColor"><rect x="1" y="0" width="3" height="1"/><rect x="0" y="1" width="1" height="2"/><rect x="4" y="1" width="1" height="2"/><rect x="0" y="3" width="5" height="4"/></svg>';n.appendChild(document.createTextNode(p.code));}else n.textContent=p.code; el.appendChild(n);
     const wb=document.createElement('div'); wb.className='wb'; wb.appendChild(document.createElement('i')); el.appendChild(wb);
-    const [x,y]=posOf(p); el.style.left=(OX+x)+'px'; el.style.top=(OY+y+(p.bed?BED_H/2+2:3))+'px';
+    const [x,y]=posOf(p); el._x=(OX+x)*S; el.style.top=snapPx((OY+y+(p.bed?BED_H/2+2:3))*S);
     labelsEl.appendChild(el); labels[p.id]=el;
   });
-  refreshLabels();
+  placeLabels(); refreshLabels();
 }
+// centre each label on its plant, on whole screen pixels (translateX(-50%) would leave half pixels and blur the text)
+function placeLabels(){Object.values(labels).forEach(el=>{el.style.left=snapPx(el._x-el.offsetWidth/2);});}
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>placeLabels());
 function layoutWorldUI(){
-  document.getElementById('title').style.top=Math.round(Math.max(OY*.42+10,innerWidth<=480?46/S:0))+'px';
-  signEl.style.left=(OX+63)+'px'; signEl.style.top=(OY+344)+'px'; signEl2.style.left=(OX+143)+'px'; signEl2.style.top=(OY+344)+'px';
-  signMine.style.left=(OX+5)+'px'; signMine.style.top=(OY+344)+'px';
+  document.getElementById('title').style.top=snapPx(Math.round(Math.max(OY*.42+10,innerWidth<=480?46/S:0))*S);
+  const sy=snapPx((OY+344)*S);
+  signEl.style.left=snapPx((OX+63)*S); signEl.style.top=sy; signEl2.style.left=snapPx((OX+143)*S); signEl2.style.top=sy;
+  signMine.style.left=snapPx((OX+5)*S); signMine.style.top=sy;
   rebuildLabels(); placeDialog();
 }
 function gardenAvg(gd){const ps=gd?gd.projects.concat(gd.skills||[]):[];return ps.length?ps.reduce((a,p)=>a+waterOf(p),0)/ps.length:100;}
@@ -5297,7 +5306,7 @@ function render(t){
   X=g;
   if(scene==='house'){renderHouse(t);return;}
   if(scene==='island'){renderIsland(t);return;}
-  const cr=Math.round(camY); if(cr!==camR){camR=cr;worldEl.style.transform=`scale(${S}) translateY(${-camR}px)`;updateJump();}
+  const cr=Math.round(camY); if(cr!==camR){camR=cr;worldEl.style.transform=`translateY(${snapPx(-camR*S)})`;updateJump();}
   g.drawImage(bg,0,-camR);
   clouds.forEach(cl=>drawCloud(cl.x,cl.y-camR,cl.s));
   drawRainbow(t,skyState().night);
@@ -5460,7 +5469,7 @@ function maybeAutoVisit(){
 #gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gAlt{display:flex;flex-direction:column;gap:10px;margin-top:4px}#gAlt[hidden],.galt[hidden]{display:none}.gor{margin:6px 0 0;font-size:14px;opacity:.6}.galt{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;color:#2a2430;cursor:pointer}.galt:active{transform:translate(2px,2px)}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;outline:none;border-radius:0;-webkit-appearance:none;appearance:none;box-shadow:none;-webkit-tap-highlight-color:transparent}#gEmail:focus,#gTok:focus{outline:none;background:#fff8e6}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
 #gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795776325"></script>
+<script src="config.js?v=1795776774"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -5491,7 +5500,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '27.11. 11:45';
+  const BUILD = '27.11. 11:52';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -5781,7 +5790,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 27.11. 11:45';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 27.11. 11:52';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid', 'garden-pending').forEach(k => localStorage.removeItem(k)); } catch (e) {}
