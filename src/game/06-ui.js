@@ -205,16 +205,17 @@ document.getElementById('fDel').onclick=()=>{
 function closeKill(){document.getElementById('dKillBar').hidden=true;document.getElementById('dBtns').hidden=false;}
 document.getElementById('fKill').onclick=e=>{
   e.stopPropagation(); if(!active||visiting) return;
-  document.getElementById('dKillTxt').textContent='Delete '+active.code+' for good? Notes and log go too.';
+  document.getElementById('dKillTxt').textContent='Put '+active.code+' on the compost? You can replant it any time.';
   document.getElementById('dBtns').hidden=true; document.getElementById('dKillBar').hidden=false;
 };
 document.getElementById('dKillNo').onclick=e=>{e.stopPropagation();closeKill();};
 document.getElementById('dKillYes').onclick=e=>{
   e.stopPropagation(); if(!active||visiting) return;
-  const code=active.code,[px,py]=posOf(active);
+  // the trash button composts too: nothing is lost by accident, deleting for good happens in the compost heap
+  {const c=JSON.parse(JSON.stringify(active));c.ct=Date.now();c.note=home.notes[active.id]||'';c.lg=(home.logs&&home.logs[active.id])||[];delete c.pos;
+   home.compost=[c].concat(home.compost||[]).slice(0,30);compostFx(active.code);}
   dropActive(); closeKill();
-  for(let i=0;i<12;i++)spawn({kind:'puff',x:px+(Math.random()*14-7),y:py-2-Math.random()*12,vy:-10,life:.5+Math.random()*.3});
-  persist(); rebuildLabels(); refreshChrome(); toast(code+' deleted.',1800);
+  persist(); rebuildLabels(); refreshChrome();
 };
 const addM=document.getElementById('addM');
 document.getElementById('bAdd').onclick=()=>{

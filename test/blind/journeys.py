@@ -118,13 +118,15 @@ def edit_and_delete(pw, chk, device):
         pg.get_by_placeholder(re.compile("One word")).fill("BAKERY"); c.press(c.btn("Save")); pg.wait_for_timeout(1500)
         chk("Edit renames the project", c.label_bb("BAKERY") is not None and not pg.evaluate(JS_LABELS, "KITE"))
         c.walk_to_plant("BAKERY")
-        c.press(pg.get_by_role("button", name="Delete")); pg.wait_for_timeout(1000)
+        c.press(pg.get_by_role("button", name="Compost")); pg.wait_for_timeout(1000)
         still = c.label_bb("BAKERY") is not None
-        asked = bool(dialogs) or seen(c.btn("Keep")) or bool(re.search(r"for good\?|sure|really", c.text(), re.I))
-        chk("delete asks for confirmation first (plant still there)", still and asked)
-        if seen(c.btn("Delete")):
-            c.press(c.btn("Delete")); pg.wait_for_timeout(1500)
-        chk("confirmed delete removes the plant", not pg.evaluate(JS_LABELS, "BAKERY"))
+        asked = bool(dialogs) or seen(c.btn("Keep")) or bool(re.search(r"compost\?|sure|really", c.text(), re.I))
+        chk("trash asks for confirmation first (plant still there)", still and asked)
+        if seen(c.btn("Compost", exact=True)):
+            c.press(c.btn("Compost", exact=True)); pg.wait_for_timeout(1500)
+        chk("confirmed trash removes the plant", not pg.evaluate(JS_LABELS, "BAKERY"))
+        heap = pg.evaluate("()=>{for(const k of Object.keys(localStorage)){try{const o=JSON.parse(localStorage.getItem(k));if(o&&Array.isArray(o.compost))return o.compost.map(c=>c.code).join(',');}catch(e){}}return ''}")
+        chk("and it lands on the compost heap", "BAKERY" in heap)
     finally:
         c.close()
 
