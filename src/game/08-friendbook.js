@@ -69,7 +69,7 @@ function stk(k,s,cls,style){const i=el('img','fstk '+(cls||''));i.src=stkUrl(k,s
 const STK_POOL=['strawberry','mushroom','bee','sakura','ladybug','clover','tulip'];
 function hashStr(t){let h=7;for(const ch of String(t))h=(h*31+ch.charCodeAt(0))>>>0;return h;}
 // every friend gets their own photo background: colour + pattern from their id
-const FBG=[['#f1d6c6','dots'],['#f3e3b0','ging'],['#cfdff0','stripe'],['#d6e6c6','dots'],['#ead9c4','ging'],['#dcd6ea','stripe']];
+const FBG=[['#e9dccb','n'],['#dfe4d6','n'],['#e2e0e6','n'],['#ece2cf','n'],['#dde3e0','n'],['#e8dad6','n']];
 function photoBg(id){const [c,p]=FBG[hashStr(id)%FBG.length];return {c,p};}
 /* scalloped paper edge as a crisp pixel mask tile (2px steps) */
 (function(){const c=document.createElement('canvas');c.width=16;c.height=8;const x=c.getContext('2d');x.fillStyle='#000';
@@ -92,14 +92,13 @@ document.getElementById('fbEnvBtn').onclick=()=>{envOpen=!envOpen;renderEnv();if
 document.getElementById('fbSet').onclick=()=>{const r2=document.getElementById('gListedRow');r2.hidden=!r2.hidden;};
 function renderEnv(){drawEnvelope(envOpen);document.getElementById('fbEnvForm').hidden=!envOpen;document.getElementById('fbEnvBtn').setAttribute('aria-expanded',envOpen);
   const L=document.getElementById('fbLetters');L.innerHTML='';const n=incoming().length;
-  const s1=el('span','slip s1',n?n+(n===1?' Anfrage':' Anfragen'):'@ hinzufügen');const s2=el('span','slip s2','Einladung ✉');L.appendChild(s1);L.appendChild(s2);}
+  L.appendChild(el('span','elab',envOpen?'schließen':'hinzufügen'));if(n)L.appendChild(el('span','ebadge',String(n)));}
 
 /* ---------- left page: polaroids on the twine, memory notes, requests ---------- */
 function polaroid(gd,i,mine){const d=mine?home:gd.data,id=mine?myId||'me':gd.id,b=photoBg(id);
-  const t=el('button','apol');t.type='button';t.style.setProperty('--rot',[-6,4,-3,6,-4,2][i%6]+'deg');
+  const t=el('button','apol');t.type='button';
   if((fbPage||'')===(mine?'me':gd.id))t.classList.add('sel');
-  const peg=stk('peg',2,'peg');t.appendChild(peg);
-  const ph=el('span','ph p-'+b.p);ph.style.backgroundColor=b.c;ph.appendChild(avatarCv(d.look));t.appendChild(ph);
+  const ph=el('span','ph');ph.style.backgroundColor=b.c;ph.appendChild(avatarCv(d.look));t.appendChild(ph);
   t.appendChild(el('b','',mine?'ich ♡':d.name));
   if(!mine){const st=fbStatusDe(gd);if(isPending(gd))t.appendChild(el('span','pst','Anfrage gesendet'));else if(st.on)t.appendChild(el('span','pst on','im Garten'));}
   t.onclick=()=>openFb(mine?'me':gd.id);return t;}
@@ -123,16 +122,8 @@ function renderGardens(keep){
   const ord=(a,b)=>(on.has(b.id)-on.has(a.id))||(lastAround(b.data)-lastAround(a.data));
   const friends=all.filter(gd=>(isFriend(gd)||isPending(gd))&&match(gd)).sort(ord),others=all.filter(gd=>!isFriend(gd)&&!isPending(gd)&&match(gd)).sort(ord);
   const pols=[];let i=0;if(home&&!q)pols.push(polaroid(null,i++,true));friends.forEach(gd=>pols.push(polaroid(gd,i++)));
-  const per=innerWidth<=560?3:3;for(let k=0;k<pols.length;k+=per)box.appendChild(garland(pols.slice(k,k+per)));
-  if(!friends.length)box.appendChild(note([['Noch keine Freunde hier.','b'],['Tipp auf den Umschlag und trag einen Benutzernamen ein ♡']],'yellow',-2));
-  // memory notes made from real things that happened
-  const mem=el('div','amems');const fr=friends.filter(isFriend);
-  const latest=fr.slice().sort((a,b)=>lastAround(b.data)-lastAround(a.data))[0];
-  if(latest&&lastAround(latest.data))mem.appendChild(note([['zuletzt im Garten','small'],[latest.data.name,'b'],[deAgo(lastAround(latest.data))]],'pink',-3));
-  const newest=fr.filter(g=>home&&home.frT&&home.frT[g.id]).sort((a,b)=>home.frT[b.id]-home.frT[a.id])[0];
-  if(newest)mem.appendChild(note([['neu im Album','small'],[newest.data.name,'b'],['seit '+new Date(home.frT[newest.id]).toLocaleDateString('de-DE',{day:'numeric',month:'short'})]],'blue',4));
-  if(fr.length)mem.appendChild(note([[fr.length+(fr.length===1?' Freund:in':' Freund:innen'),'b'],['im Album ♡']],'green',-1));
-  if(mem.children.length)box.appendChild(mem);
+  if(pols.length){const g=el('div','apols');pols.forEach(n=>g.appendChild(n));box.appendChild(g);}
+  if(!friends.length)box.appendChild(note([['Noch keine Freunde hier.','b'],['Über den Umschlag oben fügst du jemanden per Benutzername hinzu.']],'plain',0));
   if(others.length){box.appendChild(el('div','asec','andere Gärten'));const row=el('div','aothers');others.forEach(gd=>{const b=el('button','aoth');b.type='button';b.appendChild(avatarCv(gd.data.look,'fbav sm'));b.appendChild(el('span','',gd.data.name));b.onclick=()=>openFb(gd.id);row.appendChild(b);});box.appendChild(row);}
   renderFbPage();
 }
@@ -159,25 +150,21 @@ function renderFbPage(){
   const back=el('button','fbback','← zum Album');back.type='button';back.onclick=()=>document.getElementById('fbL').scrollIntoView({block:'start',behavior:'smooth'});pg.appendChild(back);
   const hd=el('div','ahead');const h=el('h3','',own?'Meine Seite':d.name);hd.appendChild(h);
   if(d.handle)hd.appendChild(el('span','fh','@'+d.handle));pg.appendChild(hd);
-  // big photo with corners, gingham tape and a sticker that suits them
-  const ph=el('div','aphoto');const inner=el('div','ph p-'+bg.p);inner.style.backgroundColor=bg.c;inner.appendChild(avatarCv(d.look,'big'));ph.appendChild(inner);
-  ph.appendChild(el('i','tape g'+(hashStr(id)%4)));ph.appendChild(stk(STK_POOL[hashStr(id+'s')%STK_POOL.length],3,'pst1'));pg.appendChild(ph);
-  // arrow notes around the photo
+  const ph=el('div','aphoto');const inner=el('div','ph');inner.style.backgroundColor=bg.c;inner.appendChild(avatarCv(d.look,'big'));ph.appendChild(inner);
+  pg.appendChild(ph);
   const facts=el('div','afacts');
   const facts3=[['flower','Lieblingsblume'],['bday','Geburtstag'],['food','Lieblingsessen']].filter(([k])=>fb[k]);
-  facts3.forEach(([k,lab],j)=>{const f=el('div','afact');f.style.setProperty('--rot',[-2,2,-1][j]+'deg');f.appendChild(stk('arrow',2,'arr'));const t=el('div','');t.appendChild(el('span','small',lab));t.appendChild(el('b','',k==='bday'?prettyBday(fb[k]):fb[k]));f.appendChild(t);facts.appendChild(f);});
+  facts3.forEach(([k,lab],j)=>{const f=el('div','afact');const t=el('div','');t.appendChild(el('span','small',lab));t.appendChild(el('b','',k==='bday'?prettyBday(fb[k]):fb[k]));f.appendChild(t);facts.appendChild(f);});
   if(!own&&!facts3.length)facts.appendChild(el('div','fsmall',d.name+' hat die Seite noch nicht ausgefüllt.'));
   if(!own)pg.appendChild(facts);
   if(!own){const more=FB_Q.filter(([k])=>!['flower','bday','food'].includes(k)&&fb[k]);if(more.length){const m=el('div','amore');more.forEach(([k,lab])=>{const r=el('div','');r.appendChild(el('span','small',lab+':'));r.appendChild(el('b','',fb[k]));m.appendChild(r);});pg.appendChild(m);}
-    if(fb.motto){const n=el('div','anote yellow msg');n.style.setProperty('--rot','-1.5deg');n.appendChild(el('span','small','eine kleine Nachricht'));n.appendChild(el('b','','„'+fb.motto+'“'));n.appendChild(el('span','sig','– '+d.name));pg.appendChild(n);}
+    if(fb.motto){const n=el('div','anote msg');n.appendChild(el('b','','„'+fb.motto+'“'));n.appendChild(el('span','sig','– '+d.name));pg.appendChild(n);}
     // shared memories as little tickets
     const tk=el('div','atix');const st=fbStatusDe(gd);
-    const tick=(a,b,c)=>{const t=el('div','tix '+c);t.appendChild(el('span','small',a));t.appendChild(el('b','',b));tk.appendChild(t);};
+    const tick=(a,b,c)=>{const t=el('div','tix');t.appendChild(el('span','small',a));t.appendChild(el('b','',b));tk.appendChild(t);};
     if(home&&home.frT&&home.frT[gd.id])tick('Freunde seit',new Date(home.frT[gd.id]).toLocaleDateString('de-DE',{day:'numeric',month:'short'}),'pink');
     if(st.t)tick(st.on?'gerade':'zuletzt da',st.on?'im Garten ♡':st.t,'blue');
-    if(d.since)tick('gärtnert seit',new Date(d.since).toLocaleDateString('de-DE',{month:'short',year:'numeric'}),'green');
     const fc=fishCount(gd.id,()=>{if(gardensM.classList.contains('show'))renderFbPage();});if(fc)tick('Fische gefangen',fc+' 🐟','yellow');
-    tick('Projekte',String((d.projects||[]).length),'yellow');
     pg.appendChild(tk);
     const acts=el('div','aacts');const friend=isFriend(gd),pend=isPending(gd);
     const here=visiting&&visiting.id===gd.id,v=el('button','fbtn red',here?'du bist in diesem Garten':'✿ Garten besuchen');v.type='button';v.disabled=here;
@@ -202,6 +189,5 @@ function renderFbPage(){
     pg.appendChild(f);
   }
   if(fbTurn){pg.classList.add('turn');fbTurn=false;}
-  // a few stickers scattered on the page
-  const r=rng(hashStr(id));['sakura','bee','clover','ladybug','heart'].forEach((k,j)=>{if(r()<.55){const s=stk(k,2,'deco');s.style.cssText+=`left:${r()<.5?1+r()*5:90+r()*5}%;top:${j*19+4+r()*8}%;transform:rotate(${(r()*30-15)|0}deg)`;box.appendChild(s);}});
+
 }
