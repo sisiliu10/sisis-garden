@@ -243,28 +243,49 @@ function besideTarget(p){if(p.bed){const [bx,by]=posOf(p);return {x:bx,y:by+BED_
 /* ================= creator ================= */
 const creator=document.getElementById('creator'),optsEl=document.getElementById('opts'),nm=document.getElementById('nm');
 const pv=document.getElementById('prev'),pvc=pv.getContext('2d');
+// the wardrobe: a standing mirror on the left, four tabs on the right. Every choice is a little pixel
+// picture drawn with the avatar renderer itself (heads for hair and accessories, garments for clothes).
+const WTABS=[['look','Appearance'],['hair','Hair'],['clothes','Clothes'],['acc','Accessories']];
+let wTab='look';
+function wOptions(k){return (isOwner?OPT[k]:(EXTRA_LOOK[k]||[]).filter(v=>!SHOP_ACC.includes(v)).concat(OPT[k])).concat(k==='acc'?SHOP_ACC.filter(owns):[]);}
+function miniCv(w,h,draw,cls){const c=document.createElement('canvas');c.width=w;c.height=h;c.className=cls||'mini';const x=c.getContext('2d'),keep=X;try{X=x;draw(x);}catch(e){}finally{X=keep;}return c;}
+// a head and shoulders of the avatar with one thing changed
+function headCv(change){const L=Object.assign({},me().look,change);return miniCv(18,20,x=>drawAvatar(x,9,30,L,{shadow:false,t:0}),'mini head');}
+function shirtCv(col){return miniCv(16,17,x=>{const d=shade(col,-.18),r=(a,b,w,h,c)=>{x.fillStyle=c;x.fillRect(a,b,w,h);};
+  r(7,0,2,1,'#6b5a48');r(8,1,1,2,'#6b5a48');r(3,3,10,1,'#6b5a48');r(2,4,1,1,'#6b5a48');r(13,4,1,1,'#6b5a48');
+  r(2,5,12,1,'#3a2e2a');r(1,6,14,4,'#3a2e2a');r(4,10,8,6,'#3a2e2a');r(2,6,12,3,col);r(5,9,6,6,col);r(3,6,2,3,d);r(11,6,2,3,d);r(6,6,4,1,shade(col,.25));r(7,5,2,1,'#3a2e2a');},'mini shirt');}
+function bottomCv(kind,col){return miniCv(14,13,x=>{const d=shade(col,-.22),r=(a,b,w,h,c)=>{x.fillStyle=c;x.fillRect(a,b,w,h);};
+  if(kind==='skirt'){r(3,2,8,1,'#3a2e2a');r(2,3,10,1,'#3a2e2a');r(1,4,12,6,'#3a2e2a');r(3,3,8,1,col);r(2,4,10,5,col);r(4,4,1,5,d);r(7,4,1,5,d);r(10,4,1,5,d);}
+  else{r(3,1,8,1,'#3a2e2a');r(2,2,10,11,'#3a2e2a');r(3,2,8,4,col);r(3,6,3,6,col);r(8,6,3,6,col);r(6,6,2,6,'#3a2e2a');r(4,3,1,9,d);r(9,3,1,9,d);}},'mini bottom');}
+function wSwatches(k,label){const o=document.createElement('div');o.className='opt gen';o.dataset.tab=wTab;
+  o.innerHTML=`<div class="k">${label}</div><div class="sw"></div>`;const box=o.querySelector('.sw');
+  wOptions(k).forEach(v=>{const b=document.createElement('button');b.type='button';b.style.background=v;b.setAttribute('aria-label',label.toLowerCase()+' '+v);if(me().look[k]===v)b.classList.add('on');
+    b.onclick=()=>{me().look[k]=v;buildCreator();};box.appendChild(b);});return o;}
+function wItems(k,label,make,name,cls){const o=document.createElement('div');o.className='opt gen';o.dataset.tab=wTab;
+  o.innerHTML=`<div class="k">${label}</div><div class="${cls}"></div>`;const box=o.lastChild;
+  wOptions(k).forEach(v=>{const b=document.createElement('button');b.type='button';b.className='witem';b.setAttribute('aria-label',name(v));b.title=name(v);
+    b.appendChild(make(v));const n=document.createElement('span');n.textContent=name(v);b.appendChild(n);if(me().look[k]===v)b.classList.add('on');
+    b.onclick=()=>{me().look[k]=v;buildCreator();};box.appendChild(b);});return o;}
 function buildCreator(){
+  const tabs=document.getElementById('wtabs');tabs.innerHTML='';
+  WTABS.forEach(([k,lab])=>{const b=document.createElement('button');b.type='button';b.className='wtab'+(wTab===k?' on':'');b.setAttribute('role','tab');b.setAttribute('aria-selected',wTab===k);b.textContent=lab;
+    b.onclick=()=>{wTab=k;buildCreator();};tabs.appendChild(b);});
   optsEl.querySelectorAll('.opt.gen').forEach(n=>n.remove());
-  const L=me().look;
-  [['skin','SKIN','sw'],['hair','HAIR','tx'],['hairColor','HAIR COLOR','sw'],['top','TOP','sw'],['bottom','BOTTOM','tx'],['bottomColor','BOTTOM COLOR','sw'],['acc','ACCESSORY','tx']].forEach(([k,label,type])=>{
-    const o=document.createElement('div');o.className='opt gen';
-    o.innerHTML=`<div class="k">${label}</div><div class="sw ${type==='tx'?'tx':''}"></div>`;
-    const box=o.querySelector('.sw');
-    (isOwner?OPT[k]:(EXTRA_LOOK[k]||[]).filter(v=>!SHOP_ACC.includes(v)).concat(OPT[k])).concat(k==='acc'?SHOP_ACC.filter(owns):[]).forEach(v=>{
-      const b=document.createElement('button');b.type='button';
-      if(type==='sw'){b.style.background=v;b.setAttribute('aria-label',v);}
-      else b.textContent=k==='acc'?ACC_LABEL[v]:k==='hair'?HAIR_LABEL[v]:v[0].toUpperCase()+v.slice(1);
-      if(L[k]===v)b.classList.add('on');
-      b.onclick=()=>{me().look[k]=v;box.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');};
-      box.appendChild(b);
-    });
-    optsEl.appendChild(o);
-  });
-  nm.value=me().name||'';
+  optsEl.querySelector('.wname').hidden=wTab!=='look';
+  const add=o=>optsEl.appendChild(o);
+  if(wTab==='look')add(wSwatches('skin','SKIN'));
+  if(wTab==='hair'){add(wItems('hair','HAIRSTYLE',v=>headCv({hair:v,acc:'none'}),v=>HAIR_LABEL[v]||v,'wgrid'));add(wSwatches('hairColor','HAIR COLOUR'));}
+  if(wTab==='clothes'){add(wItems('top','TOPS',v=>shirtCv(v),v=>'Top','wrail'));
+    add(wItems('bottom','BOTTOMS',v=>bottomCv(v,me().look.bottomColor),v=>v[0].toUpperCase()+v.slice(1),'wcubby'));add(wSwatches('bottomColor','BOTTOM COLOUR'));}
+  if(wTab==='acc')add(wItems('acc','ACCESSORIES',v=>headCv({acc:v}),v=>ACC_LABEL[v]||v,'wcubby'));
+  if(!nm.dataset.kept)nm.value=me().name||'';
+  // cubbies: fill the last shelf row with empty compartments so the cabinet looks whole
+  requestAnimationFrame(()=>optsEl.querySelectorAll('.wcubby').forEach(c=>{c.querySelectorAll('.wempty').forEach(e=>e.remove());const it=c.querySelectorAll('.witem');if(!it.length)return;
+    const cols=Math.max(1,Math.round(c.clientWidth/it[0].offsetWidth)),n=it.length,pad=(cols-n%cols)%cols;for(let i=0;i<pad;i++){const e=document.createElement('div');e.className='wempty';c.appendChild(e);}}));
 }
 const GUEST_LOOK={skin:'#fde4d0',hair:'short',hairColor:'#c27a42',top:'#2b3550',bottom:'pants',bottomColor:'#2d2d35',acc:'glasses'};
 // first visit: pick a look; later the wardrobe in your own cottage opens the same editor
-function openCreator(ward){document.getElementById('crT').textContent=ward?'Your wardrobe':'Create your avatar';document.getElementById('crL').textContent=ward?'Pick what you wear today.':'Pick a look. Later you can change it in the wardrobe in your cottage.';document.getElementById('done').textContent=ward?'Done':'Into the garden →';const m=me(),fresh=!!m&&(!m.name||m.name==='Me'||m.name==='Visitor');if(!isOwner&&fresh&&!m.tailored){m.look=Object.assign({},GUEST_LOOK);['skin','hair','hairColor','top','bottom','bottomColor','acc'].forEach(k=>m.look[k]=pick(OPT[k]));m.tailored=1;}buildCreator();if(fresh){nm.value='';nm.placeholder='Your name';}creator.classList.add('show');}
+function openCreator(ward){document.getElementById('crT').textContent=ward?'Your wardrobe':'Create your avatar';document.getElementById('crL').textContent=ward?'Pick what you wear today.':'Pick a look. Later you can change it in the wardrobe in your cottage.';document.getElementById('done').textContent=ward?'Ready!':'Into the garden →';const m=me(),fresh=!!m&&(!m.name||m.name==='Me'||m.name==='Visitor');if(!isOwner&&fresh&&!m.tailored){m.look=Object.assign({},GUEST_LOOK);['skin','hair','hairColor','top','bottom','bottomColor','acc'].forEach(k=>m.look[k]=pick(OPT[k]));m.tailored=1;}wTab='look';nm.dataset.kept='';buildCreator();nm.dataset.kept='1';if(fresh){nm.value='';nm.placeholder='Your name';}creator.classList.add('show');}
 function closeCreator(){
   if(loadFailed){toast('Could not load your garden. Check your connection and reload the page.',4000);return;}
   const m=me(),typed=(nm.value||'').trim().slice(0,14);
@@ -285,7 +306,7 @@ function showHomeHint(){const b=document.getElementById('bHome');if(!visiting||!
   const r=b.getBoundingClientRect(),up=r.top>innerHeight/2;homeHint.classList.toggle('up',up);homeHint.style.left=Math.max(6,r.left)+'px';homeHint.style.top=(up?Math.max(6,r.top-10-(homeHint.offsetHeight||60)):(r.bottom+10))+'px';
   homeHint.classList.add('show');b.classList.add('nudge');setTimeout(()=>hideHomeHint(false),12000);}
 addEventListener('resize',()=>hideHomeHint(false));
-document.getElementById('rnd').onclick=()=>{['skin','hair','hairColor','top','bottom','bottomColor','acc'].forEach(k=>me().look[k]=pick(OPT[k]));const n=nm.value;buildCreator();nm.value=n;};
+document.getElementById('rnd').onclick=()=>{['skin','hair','hairColor','top','bottom','bottomColor','acc'].forEach(k=>me().look[k]=pick(OPT[k]));buildCreator();pv.classList.remove('pop');void pv.offsetWidth;pv.classList.add('pop');};
 document.getElementById('done').onclick=closeCreator;
 const help=document.getElementById('help');
 document.getElementById('bHelp').onclick=()=>{renderNeighbours();help.classList.add('show');};

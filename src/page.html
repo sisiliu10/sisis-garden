@@ -67,14 +67,17 @@
 </div>
 
 <div class="modal" id="creator">
-  <div class="panel">
+  <div class="panel wardrobe">
     <h2 id="crT">Create your avatar</h2>
     <div class="lead" id="crL">Pick a look. Later you can change it in the wardrobe in your cottage.</div>
     <div class="cwrap">
-      <div class="pv"><canvas id="prev" width="30" height="36"></canvas><button class="btn" id="rnd">Randomize</button></div>
-      <div class="opts" id="opts"><div class="opt"><div class="k">NAME</div><input id="nm" class="inp" maxlength="14"></div></div>
+      <div class="pv"><canvas id="prev" width="48" height="74" aria-label="Your avatar in the mirror"></canvas><button class="wbtn" type="button" id="rnd">✦ Surprise me</button></div>
+      <div class="wside">
+        <div class="wtabs" role="tablist" id="wtabs"></div>
+        <div class="opts" id="opts"><div class="opt wname" data-tab="look"><div class="k">NAME</div><input id="nm" class="inp" maxlength="14"></div></div>
+      </div>
     </div>
-    <div class="pfoot"><span></span><button class="btn dark" id="done">Into the garden →</button></div>
+    <div class="pfoot"><span></span><button class="wbtn go" id="done">Into the garden →</button></div>
   </div>
 </div>
 

@@ -13,6 +13,7 @@ def first_visit(pw, chk, device):
         chk("asked for a name on first visit", seen(box))
         # the starting look is random, so pick a hair option that is NOT selected yet (unselected ones share a style)
         sty = "e=>getComputedStyle(e).backgroundColor+getComputedStyle(e).color"
+        c.press(pg.get_by_role("tab", name="Hair")); pg.wait_for_timeout(300)
         opts = [c.btn(n) for n in ("Long", "Bob", "Short")]
         styles = [o.evaluate(sty) for o in opts]
         hair = next(o for o, st in zip(opts, styles) if styles.count(st) >= 2)
@@ -21,6 +22,7 @@ def first_visit(pw, chk, device):
         after = hair.evaluate(sty)
         chk("can pick a look (hair option becomes selected)", seen(c.btn("Into the garden →")) and before != after,
             f"{before} -> {after}")
+        c.press(pg.get_by_role("tab", name="Appearance")); pg.wait_for_timeout(300)
         box.fill("Tessa"); c.press(c.btn("Into the garden →")); pg.wait_for_timeout(1500)
         chk("lands in game (name dialog closed)", not seen(pg.get_by_placeholder("Your name")))
         chk("new player first sees Sisi's garden as visitor",
@@ -419,8 +421,8 @@ def chat_and_panels(pw, chk, device):
         rx = (W - rw) // 2; ry = max(52, (H - rh) // 2 + 6)
         pg.mouse.click(box["x"] + (rx + 174) * sc, box["y"] + (ry + 40) * sc); pg.wait_for_timeout(3500)
         chk("the wardrobe opens the outfit editor", seen(pg.get_by_role("heading", name=re.compile("wardrobe", re.I))) and
-            seen(c.btn("Randomize")))
-        c.press(first_seen(pg.get_by_role("button", name=re.compile("Done|Into the garden|Save"))))
+            seen(c.btn("✦ Surprise me")))
+        c.press(first_seen(pg.get_by_role("button", name=re.compile("Ready!|Done|Into the garden|Save"))))
         pg.wait_for_timeout(800)
         c.menu(); c.press(c.btn("Garden")); pg.wait_for_timeout(1500)
         c.press(c.btn("Friends")); pg.wait_for_timeout(800)

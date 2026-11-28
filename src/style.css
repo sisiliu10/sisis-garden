@@ -641,17 +641,17 @@
 
 
 /* ===== friend book: a cozy scrapbook (sage linen cover, ivory paper, taped polaroids) ===== */
-#gardens{--sage:#7f9a72;--sageD:#4e6345;--rose:#e3b5b5;--roseD:#a86f72;--paperInk:#4a3a32;--muted2:#8b7a6c}
-#gardens .panel.fbook{position:relative;width:min(860px,100%);max-height:100%;overflow:auto;padding:14px;background:var(--fb-cover) #8b9e7e;image-rendering:pixelated;
-  border:3px solid #3f4a36;box-shadow:6px 6px 0 rgba(0,0,0,.3),inset 0 0 0 4px #8b9e7e,inset 0 0 0 6px #c9d6b8}
-#gardens .panel.fbook::before,#gardens .panel.fbook::after{content:"";position:absolute;width:12px;height:12px;background:#d29a9a;box-shadow:inset -3px -3px 0 #a86f72;z-index:1}
+#gardens{--sage:#6b8c5a;--sageD:#41603a;--rose:#e2899a;--roseD:#9e4d5e;--paperInk:#4a3a32;--muted2:#8b7a6c}
+#gardens .panel.fbook{position:relative;width:min(860px,100%);max-height:100%;overflow:auto;padding:14px;background:var(--fb-cover) #6f8a5c;image-rendering:pixelated;
+  border:3px solid #3f4a36;box-shadow:6px 6px 0 rgba(0,0,0,.3),inset 0 0 0 4px #6f8a5c,inset 0 0 0 6px #b9cca0}
+#gardens .panel.fbook::before,#gardens .panel.fbook::after{content:"";position:absolute;width:12px;height:12px;background:#e2899a;box-shadow:inset -3px -3px 0 #9e4d5e;z-index:1}
 #gardens .panel.fbook::before{left:4px;top:4px}#gardens .panel.fbook::after{right:4px;bottom:4px}
 .bk{display:grid;grid-template-columns:1fr 12px 1fr;align-items:stretch;min-height:400px}
 .bpg{position:relative;padding:20px 18px 34px;background:var(--fb-paper) #fbf4e4;background-size:32px 32px;image-rendering:pixelated;border:2px solid #6b5a48;color:var(--paperInk);overflow:hidden}
 .bpg.l{border-right:0;box-shadow:inset -10px 0 0 -6px rgba(107,90,72,.18)}
 .bpg.r{border-left:0;box-shadow:inset 10px 0 0 -6px rgba(107,90,72,.18)}
-.bspine{background:#6f8463;border-top:2px solid #3f4a36;border-bottom:2px solid #3f4a36;background-image:repeating-linear-gradient(#6f8463 0 5px,#c9d6b8 5px 7px);background-size:2px 12px;background-repeat:repeat-y;background-position:center}
-.bpg.r::before{content:"";position:absolute;right:20px;top:-2px;width:12px;height:58px;background:#d29a9a;clip-path:polygon(0 0,100% 0,100% 100%,50% 86%,0 100%);z-index:2}
+.bspine{background:#55704a;border-top:2px solid #3f4a36;border-bottom:2px solid #3f4a36;background-image:repeating-linear-gradient(#6f8463 0 5px,#c9d6b8 5px 7px);background-size:2px 12px;background-repeat:repeat-y;background-position:center}
+.bpg.r::before{content:"";position:absolute;right:20px;top:-2px;width:12px;height:58px;background:#d9606f;clip-path:polygon(0 0,100% 0,100% 100%,50% 86%,0 100%);z-index:2}
 .fbook h2,.fbook .fbh{font-family:Silkscreen,monospace;font-weight:400;font-size:20px;letter-spacing:1px;text-align:center;color:var(--paperInk);margin:0;display:block}
 .fbook h2::after{content:none}
 .fbook .fbsub{text-align:center;font-family:Silkscreen,monospace;font-size:10px;letter-spacing:.5px;color:var(--muted2);margin-top:4px}
@@ -667,12 +667,12 @@
   transform:rotate(var(--rot,0deg));font:inherit;color:var(--paperInk);cursor:pointer;min-width:0;transition:transform .15s}
 .pol:hover{transform:rotate(0deg) translateY(-2px)}
 .pol::before{content:"";position:absolute;top:-8px;left:50%;width:40px;height:13px;margin-left:-20px;transform:rotate(calc(var(--rot,0deg)*-1.5));opacity:.85}
-.pol.tY::before{background:#f2dc8f}.pol.tM::before{background:#bfe0cb}.pol.tP::before{background:#f1bfcc}.pol.tL::before{background:#d6cbef}
+.pol.tY::before{background:#f2c94c}.pol.tM::before{background:#6fc39a}.pol.tP::before{background:#ec8aa2}.pol.tL::before{background:#a48de0}
 .pol .ph{display:flex;align-items:flex-end;justify-content:center;width:100%;aspect-ratio:5/4;border:2px solid #efe6d6}
 .pol .ph canvas{width:40px;height:60px;image-rendering:pixelated;margin-bottom:4%}
 .pol b{font-family:Silkscreen,monospace;font-weight:400;font-size:12px;margin-top:6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pol .fh{font-size:9px}.pol .fs{font-size:11px;color:var(--muted2)}
-.pol.me{background:#fffaf0}.pol.sel{border-color:#d29a9a;box-shadow:0 0 0 2px #d29a9a,2px 3px 0 rgba(107,90,72,.22)}
+.pol.me{background:#fffaf0}.pol.sel{border-color:#d9606f;box-shadow:0 0 0 2px #d9606f,2px 3px 0 rgba(107,90,72,.22)}
 .pol.pend{opacity:.72}.pol.pend .ph{border-style:dashed}
 .pol.add .ph{background:#efeaf6!important;align-items:center}.pol .plus{font-family:Silkscreen,monospace;font-size:28px;color:#a99bc6}
 .fbsec{font-family:Silkscreen,monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted2);margin:22px 0 4px}
@@ -685,7 +685,7 @@
 .fbin{display:flex;align-items:center;gap:6px;background:#fffdf6;border:2px solid #c9b9a3;padding:0 8px}.fbin .at{font-family:Silkscreen,monospace;color:var(--muted2)}
 .fbin .inp{border:0;background:none;margin:0;flex:1;min-width:0;padding:9px 0;box-shadow:none;outline:none}
 .bsage,.bpink{font:inherit;font-size:14px;font-weight:600;padding:8px 12px;cursor:pointer;box-shadow:2px 2px 0 rgba(78,99,69,.3)}
-.bsage{background:var(--sage);color:#fff;border:2px solid var(--sageD)}.bpink{background:var(--rose);color:#4a2f30;border:2px solid var(--roseD);box-shadow:2px 2px 0 rgba(168,111,114,.3)}
+.bsage{background:var(--sage);color:#fff;border:2px solid var(--sageD)}.bpink{background:var(--rose);color:#fff;border:2px solid var(--roseD);box-shadow:2px 2px 0 rgba(168,111,114,.3)}
 .bsage:active,.bpink:active{transform:translate(1px,1px);box-shadow:none}.bsage:disabled{opacity:.55;cursor:default}
 .blink{font:inherit;font-size:13px;color:var(--muted2);background:none;border:0;padding:2px 0;cursor:pointer;text-decoration:underline dotted}
 .fbdash{border-top:2px dashed #d8c8b0;margin:18px 0 14px}
@@ -735,3 +735,61 @@
   @keyframes fbturnm{0%{transform:rotateY(-70deg);opacity:.2}100%{transform:none;opacity:1}}
   .fbqa{grid-template-columns:1fr 1fr}
 }
+/* ===== wardrobe: a mirror, wooden tabs, a clothes rail and cubbies ===== */
+#creator .panel.wardrobe{width:min(620px,100%);background:#fbf4e4;border-color:#5a3e2a;box-shadow:6px 6px 0 rgba(0,0,0,.25),inset 0 0 0 4px #f1e3c6}
+.wardrobe h2{font-size:22px;color:#4a3a32}
+.wardrobe .cwrap{gap:20px;margin-top:12px;align-items:flex-start}
+.wardrobe .pv{width:150px;gap:10px}
+.wardrobe #prev{width:144px;height:222px;border:0;background:none;image-rendering:pixelated}
+#prev.pop{animation:wpop .4s steps(4)}
+@keyframes wpop{40%{transform:scale(1.04) rotate(-1deg)}}
+.wbtn{font:inherit;font-size:14px;font-weight:600;padding:7px 12px;cursor:pointer;color:#4a3a32;background:#f4e2c4;border:2px solid #8a5a36;box-shadow:2px 2px 0 rgba(90,52,32,.3)}
+.wbtn:hover{background:#f8ead2}.wbtn:active{transform:translate(1px,1px);box-shadow:none}
+.wbtn.go{background:#7f9a72;color:#fff;border-color:#4e6345;box-shadow:2px 2px 0 rgba(78,99,69,.35);font-size:15px;padding:8px 18px}.wbtn.go:hover{background:#8aa67d}
+.wside{flex:1;min-width:0}
+.wtabs{display:flex;gap:4px;border-bottom:3px solid #8a5a36;padding-left:4px}
+.wtab{font:inherit;font-size:13px;padding:6px 10px 5px;cursor:pointer;color:#6b5240;background:#e8d3b0;border:2px solid #8a5a36;border-bottom:0;position:relative;top:3px}
+.wtab:hover{background:#f1dfc0}
+.wtab.on{background:#fbf4e4;color:#3a2e2a;font-weight:700;padding-top:8px;top:3px;border-bottom:3px solid #fbf4e4;margin-bottom:-3px}
+.wardrobe .opts{gap:12px;margin-top:14px}
+.wardrobe .opt .k{color:#9a7a60;letter-spacing:1px}
+.wardrobe .sw{gap:6px}
+.wardrobe .sw button{width:24px;height:24px;border:2px solid #5a3e2a;box-shadow:inset -3px -3px 0 rgba(0,0,0,.15),inset 2px 2px 0 rgba(255,255,255,.35);transition:transform .12s}
+.wardrobe .sw button:hover{transform:translateY(-2px)}
+.wardrobe .sw button.on{outline:3px solid #7f9a72;outline-offset:1px;transform:translateY(-2px)}
+.witem{display:flex;flex-direction:column;align-items:center;gap:3px;font:inherit;font-size:11px;color:#6b5240;cursor:pointer;background:none;border:0;padding:0;transition:transform .12s}
+.witem canvas{image-rendering:pixelated;display:block}
+.witem:hover{transform:translateY(-2px)}
+.witem span{font-family:Silkscreen,monospace;font-size:9px;letter-spacing:.5px;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* hairstyles: little heads on soft tiles */
+.wgrid{display:flex;flex-wrap:wrap;gap:8px}
+.wgrid .witem{padding:4px 4px 5px;background:#fffaf0;border:2px solid #d8c4a4}
+.wgrid .witem canvas{width:54px;height:60px;background:#e9f1f2}
+.wgrid .witem.on{border-color:#7f9a72;background:#eef4e6;box-shadow:0 0 0 2px #7f9a72;transform:translateY(-2px)}
+/* tops hanging on a wooden rail */
+.wrail{position:relative;display:flex;flex-wrap:wrap;gap:4px 6px;padding:10px 8px 6px;background:#efe0c4;border:2px solid #8a5a36}
+.wrail::before{content:"";position:absolute;left:4px;right:4px;top:6px;height:4px;background:#8a5a36;box-shadow:0 2px 0 #6a4228}
+.wrail .witem{position:relative;padding-top:2px}
+.wrail .witem canvas{width:40px;height:43px}
+.wrail .witem span{display:none}
+.wrail .witem.on{transform:translateY(-3px) rotate(-4deg)}
+.wrail .witem.on::after{content:"";position:absolute;left:50%;bottom:-4px;width:12px;height:3px;margin-left:-6px;background:#7f9a72}
+/* bottoms and accessories in wardrobe cubbies */
+.wcubby{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:0;border:3px solid #8a5a36;background:#8a5a36}
+.wempty{background:#e9d3ae;border:2px solid #8a5a36;box-shadow:inset 0 4px 0 rgba(90,52,32,.18);min-height:60px}
+.wcubby .witem{padding:6px 2px 5px;background:#f1dfc0;border:2px solid #8a5a36;box-shadow:inset 0 4px 0 rgba(90,52,32,.18)}
+.wcubby .witem canvas{width:44px;height:44px;object-fit:contain}
+.wcubby .witem.on{background:#f9efd9;box-shadow:inset 0 0 0 3px #7f9a72}
+.wcubby .witem.on span{color:#4e6345;font-weight:700}
+.wardrobe .wname .inp{margin:0;width:100%;background:#fffdf6;border-color:#c9b9a3}
+@media (max-width:560px){
+  .wardrobe .cwrap{flex-direction:column;align-items:center;gap:10px}
+  .wardrobe .pv{flex-direction:row;width:auto;align-items:flex-end}
+  .wardrobe #prev{width:96px;height:148px}
+  .wside{width:100%}
+  .wtab{font-size:12px;padding:5px 7px 4px}
+}
+
+/* coins are round: a 10x10 pixel coin (rim, gold face, glint), crisp at any size */
+.ci,.coinp .ci,.shb .ci,.shwal .ci{background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2010%2010%22%20shape-rendering%3D%22crispEdges%22%3E%3Crect%20x%3D%222%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%223%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%224%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%225%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%226%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%227%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%221%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%222%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%223%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%224%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%225%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%226%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%227%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%228%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%220%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%221%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%222%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23fff6c8%22/%3E%3Crect%20x%3D%223%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23fff6c8%22/%3E%3Crect%20x%3D%224%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%225%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%226%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%227%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%228%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c9962a%22/%3E%3Crect%20x%3D%229%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%220%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%221%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%222%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23fff6c8%22/%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%224%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%225%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%226%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%227%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%228%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c9962a%22/%3E%3Crect%20x%3D%229%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%220%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%221%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%222%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%223%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%225%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%226%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%227%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%228%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c9962a%22/%3E%3Crect%20x%3D%229%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%220%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%221%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%222%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%223%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%224%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%225%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%226%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%227%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%228%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c9962a%22/%3E%3Crect%20x%3D%229%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%220%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%221%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%222%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%223%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%224%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%225%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%227%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%228%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c9962a%22/%3E%3Crect%20x%3D%229%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%220%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%221%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%222%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%223%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%224%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%225%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%226%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f2c94c%22/%3E%3Crect%20x%3D%227%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c9962a%22/%3E%3Crect%20x%3D%228%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c9962a%22/%3E%3Crect%20x%3D%229%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%221%22%20y%3D%228%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%222%22%20y%3D%228%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c9962a%22/%3E%3Crect%20x%3D%223%22%20y%3D%228%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c9962a%22/%3E%3Crect%20x%3D%224%22%20y%3D%228%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c9962a%22/%3E%3Crect%20x%3D%225%22%20y%3D%228%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c9962a%22/%3E%3Crect%20x%3D%226%22%20y%3D%228%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c9962a%22/%3E%3Crect%20x%3D%227%22%20y%3D%228%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c9962a%22/%3E%3Crect%20x%3D%228%22%20y%3D%228%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%222%22%20y%3D%229%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%223%22%20y%3D%229%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%224%22%20y%3D%229%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%225%22%20y%3D%229%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%226%22%20y%3D%229%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3Crect%20x%3D%227%22%20y%3D%229%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238a6414%22/%3E%3C/svg%3E") center/100% 100% no-repeat !important;box-shadow:none !important;image-rendering:pixelated}
+.coinp .ci,.shb .ci{width:12px;height:12px}.shwal .ci{width:14px;height:14px}.ci{width:12px;height:12px}

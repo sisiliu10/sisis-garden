@@ -54,7 +54,7 @@ function fbImg(k,cls,scale){const i=el('img','fbspr '+(cls||''));i.src=fbSprite(
 (function(){const tile=(w,h,f)=>{const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');f(x);return 'url('+c.toDataURL()+')';};
   const r=rng(42),s=document.getElementById('gardens').style;
   s.setProperty('--fb-paper',tile(16,16,x=>{x.fillStyle='#fbf4e4';x.fillRect(0,0,16,16);for(let i=0;i<14;i++){x.fillStyle=r()<.5?'#f3e9d3':'#fffaf0';x.fillRect(Math.floor(r()*16),Math.floor(r()*16),1,1);}}));
-  s.setProperty('--fb-cover',tile(4,4,x=>{x.fillStyle='#8b9e7e';x.fillRect(0,0,4,4);x.fillStyle='#96a989';x.fillRect(0,0,1,1);x.fillRect(2,2,1,1);x.fillStyle='#7f9373';x.fillRect(2,0,1,1);x.fillRect(0,2,1,1);}));
+  s.setProperty('--fb-cover',tile(4,4,x=>{x.fillStyle='#6f8a5c';x.fillRect(0,0,4,4);x.fillStyle='#7c9768';x.fillRect(0,0,1,1);x.fillRect(2,2,1,1);x.fillStyle='#637d52';x.fillRect(2,0,1,1);x.fillRect(0,2,1,1);}));
   // decorations that stay on the pages
   const L=document.getElementById('fbL'),Rp=document.getElementById('fbR');
   L.prepend(fbImg('flower','dk dk1',3),fbImg('sprig','dk dk2',3));L.appendChild(fbImg('heart','dk dk3',2));
@@ -62,7 +62,7 @@ function fbImg(k,cls,scale){const i=el('img','fbspr '+(cls||''));i.src=fbSprite(
   document.getElementById('fbEnv').src=fbSprite('envelope',4);
   document.getElementById('fbSet').onclick=()=>{const r2=document.getElementById('gListedRow');r2.hidden=!r2.hidden;};
 })();
-const PASTEL=['#efe6c8','#f3dfe3','#dde9db','#e4e0f3','#f6e2cf'],TAPE=['tY','tM','tP','tL'];
+const PASTEL=['#f3d27a','#eea3b2','#9fd09a','#b3a3e6','#f5b682'],TAPE=['tY','tM','tP','tL'];
 function polaroid(look,name,sub,small,i,cls){const t=el('button','pol '+(cls||'')+' '+TAPE[i%4]);t.type='button';t.style.setProperty('--rot',[-2.2,1.6,-1,2.4,-.6][i%5]+'deg');
   const ph=el('span','ph');ph.style.background=PASTEL[i%5];if(look)ph.appendChild(avatarCv(look));else ph.appendChild(el('span','plus','+'));t.appendChild(ph);
   t.appendChild(el('b','',name));if(sub)t.appendChild(el('span','fh',sub));if(small)t.appendChild(el('span','fs'+(small.on?' on':''),small.t));return t;}
@@ -109,7 +109,7 @@ function renderFbPage(box){
   const own=fbPage==='me',gd=own?null:gardensList.find(x=>x.id===fbPage);
   if(own&&!home||!own&&!gd){fbPage=null;renderGardens(true);return;}
   const d=own?home:gd.data,st=own?null:fbStatus(gd),friend=!own&&isFriend(gd),pend=!own&&isPending(gd);
-  const hd=el('div','fbhd');const por=el('div','pol big tP');por.style.setProperty('--rot','-2deg');const ph=el('span','ph');ph.style.background='#efe6c8';ph.appendChild(avatarCv(d.look));por.appendChild(ph);hd.appendChild(por);
+  const hd=el('div','fbhd');const por=el('div','pol big tP');por.style.setProperty('--rot','-2deg');const ph=el('span','ph');ph.style.background='#f3d27a';ph.appendChild(avatarCv(d.look));por.appendChild(ph);hd.appendChild(por);
   const ht=el('div','fbht');ht.appendChild(el('h3','','All about me ♡'));ht.appendChild(el('div','fbsub','my little corner of the garden'));
   const kv=(k,v)=>{const r=el('div','kv');r.appendChild(el('b','',k+': '));r.appendChild(document.createTextNode(v));return r;};
   ht.appendChild(kv('Name',d.name+(d.handle?'  @'+d.handle:'')));

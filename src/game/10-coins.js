@@ -72,12 +72,12 @@ function coinsUpdate(dt){
     const v=Math.min(c.v,GROUND_MAX-w.dg);if(v>0){w.dg+=v;earnCoins(v,c.x,c.y-6,'ground');}}}
 }
 function drawGroundCoins(t){
-  gcoins.forEach((c,i)=>{const ph=Math.floor(t*6+i*2)%6,wd=[5,4,2,1,2,4][ph],x=Math.round(c.x),y=Math.round(c.y-4+Math.sin(t*3+i)*1),big=c.v>1;
-    g.globalAlpha=.3;R(x-3,Math.round(c.y),6,1,'#2f5a2a');g.globalAlpha=1;
-    const hw=Math.floor(wd/2)+(big?1:0),h=big?7:5;
-    R(x-hw,y-Math.floor(h/2),wd+(big?2:0),h,'#c9962a');R(x-hw+(wd>2?1:0),y-Math.floor(h/2)+1,Math.max(1,wd+(big?2:0)-(wd>2?2:0)),h-2,big?'#ffd76a':'#f2c94c');
-    if(wd>2)R(x-hw+1,y-Math.floor(h/2)+1,1,1,'#fff6c8');
-    if((Math.floor(t*2)+i)%4===0){R(x+3,y-5,1,3,'#fff8d0');R(x+2,y-4,3,1,'#fff8d0');}});
+  gcoins.forEach((c,i)=>{const ph=Math.floor(t*6+i*2)%6,big=c.v>1,rr=big?4:3,rx=[rr,rr,Math.ceil(rr*.6),1,Math.ceil(rr*.6),rr][ph],x=Math.round(c.x),y=Math.round(c.y-5+Math.sin(t*3+i)*1);
+    g.globalAlpha=.3;ell(x,Math.round(c.y),3,1,'#2f5a2a');g.globalAlpha=1;
+    // a round coin seen turning: dark rim, gold face, light glint
+    ell(x,y,rx,rr,'#a8781c');if(rx>1)ell(x,y,rx-1,rr-1,big?'#ffd76a':'#f2c94c');
+    if(rx>=rr){R(x-1,y-rr+2,1,2,'#fff6c8');if(rr>3)R(x+1,y-1,1,2,'#c9962a');}
+    if((Math.floor(t*2)+i)%4===0){R(x+rr,y-rr-1,1,3,'#fff8d0');R(x+rr-1,y-rr,3,1,'#fff8d0');}});
 }
 function coinAt(lx,ly){return gcoins.find(c=>Math.abs(lx-c.x)<8&&Math.abs(ly-c.y)<9);}
 

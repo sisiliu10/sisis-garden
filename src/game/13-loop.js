@@ -170,7 +170,7 @@ function render(t){
     else if(q.kind==='spark'){g.globalAlpha=1-q.age/q.life;R(x,y-1,1,3,'#fff6b0');R(x-1,y,3,1,'#fff6b0');R(x,y,1,1,'#ffffff');g.globalAlpha=1;}
     else if(q.kind==='puff'){g.globalAlpha=1-q.age/q.life;R(x,y,2,2,'#e9e2d4');g.globalAlpha=1;}
     else if(q.kind==='petal')R(x,y,2,1,'#f9b8cc');
-    else if(q.kind==='coin'){g.globalAlpha=Math.min(1,3*(1-q.age/q.life));const wd=[3,2,1,2][Math.floor(q.age*14)%4];R(x-Math.floor(wd/2),y-1,wd,3,'#f2c94c');R(x-Math.floor(wd/2),y-1,1,1,'#fff6c8');g.globalAlpha=1;}
+    else if(q.kind==='coin'){g.globalAlpha=Math.min(1,3*(1-q.age/q.life));const rx=[2,1,1,1][Math.floor(q.age*14)%4];ell(x,y,rx,2,'#c9962a');if(rx>1)ell(x,y,rx-1,1,'#f2c94c');R(x-1,y-1,1,1,'#fff6c8');g.globalAlpha=1;}
     else if(q.kind==='ring'){const k=q.age/q.life,rx=2+k*q.r,ry=Math.max(1,rx/3);g.globalAlpha=.85*(1-k);for(let a=0;a<6.283;a+=.3)R(Math.round(q.x+Math.cos(a)*rx),Math.round(q.y+Math.sin(a)*ry),1,1,'#bfe9ff');g.globalAlpha=1;}
     else if(q.kind==='pop'){g.globalAlpha=Math.min(1,2.4*(1-q.age/q.life));R(x,y,1,1,'#4fb3e8');R(x-1,y+1,3,2,'#4fb3e8');R(x,y+3,1,1,'#2f78b8');R(x-1,y+1,1,1,'#bfe9ff');g.globalAlpha=1;}
     else if(q.kind==='cloth'){g.globalAlpha=Math.max(0,Math.min(1,2.2*(1-q.age/q.life)));g.drawImage(q.img,x,y);g.globalAlpha=1;}
@@ -185,9 +185,7 @@ function render(t){
 }
 function previewLoop(now){
   if(creator.classList.contains('show')){
-    const t=now/1000;pvc.fillStyle='#7dc46c';pvc.fillRect(0,0,30,36);
-    pvc.fillStyle='#6bb35c';[[3,30],[22,8],[25,28],[5,10]].forEach(([a,b])=>{pvc.fillRect(a,b,1,2);pvc.fillRect(a+2,b,1,2);pvc.fillRect(a+1,b+1,1,1);});
-    drawAvatar(pvc,15,31,me().look,{blink:(t%3.5)<.12,t});
+    const t=now/1000;drawMirror(pvc,t);
   }
   requestAnimationFrame(previewLoop);
 }
@@ -291,3 +289,27 @@ function edgeTint(){
 // "last around": while the game is open and visible, note the time in your garden about every 10 minutes
 function markSeen(){if(!started||loadFailed||!home||!home.created||!db||!myId||document.hidden)return;
   if(Date.now()-(home.seen||0)>10*60e3){home.seen=Date.now();persist();}}
+
+// the wardrobe mirror: a wooden standing mirror (48x74), soft reflection, the avatar with a small floor shadow
+function drawMirror(c,t){
+  const r=(a,b,w,h,col)=>{c.fillStyle=col;c.fillRect(a,b,w,h);};
+  c.clearRect(0,0,48,74);
+  // legs and foot
+  r(10,66,4,6,'#6a4228');r(34,66,4,6,'#6a4228');r(6,71,12,2,'#5a3420');r(30,71,12,2,'#5a3420');
+  // frame with a rounded top
+  const W0=6,W1=42;
+  for(let y=2;y<68;y++){const inset=y<8?[5,3,2,1,1,0][y-2]:0;r(W0+inset,y,W1-W0-inset*2,1,'#a8744a');}
+  for(let y=2;y<68;y++){const inset=y<8?[5,3,2,1,1,0][y-2]:0;r(W0+inset,y,1,1,'#c99260');}
+  r(W0,67,W1-W0,1,'#6a4228');r(23,0,2,3,'#c99260');
+  // glass: soft bands like a reflection
+  const G=[['#dfeef2',0],['#d3e7ee',14],['#c8e0ea',28],['#bcd7e5',42]];
+  for(let y=6;y<64;y++){const inset=y<11?[4,2,1,1,0][y-6]:0;const col=G.filter(g=>y-6>=g[1]).pop()[0];r(10+inset,y,28-inset*2,1,col);}
+  // floor reflection and shadow
+  r(10,56,28,8,'#cfe2e6');r(10,56,28,1,'#b9d2d9');
+  c.globalAlpha=.25;r(17,60,14,2,'#4a5a62');c.globalAlpha=1;
+  drawAvatar(c,24,61,me().look,{blink:(t%3.5)<.12,t,shadow:false});
+  // light sheen across the glass
+  c.globalAlpha=.45;for(let i=0;i<9;i++){r(12+i,30-i*2,2,2,'#ffffff');}for(let i=0;i<5;i++){r(31+i,22-i*2,1,2,'#ffffff');}c.globalAlpha=1;
+  // small carved top ornament
+  r(21,3,6,1,'#8a5a36');r(23,2,2,1,'#e8c08a');
+}
