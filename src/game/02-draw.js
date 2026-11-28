@@ -1,7 +1,9 @@
 /* ================= background ================= */
 function drawBG(){
   X=bgc; const r=rng(7), hz=OY+104;
-  R(0,0,W,H,'#6fa6e3'); R(0,hz-46,W,46,'#79ade6'); R(0,hz-30,W,30,'#84b6ea'); R(0,hz-18,W,18,'#90bfee');
+  // sky: one smooth gradient row by row (no hard colour bands)
+  {const a=[0x6f,0xa6,0xe3],b=[0x9c,0xc8,0xf1];R(0,0,W,H,'#6fa6e3');
+   for(let y=0;y<hz;y++){const k=Math.pow(Math.max(0,(y-(hz-90))/90),1.5);X.fillStyle='rgb('+a.map((v,i)=>Math.round(v+(b[i]-v)*k)).join(',')+')';X.fillRect(0,y,W,1);}}
   for(let x=-6;x<W+12;x+=8+Math.floor(r()*6)){const rr=5+Math.floor(r()*7),y=hz-10-Math.floor(r()*8);disc(x,y,rr,'#dcefff');disc(x-1,y-1,rr-1,'#ffffff');}
   R(0,hz-6,W,10,'#dcefff');
   for(let x=0;x<W;x++){const h=15+6*Math.sin(x*.032+1)+4*Math.sin(x*.09+2)+2*Math.sin(x*.21);R(x,Math.round(hz-h+6),1,Math.round(h+10),'#a8e0da');R(x,Math.round(hz-h+6),1,1,'#c4ece6');}
