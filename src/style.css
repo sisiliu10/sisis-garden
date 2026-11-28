@@ -870,3 +870,27 @@
 .apols{grid-template-columns:repeat(4,1fr)}
 @media (max-width:760px){.fenv .elab{display:inline}}
 .fenvform{border:1px solid #ead8b8}
+/* friend book, compact */
+#gardens .panel.falb{width:min(580px,100%);max-height:min(72vh,500px);padding:8px;font-size:13px}
+.fsheet{min-height:0;grid-template-columns:1fr 8px 1fr}
+.apg{padding:12px 12px 22px}
+.pno{bottom:6px}
+.falb h2{font-size:20px}.asub{font-size:9px;margin-top:4px}
+#fbTools{margin-top:6px}.fenv canvas{width:34px;height:22px}.fenv .elab{font-size:11.5px}
+.areq{margin-top:8px;padding:7px 9px;gap:8px}.areq b{font-size:12.5px}.areq .fbav.sm{width:20px;height:30px}.fbrb .fbtn{padding:4px 9px;font-size:12px}
+.apols{gap:7px;margin-top:10px}.apol{padding:4px 4px 5px}.apol .ph canvas{width:24px;height:36px}.apol b{font-size:11.5px;margin-top:2px}.apol .pst{font-size:9.5px}
+.asec{margin:12px 0 4px;font-size:9px}.aoth{font-size:12px;padding:2px 8px 2px 3px}
+.ahead h3{font-size:20px}
+.apage{column-gap:10px}
+.aphoto{width:84px;margin:10px 0 6px;padding:5px 5px 9px}.aphoto .ph canvas.big{width:40px;height:60px}
+.apage>.afacts{margin-top:10px;gap:5px}.afact b{font-size:14px}
+.anote.msg{margin:8px 0 2px;padding:4px 10px}.anote.msg b{font-size:14px}.anote .sig{font-size:11.5px}
+.atix{margin-top:8px}.tix b{font-size:12.5px}
+.aacts{margin-top:12px;gap:8px}.aacts .fbtn{font-size:12.5px;padding:6px 11px}.blink{font-size:11.5px}
+.afill{margin-top:10px;gap:2px}.afill input{font-size:14px}.afill label .small{min-width:100px}.afill .fbtn{font-size:12.5px;padding:6px 11px}
+.fenvform{margin-top:8px;padding:9px;gap:7px}.fenvform .fbtn{font-size:12.5px;padding:6px 11px}
+@media (max-width:760px){#gardens .panel.falb{width:calc(100% - 24px);max-height:74vh}}
+.fbfind{flex-direction:row;gap:6px}.fbfind .fbin{flex:1;min-width:0}.fbin .inp{padding:6px 0;font-size:13px}.fbfind .fbtn{padding:5px 10px;font-size:12px;white-space:nowrap}
+.fenvform .fsmall{font-size:12px}.fenvform .fsmall .blink{font-size:12px;color:var(--cocoa);font-weight:600}
+#gardens .panel.falb{max-height:min(82vh,560px)}
+@media (max-width:760px){.fsheet{grid-template-columns:1fr}.aspine{height:6px}#gardens .panel.falb{max-height:76vh}.apg{padding:12px 12px 26px}}

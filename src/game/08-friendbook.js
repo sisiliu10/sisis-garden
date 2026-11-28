@@ -3,8 +3,7 @@
 // friends as polaroids hanging on a twine with little pegs, memory notes with scalloped edges, an envelope
 // pocket to add or invite friends, and on the right page the selected friend's own scrapbook page.
 // All friend logic (usernames, requests, invite) is unchanged; only the art direction is new.
-const FB_Q=[['flower','Lieblingsblume'],['bday','Geburtstag'],['food','Lieblingsessen'],['season','Lieblingsjahreszeit'],
-  ['drink','Lieblingsgetränk'],['pet','Mein Tier'],['hobby','Hobbys'],['dream','Mein Traum']];
+const FB_Q=[['flower','Lieblingsblume'],['bday','Geburtstag'],['food','Lieblingsessen']];
 let fbPage=null,fbTurn=false,envOpen=false;
 function agoTxt(t){if(!t)return '';const m=(Date.now()-t)/6e4,d=m/1440;if(m<15)return 'just now';if(m<60)return Math.round(m/5)*5+' min ago';if(m<24*60&&new Date(t).toDateString()===new Date().toDateString())return Math.floor(m/60)+(Math.floor(m/60)===1?' hour ago':' hours ago');
   if(d<2&&new Date(t).toDateString()===new Date(Date.now()-864e5).toDateString())return 'yesterday';if(d<30)return Math.max(1,Math.round(d))+' days ago';

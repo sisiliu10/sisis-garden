@@ -885,6 +885,30 @@
 .apols{grid-template-columns:repeat(4,1fr)}
 @media (max-width:760px){.fenv .elab{display:inline}}
 .fenvform{border:1px solid #ead8b8}
+/* friend book, compact */
+#gardens .panel.falb{width:min(580px,100%);max-height:min(72vh,500px);padding:8px;font-size:13px}
+.fsheet{min-height:0;grid-template-columns:1fr 8px 1fr}
+.apg{padding:12px 12px 22px}
+.pno{bottom:6px}
+.falb h2{font-size:20px}.asub{font-size:9px;margin-top:4px}
+#fbTools{margin-top:6px}.fenv canvas{width:34px;height:22px}.fenv .elab{font-size:11.5px}
+.areq{margin-top:8px;padding:7px 9px;gap:8px}.areq b{font-size:12.5px}.areq .fbav.sm{width:20px;height:30px}.fbrb .fbtn{padding:4px 9px;font-size:12px}
+.apols{gap:7px;margin-top:10px}.apol{padding:4px 4px 5px}.apol .ph canvas{width:24px;height:36px}.apol b{font-size:11.5px;margin-top:2px}.apol .pst{font-size:9.5px}
+.asec{margin:12px 0 4px;font-size:9px}.aoth{font-size:12px;padding:2px 8px 2px 3px}
+.ahead h3{font-size:20px}
+.apage{column-gap:10px}
+.aphoto{width:84px;margin:10px 0 6px;padding:5px 5px 9px}.aphoto .ph canvas.big{width:40px;height:60px}
+.apage>.afacts{margin-top:10px;gap:5px}.afact b{font-size:14px}
+.anote.msg{margin:8px 0 2px;padding:4px 10px}.anote.msg b{font-size:14px}.anote .sig{font-size:11.5px}
+.atix{margin-top:8px}.tix b{font-size:12.5px}
+.aacts{margin-top:12px;gap:8px}.aacts .fbtn{font-size:12.5px;padding:6px 11px}.blink{font-size:11.5px}
+.afill{margin-top:10px;gap:2px}.afill input{font-size:14px}.afill label .small{min-width:100px}.afill .fbtn{font-size:12.5px;padding:6px 11px}
+.fenvform{margin-top:8px;padding:9px;gap:7px}.fenvform .fbtn{font-size:12.5px;padding:6px 11px}
+@media (max-width:760px){#gardens .panel.falb{width:calc(100% - 24px);max-height:74vh}}
+.fbfind{flex-direction:row;gap:6px}.fbfind .fbin{flex:1;min-width:0}.fbin .inp{padding:6px 0;font-size:13px}.fbfind .fbtn{padding:5px 10px;font-size:12px;white-space:nowrap}
+.fenvform .fsmall{font-size:12px}.fenvform .fsmall .blink{font-size:12px;color:var(--cocoa);font-weight:600}
+#gardens .panel.falb{max-height:min(82vh,560px)}
+@media (max-width:760px){.fsheet{grid-template-columns:1fr}.aspine{height:6px}#gardens .panel.falb{max-height:76vh}.apg{padding:12px 12px 26px}}
 </style>
 </head>
 <body>
@@ -1059,9 +1083,8 @@
           <button class="fenv" type="button" id="fbEnvBtn" aria-expanded="false" aria-label="Freund:in hinzufügen oder einladen"><span class="letters" id="fbLetters"></span><canvas id="fbEnvCv" width="44" height="28"></canvas></button>
         </div>
         <div class="fenvform" id="fbEnvForm" hidden>
-          <form id="gEnter" autocomplete="off" class="fbfind"><div class="fbin"><span class="at">@</span><input class="inp" id="gEnterIn" maxlength="16" placeholder="Benutzername" autocapitalize="none" autocorrect="off" spellcheck="false"></div><button class="fbtn red" type="submit">Anfrage schicken ♡</button></form>
-          <div class="fsmall">Noch nicht dabei? Neue Leute starten mit deiner Einladung und sind sofort mit dir befreundet.</div>
-          <button class="fbtn blue" type="button" id="gInvite">Einladung kopieren</button>
+          <form id="gEnter" autocomplete="off" class="fbfind"><div class="fbin"><span class="at">@</span><input class="inp" id="gEnterIn" maxlength="16" placeholder="Benutzername" autocapitalize="none" autocorrect="off" spellcheck="false"></div><button class="fbtn red" type="submit">Anfrage schicken</button></form>
+          <div class="fsmall">Noch nicht dabei? <button class="blink" type="button" id="gInvite">Einladung kopieren</button></div>
           <button class="blink" type="button" id="fbSet">⚙ Einstellungen</button>
           <label class="chk" id="gListedRow" hidden><input type="checkbox" id="gListed"> alle hier können meinen Garten finden</label>
         </div>
@@ -4318,8 +4341,7 @@ function enterGarden(){
 // friends as polaroids hanging on a twine with little pegs, memory notes with scalloped edges, an envelope
 // pocket to add or invite friends, and on the right page the selected friend's own scrapbook page.
 // All friend logic (usernames, requests, invite) is unchanged; only the art direction is new.
-const FB_Q=[['flower','Lieblingsblume'],['bday','Geburtstag'],['food','Lieblingsessen'],['season','Lieblingsjahreszeit'],
-  ['drink','Lieblingsgetränk'],['pet','Mein Tier'],['hobby','Hobbys'],['dream','Mein Traum']];
+const FB_Q=[['flower','Lieblingsblume'],['bday','Geburtstag'],['food','Lieblingsessen']];
 let fbPage=null,fbTurn=false,envOpen=false;
 function agoTxt(t){if(!t)return '';const m=(Date.now()-t)/6e4,d=m/1440;if(m<15)return 'just now';if(m<60)return Math.round(m/5)*5+' min ago';if(m<24*60&&new Date(t).toDateString()===new Date().toDateString())return Math.floor(m/60)+(Math.floor(m/60)===1?' hour ago':' hours ago');
   if(d<2&&new Date(t).toDateString()===new Date(Date.now()-864e5).toDateString())return 'yesterday';if(d<30)return Math.max(1,Math.round(d))+' days ago';
@@ -6104,7 +6126,7 @@ function drawMirror(c,t){
 #gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gAlt{display:flex;flex-direction:column;gap:10px;margin-top:4px}#gAlt[hidden],.galt[hidden]{display:none}.gor{margin:6px 0 0;font-size:14px;opacity:.6}.galt{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;color:#2a2430;cursor:pointer}.galt:active{transform:translate(2px,2px)}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;outline:none;border-radius:0;-webkit-appearance:none;appearance:none;box-shadow:none;-webkit-tap-highlight-color:transparent}#gEmail:focus,#gTok:focus{outline:none;background:#fff8e6}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
 #gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795873768"></script>
+<script src="config.js?v=1795874095"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -6135,7 +6157,7 @@ function drawMirror(c,t){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '28.11. 14:49';
+  const BUILD = '28.11. 14:54';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -6443,7 +6465,7 @@ function drawMirror(c,t){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 28.11. 14:49';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 28.11. 14:54';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid', 'garden-pending').forEach(k => localStorage.removeItem(k)); } catch (e) {}
