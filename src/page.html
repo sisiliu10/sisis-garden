@@ -179,22 +179,29 @@
     <button class="fbx" type="button" id="gClose" aria-label="Close">✕</button>
     <div class="bk">
       <div class="bpg l" id="fbL">
-        <h2 id="fbTitle">Friend book</h2>
-        <div class="lead" id="fbLead">Everyone you garden with. Tap someone to open their page.</div>
-        <input class="inp" id="gSearch" placeholder="Search by name…" maxlength="20" style="margin:10px 0 0;width:100%" hidden>
+        <h2 id="fbTitle">My garden friends</h2>
+        <div class="fbsub" id="fbLead">little memories grow here ♡</div>
+        <input class="inp" id="gSearch" placeholder="search by name…" maxlength="20" hidden>
         <div class="glist" id="glist"></div>
+        <div class="pno">– 01 –</div>
       </div>
       <div class="bspine" aria-hidden="true"></div>
       <div class="bpg r" id="fbR">
         <div id="fbSide"></div>
         <div id="fbTools">
-          <div class="dsec">ADD A FRIEND</div>
-          <form id="gEnter" autocomplete="off" class="fbadd"><span class="at">@</span><input class="inp" id="gEnterIn" maxlength="16" placeholder="their username" autocapitalize="none" autocorrect="off" spellcheck="false"><button class="btn dark" type="submit">Send request</button></form>
-          <div class="dsec">INVITE SOMEONE NEW</div>
-          <div class="lead">Not playing yet? New accounts start with your invite link. Once they are in, you are friends.</div>
-          <button class="btn dark" type="button" id="gInvite" style="margin-top:8px">Copy my invite link</button>
-          <label class="chk" id="gListedRow" style="margin-top:10px"><input type="checkbox" id="gListed"> Everyone here can find my garden</label>
+          <h3 class="fbh">Let's grow together</h3>
+          <div class="fbsub">a garden is better with friends</div>
+          <div class="envw"><img id="fbEnv" class="env big" alt=""></div>
+          <div class="fbsec">find a friend</div>
+          <form id="gEnter" autocomplete="off" class="fbfind"><div class="fbin"><span class="at">@</span><input class="inp" id="gEnterIn" maxlength="16" placeholder="username" autocapitalize="none" autocorrect="off" spellcheck="false"></div><button class="bsage" type="submit">Send a friendship request ♡</button></form>
+          <div class="fbdash"></div>
+          <div class="fbinv">Invite someone to your garden</div>
+          <div class="fbs2">new players start with your invitation and are your friends right away</div>
+          <button class="bpink" type="button" id="gInvite">Copy invitation</button>
+          <div class="fbsetw"><button class="blink" type="button" id="fbSet">⚙ settings</button>
+          <label class="chk" id="gListedRow" hidden><input type="checkbox" id="gListed"> everyone here can find my garden</label></div>
         </div>
+        <div class="pno">– 02 –</div>
       </div>
     </div>
   </div>

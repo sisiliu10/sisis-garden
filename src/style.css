@@ -639,51 +639,99 @@
 .ilink{font:inherit;font-size:13px;color:var(--muted);background:none;border:0;padding:2px 0;cursor:pointer;text-decoration:underline dotted}
 .ilink.on{color:var(--ink);font-weight:700}
 
-/* friend book as a real book: red linen cover with gold corners, two cream pages with lines, a stitched spine,
-   a ribbon bookmark; friends are little photos taped onto the left page. Phones get one page after the other. */
-#gardens .panel.fbook{position:relative;width:min(940px,100%);max-height:100%;overflow:auto;padding:16px 16px 18px;background:#8c3b33;
-  background-image:repeating-linear-gradient(45deg,rgba(0,0,0,.05) 0 2px,transparent 2px 5px);border:3px solid var(--ink);
-  box-shadow:6px 6px 0 rgba(0,0,0,.3),inset 0 0 0 3px #a54a40,inset 0 0 0 5px #6b2721}
-#gardens .panel.fbook::before,#gardens .panel.fbook::after{content:"";position:absolute;width:14px;height:14px;background:#e2b45a;box-shadow:inset -3px -3px 0 #b8862e;z-index:1}
-#gardens .panel.fbook::before{left:5px;top:5px}#gardens .panel.fbook::after{right:5px;bottom:5px}
-.bk{display:grid;grid-template-columns:1fr 16px 1fr;align-items:stretch;min-height:440px}
-.bpg{position:relative;background:#fffaf0;padding:20px 20px 22px;border:2px solid #3a2622;
-  background-image:repeating-linear-gradient(transparent 0 27px,#e8eef6 27px 28px);background-position:0 12px}
-.bpg.l{border-right:0;box-shadow:inset -14px 0 14px -10px rgba(90,60,40,.28)}
-.bpg.r{border-left:0;box-shadow:inset 14px 0 14px -10px rgba(90,60,40,.28)}
-.bpg.l::after{content:"";position:absolute;left:6px;bottom:-6px;right:0;height:4px;background:#efe6d2;border:2px solid #3a2622;border-top:0}
-.bpg.r::after{content:"";position:absolute;right:6px;bottom:-6px;left:0;height:4px;background:#efe6d2;border:2px solid #3a2622;border-top:0}
-.bspine{background:#5e231e;background-image:repeating-linear-gradient(#5e231e 0 6px,#e2b45a 6px 8px,#5e231e 8px 14px);background-size:2px 14px;background-repeat:repeat-y;background-position:center;border-top:2px solid #3a2622;border-bottom:2px solid #3a2622;
-  box-shadow:inset 4px 0 4px rgba(0,0,0,.35),inset -4px 0 4px rgba(0,0,0,.35)}
-.bpg.r::before{content:"";position:absolute;right:22px;top:-4px;width:12px;height:64px;background:#d6404a;clip-path:polygon(0 0,100% 0,100% 100%,50% 84%,0 100%);z-index:1}
-.fbook h2{font-size:26px;display:flex;align-items:center;gap:8px}.fbook h2::after{content:"♥";color:#e8506c;font-size:18px}
-.fbx{position:absolute;right:10px;top:8px;z-index:2;width:30px;height:30px;padding:0;font:inherit;font-size:15px;color:#fff;background:#6b2721;border:2px solid #3a2622;cursor:pointer}
-.fbook .glist{margin-top:14px}
-/* friends as little taped photos */
-.fbook .fbgrid{gap:16px 12px;padding-top:6px}
-.fbook .fbt{position:relative;background:#fff;border:2px solid #3a2622;box-shadow:2px 3px 0 rgba(58,38,34,.25);padding:12px 6px 9px;transform:rotate(-1.4deg)}
-.fbook .fbt:nth-child(2n){transform:rotate(1.2deg)}.fbook .fbt:nth-child(3n){transform:rotate(-.6deg)}
-.fbook .fbt::before{content:"";position:absolute;top:-7px;left:50%;width:34px;height:12px;margin-left:-17px;background:rgba(242,201,76,.6);transform:rotate(-3deg)}
-.fbook .fbt:nth-child(2n)::before{background:rgba(143,214,189,.65);transform:rotate(4deg)}.fbook .fbt:nth-child(3n)::before{background:rgba(244,167,196,.6)}
-.fbook .fbt.me{background:#fff6d8}
-.fbook .fbt.sel{outline:3px solid #e8506c;outline-offset:2px}
-.fbook .fbt:hover{transform:rotate(0) translateY(-2px)}
-.fbook .fbav{background:#eef6e6;border:2px solid #e2dccf}
-.fbook .dsec{color:#9a6a50}
-.fbook .fbpg{margin-top:6px;background:transparent;border:0;padding:0;background-image:none}
-.fbook .fbbig{transform:rotate(-2deg);box-shadow:2px 3px 0 rgba(58,38,34,.25)}
-.fbook .fbreq{background:#fff;border-color:#3a2622}
-.fbook .fbname{background:#fff6d8;border-color:#3a2622}
-.fbook .fbback{display:none}
+
+/* ===== friend book: a cozy scrapbook (sage linen cover, ivory paper, taped polaroids) ===== */
+#gardens{--sage:#7f9a72;--sageD:#4e6345;--rose:#e3b5b5;--roseD:#a86f72;--paperInk:#4a3a32;--muted2:#8b7a6c}
+#gardens .panel.fbook{position:relative;width:min(860px,100%);max-height:100%;overflow:auto;padding:14px;background:var(--fb-cover) #8b9e7e;image-rendering:pixelated;
+  border:3px solid #3f4a36;box-shadow:6px 6px 0 rgba(0,0,0,.3),inset 0 0 0 4px #8b9e7e,inset 0 0 0 6px #c9d6b8}
+#gardens .panel.fbook::before,#gardens .panel.fbook::after{content:"";position:absolute;width:12px;height:12px;background:#d29a9a;box-shadow:inset -3px -3px 0 #a86f72;z-index:1}
+#gardens .panel.fbook::before{left:4px;top:4px}#gardens .panel.fbook::after{right:4px;bottom:4px}
+.bk{display:grid;grid-template-columns:1fr 12px 1fr;align-items:stretch;min-height:400px}
+.bpg{position:relative;padding:20px 18px 34px;background:var(--fb-paper) #fbf4e4;background-size:32px 32px;image-rendering:pixelated;border:2px solid #6b5a48;color:var(--paperInk);overflow:hidden}
+.bpg.l{border-right:0;box-shadow:inset -10px 0 0 -6px rgba(107,90,72,.18)}
+.bpg.r{border-left:0;box-shadow:inset 10px 0 0 -6px rgba(107,90,72,.18)}
+.bspine{background:#6f8463;border-top:2px solid #3f4a36;border-bottom:2px solid #3f4a36;background-image:repeating-linear-gradient(#6f8463 0 5px,#c9d6b8 5px 7px);background-size:2px 12px;background-repeat:repeat-y;background-position:center}
+.bpg.r::before{content:"";position:absolute;right:20px;top:-2px;width:12px;height:58px;background:#d29a9a;clip-path:polygon(0 0,100% 0,100% 100%,50% 86%,0 100%);z-index:2}
+.fbook h2,.fbook .fbh{font-family:Silkscreen,monospace;font-weight:400;font-size:20px;letter-spacing:1px;text-align:center;color:var(--paperInk);margin:0;display:block}
+.fbook h2::after{content:none}
+.fbook .fbsub{text-align:center;font-family:Silkscreen,monospace;font-size:10px;letter-spacing:.5px;color:var(--muted2);margin-top:4px}
+.fbook .pno{position:absolute;left:0;right:0;bottom:10px;text-align:center;font-family:Silkscreen,monospace;font-size:9px;color:#b09c88}
+.fbspr{image-rendering:pixelated;display:inline-block}
+.fbook .dk{position:absolute;pointer-events:none;opacity:.9}
+.dk1{left:8px;top:8px}.dk2{right:10px;top:54px;transform:scaleX(-1)}.dk3{left:14px;bottom:12px}.dk4{left:8px;bottom:26px}.dk5{right:44px;top:12px}
+.fbx{position:absolute;right:8px;top:6px;z-index:3;width:28px;height:28px;padding:0;font:inherit;font-size:14px;color:#fff;background:#6f8463;border:2px solid #3f4a36;cursor:pointer}
+#gSearch{margin:10px 0 0;width:100%;background:#fffdf6;border-color:#c9b9a3}
+/* polaroids */
+.fbook .fbgrid{display:grid;grid-template-columns:repeat(2,minmax(0,148px));justify-content:center;gap:20px 18px;margin-top:18px}
+.pol{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 8px 9px;background:#fffefa;border:2px solid #d8ccb8;box-shadow:2px 3px 0 rgba(107,90,72,.22);
+  transform:rotate(var(--rot,0deg));font:inherit;color:var(--paperInk);cursor:pointer;min-width:0;transition:transform .15s}
+.pol:hover{transform:rotate(0deg) translateY(-2px)}
+.pol::before{content:"";position:absolute;top:-8px;left:50%;width:40px;height:13px;margin-left:-20px;transform:rotate(calc(var(--rot,0deg)*-1.5));opacity:.85}
+.pol.tY::before{background:#f2dc8f}.pol.tM::before{background:#bfe0cb}.pol.tP::before{background:#f1bfcc}.pol.tL::before{background:#d6cbef}
+.pol .ph{display:flex;align-items:flex-end;justify-content:center;width:100%;aspect-ratio:5/4;border:2px solid #efe6d6}
+.pol .ph canvas{width:40px;height:60px;image-rendering:pixelated;margin-bottom:4%}
+.pol b{font-family:Silkscreen,monospace;font-weight:400;font-size:12px;margin-top:6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pol .fh{font-size:9px}.pol .fs{font-size:11px;color:var(--muted2)}
+.pol.me{background:#fffaf0}.pol.sel{border-color:#d29a9a;box-shadow:0 0 0 2px #d29a9a,2px 3px 0 rgba(107,90,72,.22)}
+.pol.pend{opacity:.72}.pol.pend .ph{border-style:dashed}
+.pol.add .ph{background:#efeaf6!important;align-items:center}.pol .plus{font-family:Silkscreen,monospace;font-size:28px;color:#a99bc6}
+.fbsec{font-family:Silkscreen,monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted2);margin:22px 0 4px}
+.fbook .fbsec{text-align:left}
+/* right page: let's grow together */
+.envw{display:flex;justify-content:center;margin:16px 0 6px;position:relative}
+.env.big{width:68px;height:44px;image-rendering:pixelated}
+.envw::after{content:"";position:absolute;left:calc(50% + 24px);top:-14px;width:2px;height:18px;background:#7f9a72;transform:rotate(28deg);box-shadow:3px -3px 0 -0px #a9c296}
+.fbfind{display:flex;flex-direction:column;gap:8px}
+.fbin{display:flex;align-items:center;gap:6px;background:#fffdf6;border:2px solid #c9b9a3;padding:0 8px}.fbin .at{font-family:Silkscreen,monospace;color:var(--muted2)}
+.fbin .inp{border:0;background:none;margin:0;flex:1;min-width:0;padding:9px 0;box-shadow:none;outline:none}
+.bsage,.bpink{font:inherit;font-size:14px;font-weight:600;padding:8px 12px;cursor:pointer;box-shadow:2px 2px 0 rgba(78,99,69,.3)}
+.bsage{background:var(--sage);color:#fff;border:2px solid var(--sageD)}.bpink{background:var(--rose);color:#4a2f30;border:2px solid var(--roseD);box-shadow:2px 2px 0 rgba(168,111,114,.3)}
+.bsage:active,.bpink:active{transform:translate(1px,1px);box-shadow:none}.bsage:disabled{opacity:.55;cursor:default}
+.blink{font:inherit;font-size:13px;color:var(--muted2);background:none;border:0;padding:2px 0;cursor:pointer;text-decoration:underline dotted}
+.fbdash{border-top:2px dashed #d8c8b0;margin:18px 0 14px}
+.fbinv{text-align:center;font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.5px}
+.fbs2{text-align:center;font-size:12.5px;color:var(--muted2);margin:4px 0 10px}
+#fbTools .bpink{display:block;margin:0 auto}
+.fbsetw{margin-top:16px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;font-size:13px}
+.fbsetw .chk{font-size:13px}
+.fbname{margin:0 0 14px;padding:10px 12px;background:#fff6e0;border:2px dashed #d8b98a;display:flex;flex-direction:column;gap:6px}
+.fbnt{font-family:Silkscreen,monospace;font-size:12px}.fbname .fs{text-align:left;font-size:12px}
+.fbname .fbadd{display:flex;gap:6px;align-items:center}.fbname .inp{margin:0;flex:1;min-width:0}
+.fbreq{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 10px;margin-bottom:10px;background:#fffdf6;border:2px solid #e0cdb0;transform:rotate(-.6deg)}
+.fbreq .env{width:34px;height:22px}.fbreq .fbrt{flex:1;min-width:120px;display:flex;flex-direction:column}.fbreq .fbrt b{font-size:14px}
+.fbrb{display:flex;align-items:center;gap:10px}.fbrb .bsage{padding:5px 10px;font-size:13px}
+/* all about me */
+.fbook .fbback{display:none;margin-bottom:6px}
+.fbook .fbpg{margin:0;padding:0;background:none;border:0}
+.fbook .fbhd{display:flex;gap:14px;align-items:flex-start}
+.pol.big{flex:none;width:104px;cursor:default}.pol.big .ph canvas{width:52px;height:78px}
+.fbht{min-width:0}.fbht h3{font-family:Silkscreen,monospace;font-weight:400;font-size:16px;margin:0}.fbht .fbsub{text-align:left;margin:2px 0 8px}
+.kv{font-size:14px;line-height:1.35}.kv b{font-weight:700}.fbht .fs{text-align:left;margin-top:3px;font-size:12px}
+.fbfr{font-family:Silkscreen,monospace;font-size:10px;color:#c97b8f;margin-top:4px}
+.fbook .fbchips{margin-top:12px}.fbook .fbchip{background:#f4ecdc;border-color:#e3d6bf;font-size:12px}
+.fbqa{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px;margin-top:14px;padding-top:12px;border-top:2px dashed #e0d2bb}
+.qa{display:flex;flex-direction:column;gap:2px;min-width:0}.ql{font-family:Silkscreen,monospace;font-size:9px;letter-spacing:.5px;color:var(--muted2);text-transform:uppercase}
+.qv{display:flex;align-items:center;gap:6px;font-size:15px;word-break:break-word}.qi{width:14px;height:14px;object-fit:contain;flex:none}
+.fbnote{margin-top:14px;padding:10px 12px;background:#f1e6cf;border-left:4px solid #d8b98a}.fbnote .nt{font-style:italic;font-size:15px;margin-top:3px}
+.fbook .fbacts{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:16px}
+.fbook .fbnone{margin-top:14px;font-size:14px;color:var(--muted2)}
+.fbform{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.fbform .fbq span{display:flex;align-items:center;gap:6px}.fbform .inp{margin:0;width:100%;background:#fffdf6;border-color:#c9b9a3}
+.fbform .bsage{align-self:flex-start;margin-top:4px}
+/* turning the right page when a friend's entry opens */
+.bpg.r{perspective:900px}
+#fbSide.turn{animation:fbturn .42s steps(7) both;transform-origin:left center}
+@keyframes fbturn{0%{transform:rotateY(-80deg);opacity:.2}100%{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){#fbSide.turn{animation:none}}
 @media (max-width:760px){
   .bk{grid-template-columns:1fr;min-height:0}
-  .bspine{height:16px;background-image:repeating-linear-gradient(90deg,#5e231e 0 6px,#e2b45a 6px 8px,#5e231e 8px 14px);background-size:14px 2px;background-repeat:repeat-x;border:0;border-left:2px solid #3a2622;border-right:2px solid #3a2622}
-  .bpg.l{border-right:2px solid #3a2622;border-bottom:0;box-shadow:inset 0 -14px 14px -10px rgba(90,60,40,.28)}
-  .bpg.r{border-left:2px solid #3a2622;border-top:0;box-shadow:inset 0 14px 14px -10px rgba(90,60,40,.28)}
-  .bpg.l::after{display:none}
-  .bpg{padding:18px 14px 20px}
-  /* on a phone a friend's page replaces the list, with a way back */
+  .bspine{height:12px;background-image:repeating-linear-gradient(90deg,#6f8463 0 5px,#c9d6b8 5px 7px);background-size:12px 2px;background-repeat:repeat-x;border:0;border-left:2px solid #3f4a36;border-right:2px solid #3f4a36}
+  .bpg.l{border-right:2px solid #6b5a48;border-bottom:0}.bpg.r{border-left:2px solid #6b5a48;border-top:0}
+  .bpg{padding:20px 12px 34px}
   .fbook.fbopen .bpg.l,.fbook.fbopen .bspine{display:none}
-  .fbook.fbopen .bpg.r{border-top:2px solid #3a2622;box-shadow:none}
+  .fbook.fbopen .bpg.r{border-top:2px solid #6b5a48}
   .fbook .fbback{display:block}
+  #fbSide.turn{animation-name:fbturnm}
+  @keyframes fbturnm{0%{transform:rotateY(-70deg);opacity:.2}100%{transform:none;opacity:1}}
+  .fbqa{grid-template-columns:1fr 1fr}
 }

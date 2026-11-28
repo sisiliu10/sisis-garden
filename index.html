@@ -654,53 +654,101 @@
 .ilink{font:inherit;font-size:13px;color:var(--muted);background:none;border:0;padding:2px 0;cursor:pointer;text-decoration:underline dotted}
 .ilink.on{color:var(--ink);font-weight:700}
 
-/* friend book as a real book: red linen cover with gold corners, two cream pages with lines, a stitched spine,
-   a ribbon bookmark; friends are little photos taped onto the left page. Phones get one page after the other. */
-#gardens .panel.fbook{position:relative;width:min(940px,100%);max-height:100%;overflow:auto;padding:16px 16px 18px;background:#8c3b33;
-  background-image:repeating-linear-gradient(45deg,rgba(0,0,0,.05) 0 2px,transparent 2px 5px);border:3px solid var(--ink);
-  box-shadow:6px 6px 0 rgba(0,0,0,.3),inset 0 0 0 3px #a54a40,inset 0 0 0 5px #6b2721}
-#gardens .panel.fbook::before,#gardens .panel.fbook::after{content:"";position:absolute;width:14px;height:14px;background:#e2b45a;box-shadow:inset -3px -3px 0 #b8862e;z-index:1}
-#gardens .panel.fbook::before{left:5px;top:5px}#gardens .panel.fbook::after{right:5px;bottom:5px}
-.bk{display:grid;grid-template-columns:1fr 16px 1fr;align-items:stretch;min-height:440px}
-.bpg{position:relative;background:#fffaf0;padding:20px 20px 22px;border:2px solid #3a2622;
-  background-image:repeating-linear-gradient(transparent 0 27px,#e8eef6 27px 28px);background-position:0 12px}
-.bpg.l{border-right:0;box-shadow:inset -14px 0 14px -10px rgba(90,60,40,.28)}
-.bpg.r{border-left:0;box-shadow:inset 14px 0 14px -10px rgba(90,60,40,.28)}
-.bpg.l::after{content:"";position:absolute;left:6px;bottom:-6px;right:0;height:4px;background:#efe6d2;border:2px solid #3a2622;border-top:0}
-.bpg.r::after{content:"";position:absolute;right:6px;bottom:-6px;left:0;height:4px;background:#efe6d2;border:2px solid #3a2622;border-top:0}
-.bspine{background:#5e231e;background-image:repeating-linear-gradient(#5e231e 0 6px,#e2b45a 6px 8px,#5e231e 8px 14px);background-size:2px 14px;background-repeat:repeat-y;background-position:center;border-top:2px solid #3a2622;border-bottom:2px solid #3a2622;
-  box-shadow:inset 4px 0 4px rgba(0,0,0,.35),inset -4px 0 4px rgba(0,0,0,.35)}
-.bpg.r::before{content:"";position:absolute;right:22px;top:-4px;width:12px;height:64px;background:#d6404a;clip-path:polygon(0 0,100% 0,100% 100%,50% 84%,0 100%);z-index:1}
-.fbook h2{font-size:26px;display:flex;align-items:center;gap:8px}.fbook h2::after{content:"♥";color:#e8506c;font-size:18px}
-.fbx{position:absolute;right:10px;top:8px;z-index:2;width:30px;height:30px;padding:0;font:inherit;font-size:15px;color:#fff;background:#6b2721;border:2px solid #3a2622;cursor:pointer}
-.fbook .glist{margin-top:14px}
-/* friends as little taped photos */
-.fbook .fbgrid{gap:16px 12px;padding-top:6px}
-.fbook .fbt{position:relative;background:#fff;border:2px solid #3a2622;box-shadow:2px 3px 0 rgba(58,38,34,.25);padding:12px 6px 9px;transform:rotate(-1.4deg)}
-.fbook .fbt:nth-child(2n){transform:rotate(1.2deg)}.fbook .fbt:nth-child(3n){transform:rotate(-.6deg)}
-.fbook .fbt::before{content:"";position:absolute;top:-7px;left:50%;width:34px;height:12px;margin-left:-17px;background:rgba(242,201,76,.6);transform:rotate(-3deg)}
-.fbook .fbt:nth-child(2n)::before{background:rgba(143,214,189,.65);transform:rotate(4deg)}.fbook .fbt:nth-child(3n)::before{background:rgba(244,167,196,.6)}
-.fbook .fbt.me{background:#fff6d8}
-.fbook .fbt.sel{outline:3px solid #e8506c;outline-offset:2px}
-.fbook .fbt:hover{transform:rotate(0) translateY(-2px)}
-.fbook .fbav{background:#eef6e6;border:2px solid #e2dccf}
-.fbook .dsec{color:#9a6a50}
-.fbook .fbpg{margin-top:6px;background:transparent;border:0;padding:0;background-image:none}
-.fbook .fbbig{transform:rotate(-2deg);box-shadow:2px 3px 0 rgba(58,38,34,.25)}
-.fbook .fbreq{background:#fff;border-color:#3a2622}
-.fbook .fbname{background:#fff6d8;border-color:#3a2622}
-.fbook .fbback{display:none}
+
+/* ===== friend book: a cozy scrapbook (sage linen cover, ivory paper, taped polaroids) ===== */
+#gardens{--sage:#7f9a72;--sageD:#4e6345;--rose:#e3b5b5;--roseD:#a86f72;--paperInk:#4a3a32;--muted2:#8b7a6c}
+#gardens .panel.fbook{position:relative;width:min(860px,100%);max-height:100%;overflow:auto;padding:14px;background:var(--fb-cover) #8b9e7e;image-rendering:pixelated;
+  border:3px solid #3f4a36;box-shadow:6px 6px 0 rgba(0,0,0,.3),inset 0 0 0 4px #8b9e7e,inset 0 0 0 6px #c9d6b8}
+#gardens .panel.fbook::before,#gardens .panel.fbook::after{content:"";position:absolute;width:12px;height:12px;background:#d29a9a;box-shadow:inset -3px -3px 0 #a86f72;z-index:1}
+#gardens .panel.fbook::before{left:4px;top:4px}#gardens .panel.fbook::after{right:4px;bottom:4px}
+.bk{display:grid;grid-template-columns:1fr 12px 1fr;align-items:stretch;min-height:400px}
+.bpg{position:relative;padding:20px 18px 34px;background:var(--fb-paper) #fbf4e4;background-size:32px 32px;image-rendering:pixelated;border:2px solid #6b5a48;color:var(--paperInk);overflow:hidden}
+.bpg.l{border-right:0;box-shadow:inset -10px 0 0 -6px rgba(107,90,72,.18)}
+.bpg.r{border-left:0;box-shadow:inset 10px 0 0 -6px rgba(107,90,72,.18)}
+.bspine{background:#6f8463;border-top:2px solid #3f4a36;border-bottom:2px solid #3f4a36;background-image:repeating-linear-gradient(#6f8463 0 5px,#c9d6b8 5px 7px);background-size:2px 12px;background-repeat:repeat-y;background-position:center}
+.bpg.r::before{content:"";position:absolute;right:20px;top:-2px;width:12px;height:58px;background:#d29a9a;clip-path:polygon(0 0,100% 0,100% 100%,50% 86%,0 100%);z-index:2}
+.fbook h2,.fbook .fbh{font-family:Silkscreen,monospace;font-weight:400;font-size:20px;letter-spacing:1px;text-align:center;color:var(--paperInk);margin:0;display:block}
+.fbook h2::after{content:none}
+.fbook .fbsub{text-align:center;font-family:Silkscreen,monospace;font-size:10px;letter-spacing:.5px;color:var(--muted2);margin-top:4px}
+.fbook .pno{position:absolute;left:0;right:0;bottom:10px;text-align:center;font-family:Silkscreen,monospace;font-size:9px;color:#b09c88}
+.fbspr{image-rendering:pixelated;display:inline-block}
+.fbook .dk{position:absolute;pointer-events:none;opacity:.9}
+.dk1{left:8px;top:8px}.dk2{right:10px;top:54px;transform:scaleX(-1)}.dk3{left:14px;bottom:12px}.dk4{left:8px;bottom:26px}.dk5{right:44px;top:12px}
+.fbx{position:absolute;right:8px;top:6px;z-index:3;width:28px;height:28px;padding:0;font:inherit;font-size:14px;color:#fff;background:#6f8463;border:2px solid #3f4a36;cursor:pointer}
+#gSearch{margin:10px 0 0;width:100%;background:#fffdf6;border-color:#c9b9a3}
+/* polaroids */
+.fbook .fbgrid{display:grid;grid-template-columns:repeat(2,minmax(0,148px));justify-content:center;gap:20px 18px;margin-top:18px}
+.pol{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 8px 9px;background:#fffefa;border:2px solid #d8ccb8;box-shadow:2px 3px 0 rgba(107,90,72,.22);
+  transform:rotate(var(--rot,0deg));font:inherit;color:var(--paperInk);cursor:pointer;min-width:0;transition:transform .15s}
+.pol:hover{transform:rotate(0deg) translateY(-2px)}
+.pol::before{content:"";position:absolute;top:-8px;left:50%;width:40px;height:13px;margin-left:-20px;transform:rotate(calc(var(--rot,0deg)*-1.5));opacity:.85}
+.pol.tY::before{background:#f2dc8f}.pol.tM::before{background:#bfe0cb}.pol.tP::before{background:#f1bfcc}.pol.tL::before{background:#d6cbef}
+.pol .ph{display:flex;align-items:flex-end;justify-content:center;width:100%;aspect-ratio:5/4;border:2px solid #efe6d6}
+.pol .ph canvas{width:40px;height:60px;image-rendering:pixelated;margin-bottom:4%}
+.pol b{font-family:Silkscreen,monospace;font-weight:400;font-size:12px;margin-top:6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pol .fh{font-size:9px}.pol .fs{font-size:11px;color:var(--muted2)}
+.pol.me{background:#fffaf0}.pol.sel{border-color:#d29a9a;box-shadow:0 0 0 2px #d29a9a,2px 3px 0 rgba(107,90,72,.22)}
+.pol.pend{opacity:.72}.pol.pend .ph{border-style:dashed}
+.pol.add .ph{background:#efeaf6!important;align-items:center}.pol .plus{font-family:Silkscreen,monospace;font-size:28px;color:#a99bc6}
+.fbsec{font-family:Silkscreen,monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted2);margin:22px 0 4px}
+.fbook .fbsec{text-align:left}
+/* right page: let's grow together */
+.envw{display:flex;justify-content:center;margin:16px 0 6px;position:relative}
+.env.big{width:68px;height:44px;image-rendering:pixelated}
+.envw::after{content:"";position:absolute;left:calc(50% + 24px);top:-14px;width:2px;height:18px;background:#7f9a72;transform:rotate(28deg);box-shadow:3px -3px 0 -0px #a9c296}
+.fbfind{display:flex;flex-direction:column;gap:8px}
+.fbin{display:flex;align-items:center;gap:6px;background:#fffdf6;border:2px solid #c9b9a3;padding:0 8px}.fbin .at{font-family:Silkscreen,monospace;color:var(--muted2)}
+.fbin .inp{border:0;background:none;margin:0;flex:1;min-width:0;padding:9px 0;box-shadow:none;outline:none}
+.bsage,.bpink{font:inherit;font-size:14px;font-weight:600;padding:8px 12px;cursor:pointer;box-shadow:2px 2px 0 rgba(78,99,69,.3)}
+.bsage{background:var(--sage);color:#fff;border:2px solid var(--sageD)}.bpink{background:var(--rose);color:#4a2f30;border:2px solid var(--roseD);box-shadow:2px 2px 0 rgba(168,111,114,.3)}
+.bsage:active,.bpink:active{transform:translate(1px,1px);box-shadow:none}.bsage:disabled{opacity:.55;cursor:default}
+.blink{font:inherit;font-size:13px;color:var(--muted2);background:none;border:0;padding:2px 0;cursor:pointer;text-decoration:underline dotted}
+.fbdash{border-top:2px dashed #d8c8b0;margin:18px 0 14px}
+.fbinv{text-align:center;font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.5px}
+.fbs2{text-align:center;font-size:12.5px;color:var(--muted2);margin:4px 0 10px}
+#fbTools .bpink{display:block;margin:0 auto}
+.fbsetw{margin-top:16px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;font-size:13px}
+.fbsetw .chk{font-size:13px}
+.fbname{margin:0 0 14px;padding:10px 12px;background:#fff6e0;border:2px dashed #d8b98a;display:flex;flex-direction:column;gap:6px}
+.fbnt{font-family:Silkscreen,monospace;font-size:12px}.fbname .fs{text-align:left;font-size:12px}
+.fbname .fbadd{display:flex;gap:6px;align-items:center}.fbname .inp{margin:0;flex:1;min-width:0}
+.fbreq{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 10px;margin-bottom:10px;background:#fffdf6;border:2px solid #e0cdb0;transform:rotate(-.6deg)}
+.fbreq .env{width:34px;height:22px}.fbreq .fbrt{flex:1;min-width:120px;display:flex;flex-direction:column}.fbreq .fbrt b{font-size:14px}
+.fbrb{display:flex;align-items:center;gap:10px}.fbrb .bsage{padding:5px 10px;font-size:13px}
+/* all about me */
+.fbook .fbback{display:none;margin-bottom:6px}
+.fbook .fbpg{margin:0;padding:0;background:none;border:0}
+.fbook .fbhd{display:flex;gap:14px;align-items:flex-start}
+.pol.big{flex:none;width:104px;cursor:default}.pol.big .ph canvas{width:52px;height:78px}
+.fbht{min-width:0}.fbht h3{font-family:Silkscreen,monospace;font-weight:400;font-size:16px;margin:0}.fbht .fbsub{text-align:left;margin:2px 0 8px}
+.kv{font-size:14px;line-height:1.35}.kv b{font-weight:700}.fbht .fs{text-align:left;margin-top:3px;font-size:12px}
+.fbfr{font-family:Silkscreen,monospace;font-size:10px;color:#c97b8f;margin-top:4px}
+.fbook .fbchips{margin-top:12px}.fbook .fbchip{background:#f4ecdc;border-color:#e3d6bf;font-size:12px}
+.fbqa{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px;margin-top:14px;padding-top:12px;border-top:2px dashed #e0d2bb}
+.qa{display:flex;flex-direction:column;gap:2px;min-width:0}.ql{font-family:Silkscreen,monospace;font-size:9px;letter-spacing:.5px;color:var(--muted2);text-transform:uppercase}
+.qv{display:flex;align-items:center;gap:6px;font-size:15px;word-break:break-word}.qi{width:14px;height:14px;object-fit:contain;flex:none}
+.fbnote{margin-top:14px;padding:10px 12px;background:#f1e6cf;border-left:4px solid #d8b98a}.fbnote .nt{font-style:italic;font-size:15px;margin-top:3px}
+.fbook .fbacts{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:16px}
+.fbook .fbnone{margin-top:14px;font-size:14px;color:var(--muted2)}
+.fbform{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.fbform .fbq span{display:flex;align-items:center;gap:6px}.fbform .inp{margin:0;width:100%;background:#fffdf6;border-color:#c9b9a3}
+.fbform .bsage{align-self:flex-start;margin-top:4px}
+/* turning the right page when a friend's entry opens */
+.bpg.r{perspective:900px}
+#fbSide.turn{animation:fbturn .42s steps(7) both;transform-origin:left center}
+@keyframes fbturn{0%{transform:rotateY(-80deg);opacity:.2}100%{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){#fbSide.turn{animation:none}}
 @media (max-width:760px){
   .bk{grid-template-columns:1fr;min-height:0}
-  .bspine{height:16px;background-image:repeating-linear-gradient(90deg,#5e231e 0 6px,#e2b45a 6px 8px,#5e231e 8px 14px);background-size:14px 2px;background-repeat:repeat-x;border:0;border-left:2px solid #3a2622;border-right:2px solid #3a2622}
-  .bpg.l{border-right:2px solid #3a2622;border-bottom:0;box-shadow:inset 0 -14px 14px -10px rgba(90,60,40,.28)}
-  .bpg.r{border-left:2px solid #3a2622;border-top:0;box-shadow:inset 0 14px 14px -10px rgba(90,60,40,.28)}
-  .bpg.l::after{display:none}
-  .bpg{padding:18px 14px 20px}
-  /* on a phone a friend's page replaces the list, with a way back */
+  .bspine{height:12px;background-image:repeating-linear-gradient(90deg,#6f8463 0 5px,#c9d6b8 5px 7px);background-size:12px 2px;background-repeat:repeat-x;border:0;border-left:2px solid #3f4a36;border-right:2px solid #3f4a36}
+  .bpg.l{border-right:2px solid #6b5a48;border-bottom:0}.bpg.r{border-left:2px solid #6b5a48;border-top:0}
+  .bpg{padding:20px 12px 34px}
   .fbook.fbopen .bpg.l,.fbook.fbopen .bspine{display:none}
-  .fbook.fbopen .bpg.r{border-top:2px solid #3a2622;box-shadow:none}
+  .fbook.fbopen .bpg.r{border-top:2px solid #6b5a48}
   .fbook .fbback{display:block}
+  #fbSide.turn{animation-name:fbturnm}
+  @keyframes fbturnm{0%{transform:rotateY(-70deg);opacity:.2}100%{transform:none;opacity:1}}
+  .fbqa{grid-template-columns:1fr 1fr}
 }
 </style>
 </head>
@@ -867,22 +915,29 @@
     <button class="fbx" type="button" id="gClose" aria-label="Close">✕</button>
     <div class="bk">
       <div class="bpg l" id="fbL">
-        <h2 id="fbTitle">Friend book</h2>
-        <div class="lead" id="fbLead">Everyone you garden with. Tap someone to open their page.</div>
-        <input class="inp" id="gSearch" placeholder="Search by name…" maxlength="20" style="margin:10px 0 0;width:100%" hidden>
+        <h2 id="fbTitle">My garden friends</h2>
+        <div class="fbsub" id="fbLead">little memories grow here ♡</div>
+        <input class="inp" id="gSearch" placeholder="search by name…" maxlength="20" hidden>
         <div class="glist" id="glist"></div>
+        <div class="pno">– 01 –</div>
       </div>
       <div class="bspine" aria-hidden="true"></div>
       <div class="bpg r" id="fbR">
         <div id="fbSide"></div>
         <div id="fbTools">
-          <div class="dsec">ADD A FRIEND</div>
-          <form id="gEnter" autocomplete="off" class="fbadd"><span class="at">@</span><input class="inp" id="gEnterIn" maxlength="16" placeholder="their username" autocapitalize="none" autocorrect="off" spellcheck="false"><button class="btn dark" type="submit">Send request</button></form>
-          <div class="dsec">INVITE SOMEONE NEW</div>
-          <div class="lead">Not playing yet? New accounts start with your invite link. Once they are in, you are friends.</div>
-          <button class="btn dark" type="button" id="gInvite" style="margin-top:8px">Copy my invite link</button>
-          <label class="chk" id="gListedRow" style="margin-top:10px"><input type="checkbox" id="gListed"> Everyone here can find my garden</label>
+          <h3 class="fbh">Let's grow together</h3>
+          <div class="fbsub">a garden is better with friends</div>
+          <div class="envw"><img id="fbEnv" class="env big" alt=""></div>
+          <div class="fbsec">find a friend</div>
+          <form id="gEnter" autocomplete="off" class="fbfind"><div class="fbin"><span class="at">@</span><input class="inp" id="gEnterIn" maxlength="16" placeholder="username" autocapitalize="none" autocorrect="off" spellcheck="false"></div><button class="bsage" type="submit">Send a friendship request ♡</button></form>
+          <div class="fbdash"></div>
+          <div class="fbinv">Invite someone to your garden</div>
+          <div class="fbs2">new players start with your invitation and are your friends right away</div>
+          <button class="bpink" type="button" id="gInvite">Copy invitation</button>
+          <div class="fbsetw"><button class="blink" type="button" id="fbSet">⚙ settings</button>
+          <label class="chk" id="gListedRow" hidden><input type="checkbox" id="gListed"> everyone here can find my garden</label></div>
         </div>
+        <div class="pno">– 02 –</div>
       </div>
     </div>
   </div>
@@ -1000,7 +1055,7 @@ function cleanGarden(g){
   rawS.slice(0,BED_SLOTS.length).forEach((p,i)=>{const c=cleanProject(p,i,true);if(!c)return;
     if(used2.has(c.slot)){for(let s=0;s<BED_SLOTS.length;s++)if(!used2.has(s)){c.slot=s;break;}}
     used2.add(c.slot);skills.push(c);});
-  return {v:2,name:str(g.name,14)||'Someone',look:cleanLook(g.look),projects,skills,saved:num(g.saved,0),owner:!!g.owner,cat:!!g.cat,sb:g.sb!==false,listed:g.listed===undefined?!!g.owner:!!g.listed,friends:Array.isArray(g.friends)?g.friends.filter(x=>typeof x==='string'&&x.length<64).slice(0,100):[],nb:Array.isArray(g.nb)?g.nb.filter(x=>x&&/^https:\/\//.test(x.u||'')).slice(0,10).map(x=>({n:str(x.n,30)||'Friend',u:str(x.u,300)})):[],created:g.created!==false,hs:!!g.hs,since:num(g.since,0),inv:/^[\w-]{1,64}$/.test(String(g.inv||''))?String(g.inv):'',seen:num(g.seen,0),handle:/^[a-z0-9_]{3,15}$/.test(String(g.handle||''))?String(g.handle):'',fr:(Array.isArray(g.fr)?g.fr:Array.isArray(g.friends)?g.friends:[]).filter(x=>typeof x==='string'&&/^[\w-]{1,64}$/.test(x)).slice(0,200),fdecl:Array.isArray(g.fdecl)?g.fdecl.filter(x=>typeof x==='string'&&x.length<64).slice(0,200):[],fb:(g.fb&&typeof g.fb==='object')?Object.fromEntries(['food','hobby','like','dream','motto'].filter(k=>typeof g.fb[k]==='string'&&g.fb[k].trim()).map(k=>[k,nodot(str(g.fb[k],40))])):{},ask:(g.ask&&typeof g.ask==='object')?Object.fromEntries(Object.entries(g.ask).slice(0,40).map(([k,v])=>[str(k,24),num(v,0)])):{},askDay:str(g.askDay,12),ai:!!g.ai,aiDay:str(g.aiDay,12),
+  return {v:2,name:str(g.name,14)||'Someone',look:cleanLook(g.look),projects,skills,saved:num(g.saved,0),owner:!!g.owner,cat:!!g.cat,sb:g.sb!==false,listed:g.listed===undefined?!!g.owner:!!g.listed,friends:Array.isArray(g.friends)?g.friends.filter(x=>typeof x==='string'&&x.length<64).slice(0,100):[],nb:Array.isArray(g.nb)?g.nb.filter(x=>x&&/^https:\/\//.test(x.u||'')).slice(0,10).map(x=>({n:str(x.n,30)||'Friend',u:str(x.u,300)})):[],created:g.created!==false,hs:!!g.hs,since:num(g.since,0),inv:/^[\w-]{1,64}$/.test(String(g.inv||''))?String(g.inv):'',seen:num(g.seen,0),handle:/^[a-z0-9_]{3,15}$/.test(String(g.handle||''))?String(g.handle):'',fr:(Array.isArray(g.fr)?g.fr:Array.isArray(g.friends)?g.friends:[]).filter(x=>typeof x==='string'&&/^[\w-]{1,64}$/.test(x)).slice(0,200),fdecl:Array.isArray(g.fdecl)?g.fdecl.filter(x=>typeof x==='string'&&x.length<64).slice(0,200):[],fb:(g.fb&&typeof g.fb==='object')?Object.fromEntries(['food','hobby','like','dream','motto','flower','season','drink','pet'].filter(k=>typeof g.fb[k]==='string'&&g.fb[k].trim()).map(k=>[k,nodot(str(g.fb[k],40))])):{},ask:(g.ask&&typeof g.ask==='object')?Object.fromEntries(Object.entries(g.ask).slice(0,40).map(([k,v])=>[str(k,24),num(v,0)])):{},askDay:str(g.askDay,12),ai:!!g.ai,aiDay:str(g.aiDay,12),
     aiRep:(g.aiRep&&typeof g.aiRep==='object'&&g.aiRep.lines&&typeof g.aiRep.lines==='object')?{d:str(g.aiRep.d,12),lines:Object.fromEntries(Object.entries(g.aiRep.lines).slice(0,8).map(([k,v])=>[str(k,24),str(v,140)]))}:null,
     od:(g.od&&typeof g.od==='object')?Object.fromEntries(Object.entries(g.od).slice(0,20).map(([k,v])=>[str(k,24),str(v,12)])):{},
     on:Array.isArray(g.on)?g.on.filter(x=>x&&typeof x.text==='string').slice(-8).map(x=>Object.assign({id:str(x.id,24),pid:str(x.pid,24),code:str(x.code,14),d:str(x.d,12),st:['new','done','gone'].includes(x.st)?x.st:'gone',text:str(x.text,60)},x.ai?{ai:true}:{})):[],
@@ -4044,7 +4099,7 @@ function closeModals(){shopM.classList.remove('show');ideasM.classList.remove('s
 
 /* ================= gardens (visiting) ================= */
 function renderNeighbours(){
-  const mine=document.getElementById('gMine'); mine.hidden=!home||!!visiting; document.getElementById('gListedRow').hidden=!home; if(home)document.getElementById('gListed').checked=isListed(); if(mine.hidden) return;
+  const mine=document.getElementById('gMine'); mine.hidden=!home||!!visiting; if(!home)document.getElementById('gListedRow').hidden=true;document.getElementById('fbSet').hidden=!home; if(home)document.getElementById('gListed').checked=isListed(); if(mine.hidden) return;
   document.getElementById('gSB').checked=home.sb!==false;document.getElementById('gListed').checked=isListed();
   const box=document.getElementById('nbList'); box.innerHTML='';
   (home.nb||[]).forEach((n,i)=>{const r=document.createElement('div');r.className='nbrow';const a=document.createElement('a');a.href=n.u;a.target='_blank';a.rel='noopener';a.textContent=n.n+'’s garden ↗';
@@ -4104,12 +4159,13 @@ function enterGarden(){
   rebuildLabels();refreshChrome();
 }
 
-/* ================= friend book ================= */
-// The Friends button opens a little friend book: everyone you garden with as a tile (online first),
-// tap one for their page (avatar, when they were last around, their garden, their own answers) and visit from there.
-// Your own page is the first tile: five short answers that your friends can read.
-const FB_Q=[['food','Favourite food'],['hobby','Hobbies'],['like','I really like'],['dream','My dream'],['motto','My motto']];
-let fbPage=null;
+/* ================= friend book (Freundebuch) ================= */
+// A little scrapbook like the friendship books from primary school: a sage linen cover, ivory paper,
+// friends as taped polaroids on the left page, "Let's grow together" (find a friend, invite) on the right page.
+// Tapping a friend turns the right page to their "All about me" entry. All friend logic stays as it was.
+const FB_Q=[['flower','My favourite flower','tulip'],['season','My favourite season','blossom'],['drink','My favourite drink','cup'],
+  ['pet','My little companion','paw'],['hobby','My hobbies','brush'],['food','My favourite food','bowl'],['dream','My dream','star']];
+let fbPage=null,fbTurn=false;
 function agoTxt(t){if(!t)return '';const m=(Date.now()-t)/6e4,d=m/1440;if(m<15)return 'just now';if(m<60)return Math.round(m/5)*5+' min ago';if(m<24*60&&new Date(t).toDateString()===new Date().toDateString())return Math.floor(m/60)+(Math.floor(m/60)===1?' hour ago':' hours ago');
   if(d<2&&new Date(t).toDateString()===new Date(Date.now()-864e5).toDateString())return 'yesterday';if(d<30)return Math.max(1,Math.round(d))+' days ago';
   return new Date(t).toLocaleDateString(undefined,{day:'numeric',month:'short'});}
@@ -4134,84 +4190,119 @@ function handleTaken(h){return gardensList.some(gd=>gd.id!==myId&&gd.data.handle
 function handleError(h){if(!/^[a-z0-9_]{3,15}$/.test(h))return 'Use 3 to 15 letters, numbers or _';if(handleTaken(h))return '@'+h+' is taken';return '';}
 function suggestHandle(){const b=(home&&home.name||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9_]/g,'').slice(0,12)||'gardener';
   let h=b.length<3?b+'_gr':b,i=1;while(handleTaken(h)&&i<99){h=(b+i).slice(0,15);i++;}return h;}
-function handleBox(){
-  const box=el('form','fbname');box.autocomplete='off';
-  box.appendChild(el('div','fbnt','Pick your username'));box.appendChild(el('div','fs','Friends add you with it. You can change it later on your page.'));
-  const row=el('div','fbadd');row.appendChild(el('span','at','@'));const i=el('input','inp');i.maxLength=15;i.value=suggestHandle();i.setAttribute('autocapitalize','none');i.spellcheck=false;row.appendChild(i);
-  const b=el('button','btn dark','Save');b.type='submit';row.appendChild(b);box.appendChild(row);const er=el('div','fberr');box.appendChild(er);
-  box.onsubmit=e=>{e.preventDefault();const h=i.value.trim().replace(/^@/,'').toLowerCase(),m=handleError(h);if(m){er.textContent=m;return;}home.handle=h;persist();toast('You are @'+h+' now.',2200);renderGardens(true);};
-  return box;}
-function tile(gd,extra){const t=el('button','fbt');t.type='button';t.appendChild(avatarCv(gd.data.look));t.appendChild(el('b','',gd.data.name));
-  if(gd.data.handle)t.appendChild(el('span','fh','@'+gd.data.handle));
-  const st=fbStatus(gd),s=el('span','fs'+(st.on?' on':''),extra||st.t);t.appendChild(s);
-  if(fbPage===gd.id)t.classList.add('sel');t.onclick=()=>{fbPage=gd.id;renderGardens(true);};return t;}
+/* ---------- tiny pixel sprites for the book (drawn once, crisp, no smoothing) ---------- */
+const FBP={o:'#5a4636',g:'#7f9a72',G:'#5e7a52',l:'#a9c296',p:'#e3a3b3',P:'#c97b8f',y:'#f2c94c',w:'#fffaf0',c:'#e8d6b0',C:'#c9ae7c',r:'#d6606e',b:'#8fb7d8',v:'#b7a3df',k:'#3a2e2a',t:'#f6efe0'};
+const FBS={
+  flower:["..p.p..",".pPpPp.","pPpypPp",".pPpPp.","..pgp..","...g...","..lg...","...g..."],
+  sprig:["....l.","...lg.","..lgl.",".lg.l.","lg..l.","g.....","g....."],
+  heart:[".rr.rr.","rrrrrrr","rrrrrrr",".rrrrr.","..rrr..","...r..."],
+  tulip:[".p.p.",".pPp.",".PPP.","..g..",".lg..","..g.."],
+  blossom:[".p.p.","ppypp",".p.p.","..p.."],
+  cup:[".....","ooooo.","ottto.","otttoo","ottto.",".ooo.."],
+  paw:[".o.o.","o.o.o",".ooo.","ooooo",".ooo."],
+  brush:["....o","...oy","..oy.",".Co..","CC...","C...."],
+  bowl:["..y..",".yCy.","ooooo",".ooo."],
+  star:["..y..",".yyy.","yyyyy",".y.y."],
+  envelope:["CCCCCCCCCCCCCCCCC","CCcccccccccccccCC","CcCcccccccccccCcC","CccCcccccccccCccC","CcccCccrcrccCcccC","CccccCrrrrrCccccC","CcccccCrrrCcccccC","CcccccccCcccccccC","CcccccccccccccccC","CcccccccccccccccC","CCCCCCCCCCCCCCCCC"],
+};
+const fbSprCache={};
+function fbSprite(k,scale){const key=k+(scale||1);if(fbSprCache[key])return fbSprCache[key];const rows=FBS[k],w=Math.max(...rows.map(r=>r.length)),h=rows.length,s=scale||1;
+  const c=document.createElement('canvas');c.width=w*s;c.height=h*s;const x=c.getContext('2d');
+  rows.forEach((r,y)=>[...r].forEach((ch,i)=>{if(ch==='.'||!FBP[ch])return;x.fillStyle=FBP[ch];x.fillRect(i*s,y*s,s,s);}));
+  return fbSprCache[key]=c.toDataURL();}
+function fbImg(k,cls,scale){const i=el('img','fbspr '+(cls||''));i.src=fbSprite(k,scale||1);i.alt='';i.draggable=false;return i;}
+// paper grain and linen cover as tiny pixel tiles
+(function(){const tile=(w,h,f)=>{const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');f(x);return 'url('+c.toDataURL()+')';};
+  const r=rng(42),s=document.getElementById('gardens').style;
+  s.setProperty('--fb-paper',tile(16,16,x=>{x.fillStyle='#fbf4e4';x.fillRect(0,0,16,16);for(let i=0;i<14;i++){x.fillStyle=r()<.5?'#f3e9d3':'#fffaf0';x.fillRect(Math.floor(r()*16),Math.floor(r()*16),1,1);}}));
+  s.setProperty('--fb-cover',tile(4,4,x=>{x.fillStyle='#8b9e7e';x.fillRect(0,0,4,4);x.fillStyle='#96a989';x.fillRect(0,0,1,1);x.fillRect(2,2,1,1);x.fillStyle='#7f9373';x.fillRect(2,0,1,1);x.fillRect(0,2,1,1);}));
+  // decorations that stay on the pages
+  const L=document.getElementById('fbL'),Rp=document.getElementById('fbR');
+  L.prepend(fbImg('flower','dk dk1',3),fbImg('sprig','dk dk2',3));L.appendChild(fbImg('heart','dk dk3',2));
+  Rp.prepend(fbImg('sprig','dk dk4',3),fbImg('flower','dk dk5',2));
+  document.getElementById('fbEnv').src=fbSprite('envelope',4);
+  document.getElementById('fbSet').onclick=()=>{const r2=document.getElementById('gListedRow');r2.hidden=!r2.hidden;};
+})();
+const PASTEL=['#efe6c8','#f3dfe3','#dde9db','#e4e0f3','#f6e2cf'],TAPE=['tY','tM','tP','tL'];
+function polaroid(look,name,sub,small,i,cls){const t=el('button','pol '+(cls||'')+' '+TAPE[i%4]);t.type='button';t.style.setProperty('--rot',[-2.2,1.6,-1,2.4,-.6][i%5]+'deg');
+  const ph=el('span','ph');ph.style.background=PASTEL[i%5];if(look)ph.appendChild(avatarCv(look));else ph.appendChild(el('span','plus','+'));t.appendChild(ph);
+  t.appendChild(el('b','',name));if(sub)t.appendChild(el('span','fh',sub));if(small)t.appendChild(el('span','fs'+(small.on?' on':''),small.t));return t;}
 function renderGardens(keep){
   if(!keep)renderNeighbours();
-  // left page: the friends; right page: your username, requests and tools, or the page of the friend you opened
   const panel=document.querySelector('#gardens .panel'),box=document.getElementById('glist'),side=document.getElementById('fbSide');box.innerHTML='';side.innerHTML='';
   panel.classList.toggle('fbopen',!!fbPage);
   document.getElementById('fbTools').hidden=!!fbPage;
-  if(fbPage)renderFbPage(side);
+  if(fbPage){renderFbPage(side);if(fbTurn){side.classList.remove('turn');void side.offsetWidth;side.classList.add('turn');fbTurn=false;}}
   if(!db){box.appendChild(el('div','empty','Gardens sync once you are signed in.'));return;}
   if(home&&!home.handle&&!fbPage)side.appendChild(handleBox());
-  // friend requests first
-  const inc=incoming(),rq=side;
-  if(inc.length&&!fbPage){rq.appendChild(el('div','dsec','FRIEND REQUESTS'));
-    inc.forEach(gd=>{const r=el('div','fbreq');r.appendChild(avatarCv(gd.data.look,'fbav sm'));const tx=el('div','fbrt');tx.appendChild(el('b','',gd.data.name));
-      tx.appendChild(el('span','fs',(gd.data.handle?'@'+gd.data.handle+' ':'')+'wants to be friends'));r.appendChild(tx);
-      const ok=el('button','btn dark','Accept');ok.type='button';ok.onclick=()=>{addFriend(gd.id);toast('You and '+gd.data.name+' are friends now ♥',2600);updateReqBadge();renderGardens(true);};
-      const no=el('button','btn','Not now');no.type='button';no.onclick=()=>{home.fdecl=(home.fdecl||[]).concat([gd.id]).slice(-200);persist();updateReqBadge();renderGardens(true);};
-      r.appendChild(ok);r.appendChild(no);rq.appendChild(r);});}
+  // friend requests arrive as little letters on the right page
+  const inc=incoming();
+  if(inc.length&&!fbPage){inc.forEach(gd=>{const r=el('div','fbreq');r.appendChild(fbImg('envelope','env',2));const tx=el('div','fbrt');tx.appendChild(el('b','',gd.data.name+' wants to be friends'));
+      if(gd.data.handle)tx.appendChild(el('span','fh','@'+gd.data.handle));r.appendChild(tx);
+      const ok=el('button','bsage','Accept ♡');ok.type='button';ok.onclick=()=>{addFriend(gd.id);toast('You and '+gd.data.name+' are friends now ♥',2600);updateReqBadge();renderGardens(true);};
+      const no=el('button','blink','not now');no.type='button';no.onclick=()=>{home.fdecl=(home.fdecl||[]).concat([gd.id]).slice(-200);persist();updateReqBadge();renderGardens(true);};
+      const bt=el('div','fbrb');bt.appendChild(ok);bt.appendChild(no);r.appendChild(bt);side.appendChild(r);});}
   const q=(document.getElementById('gSearch').value||'').trim().toLowerCase().replace(/^@/,''),on=onlineIds();
-  const all=fbVisible().filter(gd=>!inc.includes(gd));document.getElementById('gSearch').hidden=all.length<6&&!q;
+  const all=fbVisible().filter(gd=>!inc.includes(gd));document.getElementById('gSearch').hidden=all.length<7&&!q;
   const match=gd=>!q||gd.data.name.toLowerCase().includes(q)||(gd.data.handle||'').includes(q);
   const ord=(a,b)=>(on.has(b.id)-on.has(a.id))||(lastAround(b.data)-lastAround(a.data));
   const friends=all.filter(gd=>isFriend(gd)&&match(gd)).sort(ord),pend=all.filter(gd=>isPending(gd)&&match(gd)).sort(ord),
         others=all.filter(gd=>!isFriend(gd)&&!isPending(gd)&&match(gd)).sort(ord);
-  const grid=el('div','fbgrid');box.appendChild(grid);
-  if(home&&!q){const me=el('button','fbt me'+(fbPage==='me'?' sel':''));me.type='button';me.appendChild(avatarCv(home.look));me.appendChild(el('b','',home.name||'You'));
-    if(home.handle)me.appendChild(el('span','fh','@'+home.handle));
-    const filled=FB_Q.some(([k])=>home.fb&&home.fb[k]);me.appendChild(el('span','fs',filled?'your page':'fill in your page'));
-    me.onclick=()=>{fbPage='me';renderGardens(true);};grid.appendChild(me);}
-  friends.forEach(gd=>grid.appendChild(tile(gd)));
-  pend.forEach(gd=>{const t=tile(gd,'request sent');t.classList.add('pend');grid.appendChild(t);});
-  if(!friends.length&&!pend.length)box.appendChild(el('div','empty',q?'Nobody with that name.':'No friends yet. Add someone by their username below.'));
-  if(others.length){box.appendChild(el('div','dsec','OTHER GARDENS'));const g2=el('div','fbgrid');others.forEach(gd=>g2.appendChild(tile(gd)));box.appendChild(g2);}
+  const grid=el('div','fbgrid');box.appendChild(grid);let i=0;
+  if(home&&!q){const me=polaroid(home.look,'My page',home.handle?'@'+home.handle:'',null,i++,'me'+(fbPage==='me'?' sel':''));me.onclick=()=>openFb('me');grid.appendChild(me);}
+  friends.concat(pend).forEach(gd=>{const p=polaroid(gd.data.look,gd.data.name,gd.data.handle?'@'+gd.data.handle:'',isPending(gd)?{t:'request sent'}:fbStatus(gd),i++,(isPending(gd)?'pend':'')+(fbPage===gd.id?' sel':''));
+    p.onclick=()=>openFb(gd.id);grid.appendChild(p);});
+  const add=polaroid(null,'Add friend','',null,i++,'add');add.onclick=()=>{if(fbPage){fbPage=null;renderGardens(true);}const inp=document.getElementById('gEnterIn');inp.scrollIntoView({block:'center',behavior:'smooth'});setTimeout(()=>inp.focus(),250);};grid.appendChild(add);
+  if(others.length){box.appendChild(el('div','fbsec','other gardens'));const g2=el('div','fbgrid');others.forEach(gd=>{const p=polaroid(gd.data.look,gd.data.name,gd.data.handle?'@'+gd.data.handle:'',fbStatus(gd),i++,fbPage===gd.id?'sel':'');p.onclick=()=>openFb(gd.id);g2.appendChild(p);});box.appendChild(g2);}
 }
+function openFb(id){fbPage=id;fbTurn=true;renderGardens(true);if(innerWidth<=760)document.getElementById('fbR').scrollIntoView({block:'start'});}
+function handleBox(){
+  const box=el('form','fbname');box.autocomplete='off';
+  box.appendChild(el('div','fbnt','Pick your username ♡'));box.appendChild(el('div','fs','Friends find you with it. You can change it on your page.'));
+  const row=el('div','fbadd');row.appendChild(el('span','at','@'));const i=el('input','inp');i.maxLength=15;i.value=suggestHandle();i.setAttribute('autocapitalize','none');i.spellcheck=false;row.appendChild(i);
+  const b=el('button','bsage','Save');b.type='submit';row.appendChild(b);box.appendChild(row);const er=el('div','fberr');box.appendChild(er);
+  box.onsubmit=e=>{e.preventDefault();const h=i.value.trim().replace(/^@/,'').toLowerCase(),m=handleError(h);if(m){er.textContent=m;return;}home.handle=h;persist();toast('You are @'+h+' now.',2200);renderGardens(true);};
+  return box;}
+// the "All about me" entry of a friend (or your own page to fill in)
 function renderFbPage(box){
-  const back=el('button','fbback','← back');back.type='button';back.onclick=()=>{fbPage=null;renderGardens(true);};box.appendChild(back);
+  const back=el('button','fbback','← all friends');back.type='button';back.onclick=()=>{fbPage=null;renderGardens(true);};box.appendChild(back);
   const pg=el('div','fbpg');box.appendChild(pg);
-  if(fbPage==='me'){
-    if(!home){fbPage=null;return;}
-    const hd=el('div','fbhd');hd.appendChild(avatarCv(home.look,'fbbig'));const ht=el('div','fbht');ht.appendChild(el('h3','',home.name||'You'));
-    ht.appendChild(el('div','fs','Your page. Friends see these answers in their friend book.'));hd.appendChild(ht);pg.appendChild(hd);
-    const f=el('form','fbform');f.autocomplete='off';
-    {const l=el('label','fbq');l.appendChild(el('span','','Username'));const i=el('input','inp');i.name='handle';i.maxLength=15;i.value=home.handle||suggestHandle();i.setAttribute('autocapitalize','none');i.spellcheck=false;l.appendChild(i);f.appendChild(l);}
-    const er=el('div','fberr');
-    FB_Q.forEach(([k,lab])=>{const l=el('label','fbq');l.appendChild(el('span','',lab));const i=el('input','inp');i.name=k;i.maxLength=40;i.value=(home.fb&&home.fb[k])||'';l.appendChild(i);f.appendChild(l);});
-    const sv=el('button','btn dark','Save my page');sv.type='submit';f.appendChild(sv);
-    f.onsubmit=e=>{e.preventDefault();const h=f.elements.handle.value.trim().replace(/^@/,'').toLowerCase();if(h!==home.handle){const m=handleError(h);if(m){er.textContent=m;f.elements.handle.focus();return;}home.handle=h;}const fb={};FB_Q.forEach(([k])=>{const v=nodot(f.elements[k].value.trim()).slice(0,40);if(v)fb[k]=v;});home.fb=fb;persist();toast('Saved. Your friends can read it now.',2200);fbPage=null;renderGardens(true);};
-    f.insertBefore(er,sv);pg.appendChild(f);return;}
-  const gd=gardensList.find(x=>x.id===fbPage);if(!gd){fbPage=null;renderGardens(true);return;}
-  const d=gd.data,st=fbStatus(gd),friend=isFriend(gd),pend=isPending(gd);
-  const hd=el('div','fbhd');hd.appendChild(avatarCv(d.look,'fbbig'));const ht=el('div','fbht');
-  const h=el('h3','',d.name);if(friend)h.appendChild(el('span','hrt','♥'));ht.appendChild(h);if(d.handle)ht.appendChild(el('div','fh','@'+d.handle));
-  if(st.t)ht.appendChild(el('div','fs'+(st.on?' on':''),st.t));
-  {const la=lastAround(d);if(!st.on&&la)ht.appendChild(el('div','fs',new Date(la).toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})+', '+new Date(la).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})));}
-  if(d.since)ht.appendChild(el('div','fs','gardening since '+new Date(d.since).toLocaleDateString(undefined,{month:'long',year:'numeric'})));
+  const own=fbPage==='me',gd=own?null:gardensList.find(x=>x.id===fbPage);
+  if(own&&!home||!own&&!gd){fbPage=null;renderGardens(true);return;}
+  const d=own?home:gd.data,st=own?null:fbStatus(gd),friend=!own&&isFriend(gd),pend=!own&&isPending(gd);
+  const hd=el('div','fbhd');const por=el('div','pol big tP');por.style.setProperty('--rot','-2deg');const ph=el('span','ph');ph.style.background='#efe6c8';ph.appendChild(avatarCv(d.look));por.appendChild(ph);hd.appendChild(por);
+  const ht=el('div','fbht');ht.appendChild(el('h3','','All about me ♡'));ht.appendChild(el('div','fbsub','my little corner of the garden'));
+  const kv=(k,v)=>{const r=el('div','kv');r.appendChild(el('b','',k+': '));r.appendChild(document.createTextNode(v));return r;};
+  ht.appendChild(kv('Name',d.name+(d.handle?'  @'+d.handle:'')));
+  if(d.since)ht.appendChild(kv('Gardening since',new Date(d.since).toLocaleDateString(undefined,{month:'long',year:'numeric'})));
+  if(st&&st.t)ht.appendChild(el('div','fs'+(st.on?' on':''),st.t));
+  if(friend)ht.appendChild(el('div','fbfr','♥ friends'));
   hd.appendChild(ht);pg.appendChild(hd);
+  if(own){
+    const f=el('form','fbform');f.autocomplete='off';
+    const field=(name,lab,val,max,icon)=>{const l=el('label','fbq');const sp=el('span','');if(icon)sp.prepend(fbImg(icon,'qi',2));sp.appendChild(document.createTextNode(lab));l.appendChild(sp);
+      const i=el('input','inp');i.name=name;i.maxLength=max;i.value=val||'';l.appendChild(i);f.appendChild(l);return i;};
+    const hi=field('handle','Username',home.handle||suggestHandle(),15);hi.setAttribute('autocapitalize','none');hi.spellcheck=false;
+    FB_Q.forEach(([k,lab,ic])=>field(k,lab,home.fb&&home.fb[k],40,ic));
+    field('motto','A little note from me',home.fb&&home.fb.motto,40,'heart');
+    const er=el('div','fberr');f.appendChild(er);
+    const sv=el('button','bsage','Save my page ♡');sv.type='submit';f.appendChild(sv);
+    f.onsubmit=e=>{e.preventDefault();const h=f.elements.handle.value.trim().replace(/^@/,'').toLowerCase();if(h!==home.handle){const m=handleError(h);if(m){er.textContent=m;f.elements.handle.focus();return;}home.handle=h;}
+      const fb={};FB_Q.concat([['motto']]).forEach(([k])=>{const v=nodot(f.elements[k].value.trim()).slice(0,40);if(v)fb[k]=v;});home.fb=fb;persist();toast('Saved. Your friends can read it now.',2200);fbPage=null;renderGardens(true);};
+    pg.appendChild(f);return;}
   const ps=d.projects||[],sk=d.skills||[],chips=el('div','fbchips');
   [ps.length+(ps.length===1?' project':' projects'),sk.length+(sk.length===1?' skill':' skills'),'watered '+Math.round(gardenAvg(d))+'%'].forEach(t=>chips.appendChild(el('span','fbchip',t)));pg.appendChild(chips);
   const qa=FB_Q.filter(([k])=>d.fb&&d.fb[k]);
-  if(qa.length){const dl=el('dl','fbqa');qa.forEach(([k,lab])=>{dl.appendChild(el('dt','',lab));dl.appendChild(el('dd','',d.fb[k]));});pg.appendChild(dl);}
-  else pg.appendChild(el('div','fbnone',d.name+' has not filled in their page yet.'));
+  if(qa.length){const g=el('div','fbqa');qa.forEach(([k,lab,ic])=>{const c=el('div','qa');c.appendChild(el('span','ql',lab));const v=el('span','qv');v.appendChild(fbImg(ic,'qi',2));v.appendChild(document.createTextNode(d.fb[k]));c.appendChild(v);g.appendChild(c);});pg.appendChild(g);}
+  if(d.fb&&(d.fb.motto||d.fb.like)){const n=el('div','fbnote');n.appendChild(el('span','ql','A little note from me…'));n.appendChild(el('div','nt',(d.fb.motto||d.fb.like)+' ♡'));pg.appendChild(n);}
+  if(!qa.length&&!(d.fb&&d.fb.motto))pg.appendChild(el('div','fbnone',d.name+' has not filled in their page yet.'));
   const acts=el('div','fbacts');
-  const here=visiting&&visiting.id===gd.id,v=el('button','btn dark',here?'You are here':'Visit '+d.name+'’s garden');v.type='button';v.disabled=here;
+  const here=visiting&&visiting.id===gd.id,v=el('button','bsage',here?'You are in this garden':'✿ Visit my garden');v.type='button';v.disabled=here;
   v.onclick=()=>{gardensM.classList.remove('show');fbPage=null;visit(gd);};acts.appendChild(v);
-  if(home&&!friend&&!pend){const inc=(d.fr||[]).includes(myId),a=el('button','btn',inc?'Accept friend request':'Send friend request');a.type='button';
+  if(home&&!friend&&!pend){const inc=(d.fr||[]).includes(myId),a=el('button','bpink',inc?'Accept friend request ♡':'Send friend request ♡');a.type='button';
     a.onclick=()=>{addFriend(gd.id);toast(inc?'You and '+d.name+' are friends now ♥':'Friend request sent to '+d.name+'.',2600);updateReqBadge();renderGardens(true);};acts.appendChild(a);}
-  else if(pend)acts.appendChild(el('span','fs','Request sent, waiting for '+d.name));
-  else if(friend){const u=el('button','ilink','Remove friend');u.type='button';u.onclick=()=>{if(!u.dataset.a){u.dataset.a=1;u.textContent='Tap again to remove';return;}
+  else if(pend)acts.appendChild(el('span','fs','request sent, waiting for '+d.name));
+  else if(friend){const u=el('button','blink','remove friend');u.type='button';u.onclick=()=>{if(!u.dataset.a){u.dataset.a=1;u.textContent='tap again to remove';return;}
     home.fr=myFr().filter(x=>x!==gd.id);persist();renderGardens(true);};acts.appendChild(u);}
   pg.appendChild(acts);
 }
@@ -5791,7 +5882,7 @@ function markSeen(){if(!started||loadFailed||!home||!home.created||!db||!myId||d
 #gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gAlt{display:flex;flex-direction:column;gap:10px;margin-top:4px}#gAlt[hidden],.galt[hidden]{display:none}.gor{margin:6px 0 0;font-size:14px;opacity:.6}.galt{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;color:#2a2430;cursor:pointer}.galt:active{transform:translate(2px,2px)}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;outline:none;border-radius:0;-webkit-appearance:none;appearance:none;box-shadow:none;-webkit-tap-highlight-color:transparent}#gEmail:focus,#gTok:focus{outline:none;background:#fff8e6}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
 #gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795863769"></script>
+<script src="config.js?v=1795865290"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -5822,7 +5913,7 @@ function markSeen(){if(!started||loadFailed||!home||!home.created||!db||!myId||d
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '28.11. 12:02';
+  const BUILD = '28.11. 12:28';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -6130,7 +6221,7 @@ function markSeen(){if(!started||loadFailed||!home||!home.created||!db||!myId||d
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 28.11. 12:02';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 28.11. 12:28';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid', 'garden-pending').forEach(k => localStorage.removeItem(k)); } catch (e) {}

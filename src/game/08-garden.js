@@ -298,7 +298,7 @@ function closeModals(){shopM.classList.remove('show');ideasM.classList.remove('s
 
 /* ================= gardens (visiting) ================= */
 function renderNeighbours(){
-  const mine=document.getElementById('gMine'); mine.hidden=!home||!!visiting; document.getElementById('gListedRow').hidden=!home; if(home)document.getElementById('gListed').checked=isListed(); if(mine.hidden) return;
+  const mine=document.getElementById('gMine'); mine.hidden=!home||!!visiting; if(!home)document.getElementById('gListedRow').hidden=true;document.getElementById('fbSet').hidden=!home; if(home)document.getElementById('gListed').checked=isListed(); if(mine.hidden) return;
   document.getElementById('gSB').checked=home.sb!==false;document.getElementById('gListed').checked=isListed();
   const box=document.getElementById('nbList'); box.innerHTML='';
   (home.nb||[]).forEach((n,i)=>{const r=document.createElement('div');r.className='nbrow';const a=document.createElement('a');a.href=n.u;a.target='_blank';a.rel='noopener';a.textContent=n.n+'’s garden ↗';
