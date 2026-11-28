@@ -159,7 +159,7 @@ function burst(p,n){const [x,y]=posOf(p),top=plantTop(p);setTimeout(()=>{for(let
 /* ================= particles, critters, avatar ================= */
 let parts=[];
 function spawn(o){parts.push(Object.assign({life:1,age:0},o));}
-const flies=[{x:60,y:190,tx:60,ty:190,ph:0,c:'#ffffff',next:0},{x:180,y:280,tx:180,ty:280,ph:1.3,c:'#ffe27a',next:0}];
+const flies=[]; // only neglect flies now (drawFlies); they vanish as soon as a plant is watered
 const av={x:120,y:216,back:false,moving:false,target:null,water:0,pourFor:null};
 const host={x:40,y:172};
 function drawSleeper(t){
