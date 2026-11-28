@@ -183,7 +183,7 @@ function blocked(x,y){
 
   if(scene==='garden'&&Math.hypot(x-(SL.x+15),(y-(SL.y-1))*1.5)<7) return true;
   if(scene==='garden'&&lineBlocked(x,y)) return true;
-  if(scene==='garden'&&(pondBlocked(x,y)||bucketBlocked(x,y))) return true;
+  if(scene==='garden'&&(pondBlocked(x,y)||bucketBlocked(x,y)||grillBlocked(x,y))) return true;
   if(decoBlocked(x,y)) return true;
   if(scene==='garden'&&x>COMP.x-14&&x<COMP.x+19&&y>COMP.y-6&&y<COMP.y+2) return true;
   if(visiting&&Math.abs(x-host.x)<14&&Math.abs(y-host.y)<5) return true;
@@ -221,6 +221,7 @@ cvs.addEventListener('pointerdown',e=>{
   if(moving){av.run=false;placeAt(lx,ly);return;}
   if(passOf){hopOff();return;}
   if(bucketAt(lx,ly)){av.target={x:BUCKET.x-9,y:BUCKET.y+1,onArrive:openAquarium};return;}
+  if(grillAt(lx,ly)){goGrill();return;}
   if(onPondTap(lx,ly)){goFish();return;}
   if(lx>=BOARD.x0-4&&lx<=BOARD.x1+2&&Math.abs(ly-BOARD.y)<8&&!av.swim){av.run=false;av.target={x:BOARD.x1-3,y:BOARD.y,onArrive:()=>{av.target={x:BOARD.x0+2,y:BOARD.y,onArrive:()=>startJump(BOARD.x0-20,BOARD.y+4,true)};}};return;}
   if(lx>40&&lx<92&&ly>HB-46&&ly<HB+2){goToDoor();return;}
@@ -315,7 +316,7 @@ const gardensM=document.getElementById('gardens');
 document.getElementById('bGardens').onclick=()=>{fbPage=null;renderGardens();gardensM.classList.add('show');};
 document.getElementById('gClose').onclick=()=>gardensM.classList.remove('show');
 document.getElementById('bHome').onclick=()=>{hideHomeHint(true);goHome();};
-function closeModals(){shopM.classList.remove('show');ideasM.classList.remove('show');if(fishM.classList.contains('show'))closeAquarium();document.querySelectorAll('.modal.pgm.show').forEach(m=>m._close());compM.classList.remove('show');mapM.classList.remove('show');isleM.classList.remove('show');lineM.classList.remove('show');askM.classList.remove('show');if(quizM.classList.contains('show'))closeQuiz();if(c4M.classList.contains('show'))closeC4();stillM.classList.remove('show');dashM.classList.remove('show');booksM.classList.remove('show');if(creator.classList.contains('show'))closeCreator();help.classList.remove('show');gardensM.classList.remove('show');addM.classList.remove('show');}
+function closeModals(){shopM.classList.remove('show');grillM.classList.remove('show');ideasM.classList.remove('show');if(fishM.classList.contains('show'))closeAquarium();document.querySelectorAll('.modal.pgm.show').forEach(m=>m._close());compM.classList.remove('show');mapM.classList.remove('show');isleM.classList.remove('show');lineM.classList.remove('show');askM.classList.remove('show');if(quizM.classList.contains('show'))closeQuiz();if(c4M.classList.contains('show'))closeC4();stillM.classList.remove('show');dashM.classList.remove('show');booksM.classList.remove('show');if(creator.classList.contains('show'))closeCreator();help.classList.remove('show');gardensM.classList.remove('show');addM.classList.remove('show');}
 
 /* ================= gardens (visiting) ================= */
 function renderNeighbours(){

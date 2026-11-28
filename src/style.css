@@ -914,3 +914,6 @@
 .fclose:hover{color:var(--cocoa)}
 .fenvform .fhint,.fenvform .fbfind{margin-right:18px}
 #fbTools[hidden]{display:none}
+.grf{cursor:pointer;font:inherit;text-align:left}
+.grf:hover{filter:brightness(1.06)}
+.grf .gc{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:#8a6a2a}

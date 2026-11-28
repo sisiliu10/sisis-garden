@@ -929,6 +929,9 @@
 .fclose:hover{color:var(--cocoa)}
 .fenvform .fhint,.fenvform .fbfind{margin-right:18px}
 #fbTools[hidden]{display:none}
+.grf{cursor:pointer;font:inherit;text-align:left}
+.grf:hover{filter:brightness(1.06)}
+.grf .gc{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:#8a6a2a}
 </style>
 </head>
 <body>
@@ -1089,6 +1092,15 @@
     <canvas id="aqCv" width="200" height="100" aria-hidden="true"></canvas>
     <div class="aqgrid" id="aqGrid"></div>
     <button class="gclose" id="fishNo" type="button">Schließen</button>
+  </div>
+</div>
+
+<div class="modal" id="grillM">
+  <div class="askp aqp" role="dialog" aria-labelledby="grillT">
+    <div class="askt" id="grillT">Grill</div>
+    <p class="stillsub">Welchen Fisch willst du grillen?</p>
+    <div class="aqgrid" id="grillGrid"></div>
+    <button class="gclose" id="grillNo" type="button">Schließen</button>
   </div>
 </div>
 
@@ -4162,7 +4174,7 @@ function blocked(x,y){
 
   if(scene==='garden'&&Math.hypot(x-(SL.x+15),(y-(SL.y-1))*1.5)<7) return true;
   if(scene==='garden'&&lineBlocked(x,y)) return true;
-  if(scene==='garden'&&(pondBlocked(x,y)||bucketBlocked(x,y))) return true;
+  if(scene==='garden'&&(pondBlocked(x,y)||bucketBlocked(x,y)||grillBlocked(x,y))) return true;
   if(decoBlocked(x,y)) return true;
   if(scene==='garden'&&x>COMP.x-14&&x<COMP.x+19&&y>COMP.y-6&&y<COMP.y+2) return true;
   if(visiting&&Math.abs(x-host.x)<14&&Math.abs(y-host.y)<5) return true;
@@ -4200,6 +4212,7 @@ cvs.addEventListener('pointerdown',e=>{
   if(moving){av.run=false;placeAt(lx,ly);return;}
   if(passOf){hopOff();return;}
   if(bucketAt(lx,ly)){av.target={x:BUCKET.x-9,y:BUCKET.y+1,onArrive:openAquarium};return;}
+  if(grillAt(lx,ly)){goGrill();return;}
   if(onPondTap(lx,ly)){goFish();return;}
   if(lx>=BOARD.x0-4&&lx<=BOARD.x1+2&&Math.abs(ly-BOARD.y)<8&&!av.swim){av.run=false;av.target={x:BOARD.x1-3,y:BOARD.y,onArrive:()=>{av.target={x:BOARD.x0+2,y:BOARD.y,onArrive:()=>startJump(BOARD.x0-20,BOARD.y+4,true)};}};return;}
   if(lx>40&&lx<92&&ly>HB-46&&ly<HB+2){goToDoor();return;}
@@ -4294,7 +4307,7 @@ const gardensM=document.getElementById('gardens');
 document.getElementById('bGardens').onclick=()=>{fbPage=null;renderGardens();gardensM.classList.add('show');};
 document.getElementById('gClose').onclick=()=>gardensM.classList.remove('show');
 document.getElementById('bHome').onclick=()=>{hideHomeHint(true);goHome();};
-function closeModals(){shopM.classList.remove('show');ideasM.classList.remove('show');if(fishM.classList.contains('show'))closeAquarium();document.querySelectorAll('.modal.pgm.show').forEach(m=>m._close());compM.classList.remove('show');mapM.classList.remove('show');isleM.classList.remove('show');lineM.classList.remove('show');askM.classList.remove('show');if(quizM.classList.contains('show'))closeQuiz();if(c4M.classList.contains('show'))closeC4();stillM.classList.remove('show');dashM.classList.remove('show');booksM.classList.remove('show');if(creator.classList.contains('show'))closeCreator();help.classList.remove('show');gardensM.classList.remove('show');addM.classList.remove('show');}
+function closeModals(){shopM.classList.remove('show');grillM.classList.remove('show');ideasM.classList.remove('show');if(fishM.classList.contains('show'))closeAquarium();document.querySelectorAll('.modal.pgm.show').forEach(m=>m._close());compM.classList.remove('show');mapM.classList.remove('show');isleM.classList.remove('show');lineM.classList.remove('show');askM.classList.remove('show');if(quizM.classList.contains('show'))closeQuiz();if(c4M.classList.contains('show'))closeC4();stillM.classList.remove('show');dashM.classList.remove('show');booksM.classList.remove('show');if(creator.classList.contains('show'))closeCreator();help.classList.remove('show');gardensM.classList.remove('show');addM.classList.remove('show');}
 
 /* ================= gardens (visiting) ================= */
 function renderNeighbours(){
@@ -5052,7 +5065,7 @@ function onPondTap(x,y){return inPond(x,y,4)||onDock(x,y);}
 const BUCKET={x:138,y:500};
 function bucketAt(x,y){return Math.abs(x-BUCKET.x)<7&&y>BUCKET.y-12&&y<BUCKET.y+3;}
 function bucketBlocked(x,y){return Math.abs(x-BUCKET.x)<5&&Math.abs(y-BUCKET.y)<3;}
-function drawBucket(t){const x=BUCKET.x,y=BUCKET.y,n=FISH.filter(f=>tankFish().c[f.id]).length;
+function drawBucket(t){const x=BUCKET.x,y=BUCKET.y,n=FISH.filter(f=>inBucket(tankFish(),f.id)).length;
   R(x-5,y-9,10,9,'#a8744a');R(x-5,y-9,10,1,'#c99260');R(x-6,y-10,12,2,'#6a4228');R(x-4,y-11,8,1,'#7cc0cc');R(x-5,y-5,10,1,'#6a4228');R(x-4,y,8,1,'#5a3420');
   R(x-6,y-14,1,4,'#3a3440');R(x+5,y-14,1,4,'#3a3440');R(x-5,y-15,10,1,'#3a3440');
   if(n&&Math.floor(t*1.3)%5===0){R(x-1,y-13,3,2,'#f28c28');R(x+2,y-12,1,1,'#f7a54a');}}
@@ -5094,14 +5107,17 @@ function pickFish(bait){const all=bait?FISH:FISH.concat([BOOT]),wt=f=>bait&&f.w<
 /* ---------- your fish book (local first, then your own row in the database) ---------- */
 let fishBooks={}, visFish={};
 function fishKey(){return 'garden-fish-'+(myId||'me');}
-function cleanFish(o){const c={};if(o&&o.c&&typeof o.c==='object')FISH.forEach(f=>{const v=+o.c[f.id];if(Number.isFinite(v)&&v>0)c[f.id]=Math.min(9999,Math.floor(v));});return {c};}
+function cleanFish(o){const c={},g={};if(o&&o.c&&typeof o.c==='object')FISH.forEach(f=>{const v=+o.c[f.id];if(Number.isFinite(v)&&v>0)c[f.id]=Math.min(9999,Math.floor(v));});
+  if(o&&o.g&&typeof o.g==='object')FISH.forEach(f=>{const v=+o.g[f.id];if(c[f.id]&&Number.isFinite(v)&&v>0)g[f.id]=Math.min(c[f.id],Math.floor(v));});return {c,g};}
+const inBucket=(b,id)=>Math.max(0,(b.c[id]||0)-((b.g||{})[id]||0));
 function myFish(){
   const k=fishKey();if(fishBooks[k])return fishBooks[k];
-  let b={c:{}};try{b=cleanFish(JSON.parse(localStorage.getItem(k)));}catch(e){}
+  let b={c:{},g:{}};try{b=cleanFish(JSON.parse(localStorage.getItem(k)));}catch(e){}
   fishBooks[k]=b;
   if(window.__fish&&myId)window.__fish.load().then(d=>{if(!d)return;const s=cleanFish(d);let more=false;
     for(const id in s.c){if((b.c[id]||0)<s.c[id]){b.c[id]=s.c[id];}else if((b.c[id]||0)>s.c[id])more=true;}
     for(const id in b.c)if(!(id in s.c))more=true;
+    for(const id in s.g){if((b.g[id]||0)<s.g[id])b.g[id]=s.g[id];else if((b.g[id]||0)>s.g[id])more=true;}for(const id in b.g)if(!(id in s.g))more=true;
     try{localStorage.setItem(k,JSON.stringify(b));}catch(e){}if(more)window.__fish.save(b);}).catch(()=>{});
   return b;
 }
@@ -5162,7 +5178,7 @@ function fishUpdate(dt){
     if(F.t>=F.wait){F.ph='bite';F.t=0;spawn({kind:'ring',x:F.bx,y:F.by,r:9,life:.7});spawn({kind:'ring',x:F.bx,y:F.by,r:5,life:.5});
       try{Sfx.plop();}catch(e){}try{navigator.vibrate&&navigator.vibrate(35);}catch(e){}}
     return;}
-  if(F.ph==='bite'&&F.t>=F.sp.win/1000+.35){sayFish(F.sp.id==='boot'?'Hm, nichts.':'Weg ist er …',1600);fish=null;return;}
+  if(F.ph==='bite'&&F.t>=F.sp.win/1000+.6){sayFish(F.sp.id==='boot'?'Hm, nichts.':'Weg ist er …',1600);fish=null;return;}
   if(F.ph==='reel'&&F.t>=.5){F.ph='show';F.t=0;landFish(F.sp);return;}
   if(F.ph==='show'&&F.t>=2.4){fish=null;}
 }
@@ -5280,16 +5296,16 @@ function closeAquarium(){fishM.classList.remove('show');cancelAnimationFrame(aqR
 document.getElementById('fishNo').onclick=closeAquarium;
 fishM.addEventListener('click',e=>{if(e.target===fishM)closeAquarium();});
 function renderAquarium(){
-  const b=tankFish(),got=FISH.filter(f=>b.c[f.id]),total=got.reduce((a,f)=>a+b.c[f.id],0);
+  const b=tankFish(),got=FISH.filter(f=>b.c[f.id]),total=FISH.reduce((a,f)=>a+inBucket(b,f.id),0);
   const who=visiting&&visiting.data&&visiting.data.name;
   document.getElementById('fishT').textContent=who?who+'s Fang':'Dein Fang';
-  document.getElementById('fishS').textContent=!got.length?(visiting?'Noch keine Fische gefangen.':'Noch leer. Tipp aufs Wasser, dann wirfst du am Steg die Angel aus.'):got.length+' von '+FISH.length+' Arten, '+total+(total===1?' Fisch':' Fische')+' insgesamt.';
+  document.getElementById('fishS').textContent=!got.length?(visiting?'Noch keine Fische gefangen.':'Noch leer. Tipp aufs Wasser, dann wirfst du am Steg die Angel aus.'):got.length+' von '+FISH.length+' Arten entdeckt, '+total+(total===1?' Fisch':' Fische')+' im Eimer.';
   const grid=document.getElementById('aqGrid');grid.innerHTML='';
-  FISH.forEach(f=>{const n=b.c[f.id]||0,d=document.createElement('div');d.className='aqf'+(n?'':' no');
+  FISH.forEach(f=>{const n=b.c[f.id]||0,nb=inBucket(b,f.id),d=document.createElement('div');d.className='aqf'+(n?'':' no');
     const cv=document.createElement('canvas'),im=fishImg(f.id,!n);cv.width=16;cv.height=8;cv.getContext('2d').drawImage(im,Math.floor((16-im.width)/2),Math.floor((8-im.height)/2));
-    const nm=document.createElement('span');nm.className='n';nm.textContent=n?f.n:'???';const c=document.createElement('span');c.className='c';c.textContent=n?n+'×':'';
+    const nm=document.createElement('span');nm.className='n';nm.textContent=n?f.n:'???';const c=document.createElement('span');c.className='c';c.textContent=n?nb+'×':'';
     d.append(cv,nm,c);grid.appendChild(d);});
-  aqSwim=[];got.forEach((f,i)=>{for(let k=0;k<Math.min(3,b.c[f.id]);k++)aqSwim.push({id:f.id,x:20+Math.random()*160,y:16+((aqSwim.length*13)%62),v:(6+Math.random()*8)*(Math.random()<.5?-1:1),ph:Math.random()*6});});
+  aqSwim=[];got.forEach((f,i)=>{for(let k=0;k<Math.min(3,inBucket(b,f.id));k++)aqSwim.push({id:f.id,x:20+Math.random()*160,y:16+((aqSwim.length*13)%62),v:(6+Math.random()*8)*(Math.random()<.5?-1:1),ph:Math.random()*6});});
   aqSwim=aqSwim.slice(0,16);
 }
 function aqLoop(now){
@@ -5308,6 +5324,60 @@ function aqLoop(now){
   c.fillStyle='rgba(255,255,255,.25)';c.fillRect(0,0,W2,1);
   aqRaf=requestAnimationFrame(aqLoop);
 }
+
+
+/* ================= the grill next to the dock ================= */
+// pick a fish from your bucket, it sizzles on the grate for a moment, then you eat it: coins, and it leaves the bucket
+const GRILL={x:99,y:498};
+function grillAt(x,y){return Math.abs(x-GRILL.x)<10&&y>GRILL.y-18&&y<GRILL.y+3;}
+function grillBlocked(x,y){return Math.abs(x-GRILL.x)<7&&Math.abs(y-GRILL.y)<3;}
+let grilling=null;
+function drawGrill(t){const x=GRILL.x,y=GRILL.y,hot=!!grilling;
+  // round kettle grill on three legs
+  R(x-6,y-4,1,2,'#2a2430');R(x-5,y-2,1,2,'#2a2430');R(x+5,y-4,1,2,'#2a2430');R(x+6,y-2,1,2,'#2a2430');R(x,y-4,1,4,'#2a2430');
+  R(x-6,y-3,13,1,'#2a2430');
+  R(x-7,y-10,15,2,'#2f2a36');R(x-6,y-8,13,1,'#2f2a36');R(x-5,y-7,11,1,'#2f2a36');R(x-3,y-6,7,1,'#2f2a36');R(x-1,y-5,3,1,'#2a2430');
+  R(x-6,y-10,3,1,'#55505e');R(x-6,y-9,1,1,'#4a4552');R(x+5,y-9,1,1,'#3a3440');
+  R(x-8,y-11,17,1,'#8a8590');R(x-8,y-11,1,1,'#6a6570');R(x+8,y-11,1,1,'#6a6570');
+  if(hot){for(let i=0;i<13;i++){const f=(Math.floor(t*8)+i*2)%3;R(x-6+i,y-12,1,1,f===0?'#ffb347':f===1?'#e8443a':'#c2351f');}}
+  for(let i=0;i<9;i++)R(x-8+i*2,y-12,1,1,'#b9b4be');
+  R(x+8,y-9,2,1,'#6a6570');R(x+9,y-10,1,1,'#6a6570'); // handle
+  if(grilling){const G=grilling,k=Math.min(1,(t-G.t0)/G.dur),im=G.k>=.5?grillImg(G.id):fishImg(G.id);
+    g.drawImage(im,Math.round(x-im.width/2),y-12-im.height+1);
+    if(Math.random()<.35)spawn({kind:'smoke',x:x-3+Math.random()*6,y:y-14,vx:(Math.random()-.5)*4,vy:-9-Math.random()*5,life:1.1});
+    G.k=k;}
+}
+const grillCache={};
+function grillImg(id){if(grillCache[id])return grillCache[id];const src=fishImg(id),cv=document.createElement('canvas');cv.width=src.width;cv.height=src.height;const c=cv.getContext('2d');
+  c.drawImage(src,0,0);c.globalCompositeOperation='source-atop';c.fillStyle='rgba(120,62,20,.55)';c.fillRect(0,0,cv.width,cv.height);
+  c.fillStyle='rgba(40,20,10,.8)';for(let x=2;x<cv.width-1;x+=3)c.fillRect(x,1,1,cv.height-2);return grillCache[id]=cv;}
+function goGrill(){
+  if(visiting){sayFish('Der Grill gehört '+(visiting.data&&visiting.data.name||'jemand anderem')+'.',1800);return;}
+  av.target={x:GRILL.x-15,y:GRILL.y+1,onArrive:()=>{av.back=false;openGrill();}};
+}
+const grillM=document.getElementById('grillM');
+function openGrill(){
+  if(grilling)return;
+  const b=myFish(),have=FISH.filter(f=>inBucket(b,f.id));
+  if(!have.length){sayFish('Erst einen Fisch fangen',1800);return;}
+  const grid=document.getElementById('grillGrid');grid.innerHTML='';
+  have.forEach(f=>{const bt=document.createElement('button');bt.type='button';bt.className='aqf grf';
+    const cv=document.createElement('canvas'),im=fishImg(f.id);cv.width=16;cv.height=8;cv.getContext('2d').drawImage(im,Math.floor((16-im.width)/2),Math.floor((8-im.height)/2));
+    const nm=document.createElement('span');nm.className='n';nm.textContent=f.n;const c=document.createElement('span');c.className='c';c.textContent=inBucket(b,f.id)+'×';const gc=document.createElement('span');gc.className='gc';gc.textContent='+'+grillCoins(f);const ci=document.createElement('i');ci.className='ci';gc.appendChild(ci);
+    bt.append(cv,nm,c,gc);bt.onclick=()=>{grillM.classList.remove('show');grillFish(f);};grid.appendChild(bt);});
+  grillM.classList.add('show');
+}
+function grillCoins(f){return Math.max(3,f.coin*2);}
+function grillFish(f){
+  const b=myFish();if(!inBucket(b,f.id)||grilling)return;
+  b.g=b.g||{};b.g[f.id]=(b.g[f.id]||0)+1;saveFish();
+  grilling={id:f.id,t0:performance.now()/1000,dur:3,k:0};try{Sfx.pour(.25);}catch(e){}
+  setTimeout(()=>{try{Sfx.pour(.2);}catch(e){}},1400);
+  setTimeout(()=>{grilling=null;sayFish(pick(['Lecker!','Mmh, '+f.n+'!','Schmeckt nach Sommer']),2000);try{Sfx.yay(.4);}catch(e){}
+    if(typeof earnCoins==='function')earnCoins(grillCoins(f),GRILL.x,GRILL.y-16,'grill');},3000);
+}
+document.getElementById('grillNo').onclick=()=>grillM.classList.remove('show');
+grillM.addEventListener('click',e=>{if(e.target===grillM)grillM.classList.remove('show');});
 /* generated by tools/dog_sheet.py from art/dog-sprite.png; do not edit by hand */
 const DOG_SHEET="data:image/png;base64,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", DOG_W=22, DOG_H=18, DOG_FR={"idle": 0, "breath": 1, "blink": 2, "walk1": 3, "walk2": 4, "wag1": 5, "wag2": 6, "sad": 7, "sadb": 8, "sleep": 9, "sleepb": 10, "eat1": 11, "eat2": 12};
 /* ================= shiba (lives in Sisi's cottage) ================= */
@@ -5968,6 +6038,7 @@ function render(t){
   decoItems(t).forEach(o=>list.push(o));
   REEDS.forEach(([x,y,i])=>list.push({y,d:()=>drawReeds(x,y,i,t)}));
   list.push({y:BUCKET.y,d:()=>drawBucket(t)});
+  list.push({y:GRILL.y,d:()=>drawGrill(t)});
   list.push({y:FOUNT.y,d:()=>drawFountain(t)});
   list.push({y:SL.y,d:()=>drawSlide(t)});
   for(let r0=0;r0<lineRows();r0++)list.push({y:CLN.rows[r0],d:()=>drawLineRow(r0,t)});
@@ -6157,7 +6228,7 @@ function drawMirror(c,t){
 #gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gAlt{display:flex;flex-direction:column;gap:10px;margin-top:4px}#gAlt[hidden],.galt[hidden]{display:none}.gor{margin:6px 0 0;font-size:14px;opacity:.6}.galt{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;color:#2a2430;cursor:pointer}.galt:active{transform:translate(2px,2px)}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;outline:none;border-radius:0;-webkit-appearance:none;appearance:none;box-shadow:none;-webkit-tap-highlight-color:transparent}#gEmail:focus,#gTok:focus{outline:none;background:#fff8e6}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
 #gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795885466"></script>
+<script src="config.js?v=1795885726"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -6188,7 +6259,7 @@ function drawMirror(c,t){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '28.11. 18:04';
+  const BUILD = '28.11. 18:08';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -6496,7 +6567,7 @@ function drawMirror(c,t){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 28.11. 18:04';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 28.11. 18:08';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid', 'garden-pending').forEach(k => localStorage.removeItem(k)); } catch (e) {}

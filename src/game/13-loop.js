@@ -136,6 +136,7 @@ function render(t){
   decoItems(t).forEach(o=>list.push(o));
   REEDS.forEach(([x,y,i])=>list.push({y,d:()=>drawReeds(x,y,i,t)}));
   list.push({y:BUCKET.y,d:()=>drawBucket(t)});
+  list.push({y:GRILL.y,d:()=>drawGrill(t)});
   list.push({y:FOUNT.y,d:()=>drawFountain(t)});
   list.push({y:SL.y,d:()=>drawSlide(t)});
   for(let r0=0;r0<lineRows();r0++)list.push({y:CLN.rows[r0],d:()=>drawLineRow(r0,t)});

@@ -10,7 +10,7 @@ function onPondTap(x,y){return inPond(x,y,4)||onDock(x,y);}
 const BUCKET={x:138,y:500};
 function bucketAt(x,y){return Math.abs(x-BUCKET.x)<7&&y>BUCKET.y-12&&y<BUCKET.y+3;}
 function bucketBlocked(x,y){return Math.abs(x-BUCKET.x)<5&&Math.abs(y-BUCKET.y)<3;}
-function drawBucket(t){const x=BUCKET.x,y=BUCKET.y,n=FISH.filter(f=>tankFish().c[f.id]).length;
+function drawBucket(t){const x=BUCKET.x,y=BUCKET.y,n=FISH.filter(f=>inBucket(tankFish(),f.id)).length;
   R(x-5,y-9,10,9,'#a8744a');R(x-5,y-9,10,1,'#c99260');R(x-6,y-10,12,2,'#6a4228');R(x-4,y-11,8,1,'#7cc0cc');R(x-5,y-5,10,1,'#6a4228');R(x-4,y,8,1,'#5a3420');
   R(x-6,y-14,1,4,'#3a3440');R(x+5,y-14,1,4,'#3a3440');R(x-5,y-15,10,1,'#3a3440');
   if(n&&Math.floor(t*1.3)%5===0){R(x-1,y-13,3,2,'#f28c28');R(x+2,y-12,1,1,'#f7a54a');}}
@@ -52,14 +52,17 @@ function pickFish(bait){const all=bait?FISH:FISH.concat([BOOT]),wt=f=>bait&&f.w<
 /* ---------- your fish book (local first, then your own row in the database) ---------- */
 let fishBooks={}, visFish={};
 function fishKey(){return 'garden-fish-'+(myId||'me');}
-function cleanFish(o){const c={};if(o&&o.c&&typeof o.c==='object')FISH.forEach(f=>{const v=+o.c[f.id];if(Number.isFinite(v)&&v>0)c[f.id]=Math.min(9999,Math.floor(v));});return {c};}
+function cleanFish(o){const c={},g={};if(o&&o.c&&typeof o.c==='object')FISH.forEach(f=>{const v=+o.c[f.id];if(Number.isFinite(v)&&v>0)c[f.id]=Math.min(9999,Math.floor(v));});
+  if(o&&o.g&&typeof o.g==='object')FISH.forEach(f=>{const v=+o.g[f.id];if(c[f.id]&&Number.isFinite(v)&&v>0)g[f.id]=Math.min(c[f.id],Math.floor(v));});return {c,g};}
+const inBucket=(b,id)=>Math.max(0,(b.c[id]||0)-((b.g||{})[id]||0));
 function myFish(){
   const k=fishKey();if(fishBooks[k])return fishBooks[k];
-  let b={c:{}};try{b=cleanFish(JSON.parse(localStorage.getItem(k)));}catch(e){}
+  let b={c:{},g:{}};try{b=cleanFish(JSON.parse(localStorage.getItem(k)));}catch(e){}
   fishBooks[k]=b;
   if(window.__fish&&myId)window.__fish.load().then(d=>{if(!d)return;const s=cleanFish(d);let more=false;
     for(const id in s.c){if((b.c[id]||0)<s.c[id]){b.c[id]=s.c[id];}else if((b.c[id]||0)>s.c[id])more=true;}
     for(const id in b.c)if(!(id in s.c))more=true;
+    for(const id in s.g){if((b.g[id]||0)<s.g[id])b.g[id]=s.g[id];else if((b.g[id]||0)>s.g[id])more=true;}for(const id in b.g)if(!(id in s.g))more=true;
     try{localStorage.setItem(k,JSON.stringify(b));}catch(e){}if(more)window.__fish.save(b);}).catch(()=>{});
   return b;
 }
@@ -120,7 +123,7 @@ function fishUpdate(dt){
     if(F.t>=F.wait){F.ph='bite';F.t=0;spawn({kind:'ring',x:F.bx,y:F.by,r:9,life:.7});spawn({kind:'ring',x:F.bx,y:F.by,r:5,life:.5});
       try{Sfx.plop();}catch(e){}try{navigator.vibrate&&navigator.vibrate(35);}catch(e){}}
     return;}
-  if(F.ph==='bite'&&F.t>=F.sp.win/1000+.35){sayFish(F.sp.id==='boot'?'Hm, nichts.':'Weg ist er …',1600);fish=null;return;}
+  if(F.ph==='bite'&&F.t>=F.sp.win/1000+.6){sayFish(F.sp.id==='boot'?'Hm, nichts.':'Weg ist er …',1600);fish=null;return;}
   if(F.ph==='reel'&&F.t>=.5){F.ph='show';F.t=0;landFish(F.sp);return;}
   if(F.ph==='show'&&F.t>=2.4){fish=null;}
 }
@@ -238,16 +241,16 @@ function closeAquarium(){fishM.classList.remove('show');cancelAnimationFrame(aqR
 document.getElementById('fishNo').onclick=closeAquarium;
 fishM.addEventListener('click',e=>{if(e.target===fishM)closeAquarium();});
 function renderAquarium(){
-  const b=tankFish(),got=FISH.filter(f=>b.c[f.id]),total=got.reduce((a,f)=>a+b.c[f.id],0);
+  const b=tankFish(),got=FISH.filter(f=>b.c[f.id]),total=FISH.reduce((a,f)=>a+inBucket(b,f.id),0);
   const who=visiting&&visiting.data&&visiting.data.name;
   document.getElementById('fishT').textContent=who?who+'s Fang':'Dein Fang';
-  document.getElementById('fishS').textContent=!got.length?(visiting?'Noch keine Fische gefangen.':'Noch leer. Tipp aufs Wasser, dann wirfst du am Steg die Angel aus.'):got.length+' von '+FISH.length+' Arten, '+total+(total===1?' Fisch':' Fische')+' insgesamt.';
+  document.getElementById('fishS').textContent=!got.length?(visiting?'Noch keine Fische gefangen.':'Noch leer. Tipp aufs Wasser, dann wirfst du am Steg die Angel aus.'):got.length+' von '+FISH.length+' Arten entdeckt, '+total+(total===1?' Fisch':' Fische')+' im Eimer.';
   const grid=document.getElementById('aqGrid');grid.innerHTML='';
-  FISH.forEach(f=>{const n=b.c[f.id]||0,d=document.createElement('div');d.className='aqf'+(n?'':' no');
+  FISH.forEach(f=>{const n=b.c[f.id]||0,nb=inBucket(b,f.id),d=document.createElement('div');d.className='aqf'+(n?'':' no');
     const cv=document.createElement('canvas'),im=fishImg(f.id,!n);cv.width=16;cv.height=8;cv.getContext('2d').drawImage(im,Math.floor((16-im.width)/2),Math.floor((8-im.height)/2));
-    const nm=document.createElement('span');nm.className='n';nm.textContent=n?f.n:'???';const c=document.createElement('span');c.className='c';c.textContent=n?n+'×':'';
+    const nm=document.createElement('span');nm.className='n';nm.textContent=n?f.n:'???';const c=document.createElement('span');c.className='c';c.textContent=n?nb+'×':'';
     d.append(cv,nm,c);grid.appendChild(d);});
-  aqSwim=[];got.forEach((f,i)=>{for(let k=0;k<Math.min(3,b.c[f.id]);k++)aqSwim.push({id:f.id,x:20+Math.random()*160,y:16+((aqSwim.length*13)%62),v:(6+Math.random()*8)*(Math.random()<.5?-1:1),ph:Math.random()*6});});
+  aqSwim=[];got.forEach((f,i)=>{for(let k=0;k<Math.min(3,inBucket(b,f.id));k++)aqSwim.push({id:f.id,x:20+Math.random()*160,y:16+((aqSwim.length*13)%62),v:(6+Math.random()*8)*(Math.random()<.5?-1:1),ph:Math.random()*6});});
   aqSwim=aqSwim.slice(0,16);
 }
 function aqLoop(now){
@@ -266,3 +269,57 @@ function aqLoop(now){
   c.fillStyle='rgba(255,255,255,.25)';c.fillRect(0,0,W2,1);
   aqRaf=requestAnimationFrame(aqLoop);
 }
+
+
+/* ================= the grill next to the dock ================= */
+// pick a fish from your bucket, it sizzles on the grate for a moment, then you eat it: coins, and it leaves the bucket
+const GRILL={x:99,y:498};
+function grillAt(x,y){return Math.abs(x-GRILL.x)<10&&y>GRILL.y-18&&y<GRILL.y+3;}
+function grillBlocked(x,y){return Math.abs(x-GRILL.x)<7&&Math.abs(y-GRILL.y)<3;}
+let grilling=null;
+function drawGrill(t){const x=GRILL.x,y=GRILL.y,hot=!!grilling;
+  // round kettle grill on three legs
+  R(x-6,y-4,1,2,'#2a2430');R(x-5,y-2,1,2,'#2a2430');R(x+5,y-4,1,2,'#2a2430');R(x+6,y-2,1,2,'#2a2430');R(x,y-4,1,4,'#2a2430');
+  R(x-6,y-3,13,1,'#2a2430');
+  R(x-7,y-10,15,2,'#2f2a36');R(x-6,y-8,13,1,'#2f2a36');R(x-5,y-7,11,1,'#2f2a36');R(x-3,y-6,7,1,'#2f2a36');R(x-1,y-5,3,1,'#2a2430');
+  R(x-6,y-10,3,1,'#55505e');R(x-6,y-9,1,1,'#4a4552');R(x+5,y-9,1,1,'#3a3440');
+  R(x-8,y-11,17,1,'#8a8590');R(x-8,y-11,1,1,'#6a6570');R(x+8,y-11,1,1,'#6a6570');
+  if(hot){for(let i=0;i<13;i++){const f=(Math.floor(t*8)+i*2)%3;R(x-6+i,y-12,1,1,f===0?'#ffb347':f===1?'#e8443a':'#c2351f');}}
+  for(let i=0;i<9;i++)R(x-8+i*2,y-12,1,1,'#b9b4be');
+  R(x+8,y-9,2,1,'#6a6570');R(x+9,y-10,1,1,'#6a6570'); // handle
+  if(grilling){const G=grilling,k=Math.min(1,(t-G.t0)/G.dur),im=G.k>=.5?grillImg(G.id):fishImg(G.id);
+    g.drawImage(im,Math.round(x-im.width/2),y-12-im.height+1);
+    if(Math.random()<.35)spawn({kind:'smoke',x:x-3+Math.random()*6,y:y-14,vx:(Math.random()-.5)*4,vy:-9-Math.random()*5,life:1.1});
+    G.k=k;}
+}
+const grillCache={};
+function grillImg(id){if(grillCache[id])return grillCache[id];const src=fishImg(id),cv=document.createElement('canvas');cv.width=src.width;cv.height=src.height;const c=cv.getContext('2d');
+  c.drawImage(src,0,0);c.globalCompositeOperation='source-atop';c.fillStyle='rgba(120,62,20,.55)';c.fillRect(0,0,cv.width,cv.height);
+  c.fillStyle='rgba(40,20,10,.8)';for(let x=2;x<cv.width-1;x+=3)c.fillRect(x,1,1,cv.height-2);return grillCache[id]=cv;}
+function goGrill(){
+  if(visiting){sayFish('Der Grill gehört '+(visiting.data&&visiting.data.name||'jemand anderem')+'.',1800);return;}
+  av.target={x:GRILL.x-15,y:GRILL.y+1,onArrive:()=>{av.back=false;openGrill();}};
+}
+const grillM=document.getElementById('grillM');
+function openGrill(){
+  if(grilling)return;
+  const b=myFish(),have=FISH.filter(f=>inBucket(b,f.id));
+  if(!have.length){sayFish('Erst einen Fisch fangen',1800);return;}
+  const grid=document.getElementById('grillGrid');grid.innerHTML='';
+  have.forEach(f=>{const bt=document.createElement('button');bt.type='button';bt.className='aqf grf';
+    const cv=document.createElement('canvas'),im=fishImg(f.id);cv.width=16;cv.height=8;cv.getContext('2d').drawImage(im,Math.floor((16-im.width)/2),Math.floor((8-im.height)/2));
+    const nm=document.createElement('span');nm.className='n';nm.textContent=f.n;const c=document.createElement('span');c.className='c';c.textContent=inBucket(b,f.id)+'×';const gc=document.createElement('span');gc.className='gc';gc.textContent='+'+grillCoins(f);const ci=document.createElement('i');ci.className='ci';gc.appendChild(ci);
+    bt.append(cv,nm,c,gc);bt.onclick=()=>{grillM.classList.remove('show');grillFish(f);};grid.appendChild(bt);});
+  grillM.classList.add('show');
+}
+function grillCoins(f){return Math.max(3,f.coin*2);}
+function grillFish(f){
+  const b=myFish();if(!inBucket(b,f.id)||grilling)return;
+  b.g=b.g||{};b.g[f.id]=(b.g[f.id]||0)+1;saveFish();
+  grilling={id:f.id,t0:performance.now()/1000,dur:3,k:0};try{Sfx.pour(.25);}catch(e){}
+  setTimeout(()=>{try{Sfx.pour(.2);}catch(e){}},1400);
+  setTimeout(()=>{grilling=null;sayFish(pick(['Lecker!','Mmh, '+f.n+'!','Schmeckt nach Sommer']),2000);try{Sfx.yay(.4);}catch(e){}
+    if(typeof earnCoins==='function')earnCoins(grillCoins(f),GRILL.x,GRILL.y-16,'grill');},3000);
+}
+document.getElementById('grillNo').onclick=()=>grillM.classList.remove('show');
+grillM.addEventListener('click',e=>{if(e.target===grillM)grillM.classList.remove('show');});
