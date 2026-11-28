@@ -91,12 +91,12 @@ function castLine(){
   if(scene!=='garden'||fish)return;
   av.back=false;av.target=null;
   let side=Math.random()<.5?-1:1,bx=0,by=0;
-  for(let k=0;k<20;k++){bx=FSPOT.x+side*(16+Math.random()*28);by=POND.y+5+Math.random()*12;if(inPond(bx,by,-6))break;}
+  for(let k=0;k<20;k++){bx=FSPOT.x+side*(18+Math.random()*26);by=POND.y-10+Math.random()*10;if(inPond(bx,by,-6))break;}
   const sp=pickFish(useBait()),wait=1.6+Math.random()*4.4;
   fish={ph:'cast',t:0,bx,by,side,wait,sp,nib:[],dip:0};
   if(Math.random()<.7)fish.nib.push(.5+Math.random()*Math.max(.3,wait-1.1));
   if(Math.random()<.3)fish.nib.push(.5+Math.random()*Math.max(.3,wait-1.1));
-  fishSay=null;
+  fishSay=null;if(Object.values(myFish().c).reduce((a,b)=>a+b,0)<3){sayFish('Tippen, sobald das ! kommt',1500);fish.wait=Math.max(fish.wait,2.4);}
   try{Sfx.cast();}catch(e){}
 }
 function rodTip(x,y,side){return [Math.round(x)+side*17,Math.round(y)-27];}
@@ -105,7 +105,7 @@ function fishTap(){
   if(!fish)return false;
   const F=fish;
   if(F.ph==='bite'){F.ph='reel';F.t=0;try{Sfx.reel();}catch(e){}splash(F.bx,F.by,8,.3,false);return true;}
-  if(F.ph==='wait'){sayFish('Zu früh!',1500);for(let i=0;i<4;i++)spawn({kind:'splash',x:F.bx+(Math.random()*6-3),y:F.by-1,vx:(Math.random()-.5)*20,vy:-14,floor:F.by,life:.4});fish=null;return true;}
+  if(F.ph==='wait'){sayFish('Noch nicht … warte aufs !',1400);F.wait=Math.max(F.wait,F.t+1.2);return true;}
   if(F.ph==='show'){fish=null;return true;}
   return true;
 }
@@ -120,7 +120,7 @@ function fishUpdate(dt){
     if(F.t>=F.wait){F.ph='bite';F.t=0;spawn({kind:'ring',x:F.bx,y:F.by,r:9,life:.7});spawn({kind:'ring',x:F.bx,y:F.by,r:5,life:.5});
       try{Sfx.plop();}catch(e){}try{navigator.vibrate&&navigator.vibrate(35);}catch(e){}}
     return;}
-  if(F.ph==='bite'&&F.t>=F.sp.win/1000){sayFish(F.sp.id==='boot'?'Hm, nichts.':'Weg ist er …',1600);fish=null;return;}
+  if(F.ph==='bite'&&F.t>=F.sp.win/1000+.35){sayFish(F.sp.id==='boot'?'Hm, nichts.':'Weg ist er …',1600);fish=null;return;}
   if(F.ph==='reel'&&F.t>=.5){F.ph='show';F.t=0;landFish(F.sp);return;}
   if(F.ph==='show'&&F.t>=2.4){fish=null;}
 }
@@ -142,7 +142,9 @@ function drawBobber(x,y,st,t){
   const b=st==='dip'?1:Math.round(Math.sin(t*3)*.6);
   R(x-2,y+1,5,1,'#8fd0d8');R(x-1,y-3+b,3,2,'#e8443a');R(x,y-4+b,1,1,'#ff9a8a');R(x-1,y-1+b,3,1,'#ffffff');
 }
-function drawExcl(x,y,t){if(Math.floor(t*8)%2)return;x=Math.round(x);y=Math.round(y);R(x-2,y-1,5,10,'#2a2430');R(x-1,y,3,5,'#ffe27a');R(x-1,y+6,3,2,'#ffe27a');}
+function drawExcl(x,y,t){x=Math.round(x);y=Math.round(y)-4+(Math.floor(t*6)%2);
+  R(x-5,y-2,11,15,'#2a2430');R(x-4,y-1,9,13,'#ffffff');R(x-1,y+14,3,1,'#2a2430');R(x,y+13,1,1,'#2a2430');
+  R(x-1,y+1,3,6,'#e8443a');R(x-1,y+8,3,2,'#e8443a');}
 // rod + line + bobber for anyone fishing (you, or a friend from their presence)
 function drawAngler(x,y,side,bx,by,st,t,spId,k){
   const hx=Math.round(x)+side*5,hy=Math.round(y)-12,[tx,ty]=rodTip(x,y,side);

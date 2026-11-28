@@ -211,7 +211,7 @@ function resize(){
   const vw=innerWidth, vh=innerHeight;
   S=Math.min(vw/CW,vh/CH);
   W=Math.ceil(vw/S); H=Math.ceil(vh/S);
-  OX=Math.floor((W-CW)/2); OY=Math.max(0,H-WORLD_H); TH=OY+WORLD_H+(vw<=560?Math.ceil(64/S):0); camR=-1;
+  OX=Math.floor((W-CW)/2); OY=Math.max(0,H-WORLD_H); TH=OY+WORLD_H+Math.ceil((vw<=560?64:56)/S); // room below the pond so the chat bar never hides it camR=-1;
   cvs.width=W; cvs.height=H; cvs.style.width=(W*S)+'px'; cvs.style.height=(H*S)+'px';
   worldEl.style.width=(W*S)+'px'; worldEl.style.height=(TH*S)+'px';
   // text over the canvas is not scaled: one pixel of the pixel font is a whole number of screen pixels, so it stays sharp
