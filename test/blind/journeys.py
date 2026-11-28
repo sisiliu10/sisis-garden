@@ -426,7 +426,7 @@ def chat_and_panels(pw, chk, device):
         pg.wait_for_timeout(800)
         c.menu(); c.press(c.btn("Garden")); pg.wait_for_timeout(1500)
         c.press(c.btn("Friends")); pg.wait_for_timeout(800)
-        chk("Friends opens the friend book", seen(pg.get_by_role("heading", name="Gartenfreunde")) and
+        chk("Friends opens the friend book", seen(pg.get_by_role("heading", name="Freundebuch")) and
             seen(pg.get_by_text("Sisi", exact=True)))
     finally:
         c.close()

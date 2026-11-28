@@ -1077,8 +1077,7 @@
     <button class="fbx" type="button" id="gClose" aria-label="Close">✕</button>
     <div class="fsheet">
       <div class="apg l" id="fbL">
-        <h2 id="fbTitle">Gartenfreunde</h2>
-        <div class="asub" id="fbLead">die Menschen, mit denen ich gärtnere</div>
+        <h2 id="fbTitle">Freundebuch</h2>
         <div id="fbTools">
           <button class="fenv" type="button" id="fbEnvBtn" aria-expanded="false" aria-label="Freund:in hinzufügen oder einladen"><span class="letters" id="fbLetters"></span><canvas id="fbEnvCv" width="44" height="28"></canvas></button>
         </div>
@@ -4341,7 +4340,7 @@ function enterGarden(){
 // friends as polaroids hanging on a twine with little pegs, memory notes with scalloped edges, an envelope
 // pocket to add or invite friends, and on the right page the selected friend's own scrapbook page.
 // All friend logic (usernames, requests, invite) is unchanged; only the art direction is new.
-const FB_Q=[['flower','Lieblingsblume'],['bday','Geburtstag'],['food','Lieblingsessen']];
+const FB_Q=[['flower','Lieblingsblume'],['bday','Geburtstag']];
 let fbPage=null,fbTurn=false,envOpen=false;
 function agoTxt(t){if(!t)return '';const m=(Date.now()-t)/6e4,d=m/1440;if(m<15)return 'just now';if(m<60)return Math.round(m/5)*5+' min ago';if(m<24*60&&new Date(t).toDateString()===new Date().toDateString())return Math.floor(m/60)+(Math.floor(m/60)===1?' hour ago':' hours ago');
   if(d<2&&new Date(t).toDateString()===new Date(Date.now()-864e5).toDateString())return 'yesterday';if(d<30)return Math.max(1,Math.round(d))+' days ago';
@@ -4490,7 +4489,7 @@ function renderFbPage(){
   const ph=el('div','aphoto');const inner=el('div','ph');inner.style.backgroundColor=bg.c;inner.appendChild(avatarCv(d.look,'big'));ph.appendChild(inner);
   pg.appendChild(ph);
   const facts=el('div','afacts');
-  const facts3=[['flower','Lieblingsblume'],['bday','Geburtstag'],['food','Lieblingsessen']].filter(([k])=>fb[k]);
+  const facts3=[['flower','Lieblingsblume'],['bday','Geburtstag']].filter(([k])=>fb[k]);
   facts3.forEach(([k,lab],j)=>{const f=el('div','afact');const t=el('div','');t.appendChild(el('span','small',lab));t.appendChild(el('b','',k==='bday'?prettyBday(fb[k]):fb[k]));f.appendChild(t);facts.appendChild(f);});
   if(!own&&!facts3.length)facts.appendChild(el('div','fsmall',d.name+' hat die Seite noch nicht ausgefüllt.'));
   if(!own)pg.appendChild(facts);
@@ -6126,7 +6125,7 @@ function drawMirror(c,t){
 #gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gAlt{display:flex;flex-direction:column;gap:10px;margin-top:4px}#gAlt[hidden],.galt[hidden]{display:none}.gor{margin:6px 0 0;font-size:14px;opacity:.6}.galt{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;color:#2a2430;cursor:pointer}.galt:active{transform:translate(2px,2px)}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;outline:none;border-radius:0;-webkit-appearance:none;appearance:none;box-shadow:none;-webkit-tap-highlight-color:transparent}#gEmail:focus,#gTok:focus{outline:none;background:#fff8e6}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
 #gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795874095"></script>
+<script src="config.js?v=1795883635"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -6157,7 +6156,7 @@ function drawMirror(c,t){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '28.11. 14:54';
+  const BUILD = '28.11. 17:33';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -6465,7 +6464,7 @@ function drawMirror(c,t){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 28.11. 14:54';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 28.11. 17:33';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid', 'garden-pending').forEach(k => localStorage.removeItem(k)); } catch (e) {}
