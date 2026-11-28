@@ -88,12 +88,13 @@ function drawEnvelope(open){const c=document.getElementById('fbEnvCv'),x=c.getCo
   [[19,14,6,1],[18,15,8,5],[19,20,6,1]].forEach(([a,b,w,h])=>r(a,b,w,h,'#c9584f'));r(20,16,4,3,'#a8443d');r(19,15,1,1,'#e07a70');
 }
 document.getElementById('fbEnvBtn').onclick=()=>{envOpen=!envOpen;envTouched=true;envMsg('');renderEnv();if(envOpen)setTimeout(()=>document.getElementById('gEnterIn').focus(),60);};
+document.getElementById('fbEnvX').onclick=()=>{envOpen=false;envTouched=true;envMsg('');renderEnv();};
 document.getElementById('fbSet').onclick=()=>{const r2=document.getElementById('gListedRow');r2.hidden=!r2.hidden;};
 function envMsg(t,ok){const m=document.getElementById('fbEnvMsg');if(!m)return;m.textContent=t||'';m.classList.toggle('ok',!!ok);}
 window.__envMsg=envMsg;
 function renderEnv(){drawEnvelope(envOpen);document.getElementById('fbEnvForm').hidden=!envOpen;document.getElementById('fbEnvBtn').setAttribute('aria-expanded',envOpen);
   const L=document.getElementById('fbLetters');L.innerHTML='';const n=incoming().length;
-  L.appendChild(el('span','elab',envOpen?'× schließen':'+ Freund hinzufügen'));if(n)L.appendChild(el('span','ebadge',String(n)));}
+  L.appendChild(el('span','elab','+ Freund hinzufügen'));document.getElementById('fbTools').hidden=envOpen;if(n)L.appendChild(el('span','ebadge',String(n)));}
 
 /* ---------- left page: polaroids on the twine, memory notes, requests ---------- */
 function polaroid(gd,i,mine){const d=mine?home:gd.data,id=mine?myId||'me':gd.id,b=photoBg(id);
