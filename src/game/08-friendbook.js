@@ -4,7 +4,7 @@
 // pocket to add or invite friends, and on the right page the selected friend's own scrapbook page.
 // All friend logic (usernames, requests, invite) is unchanged; only the art direction is new.
 const FB_Q=[['bday','Geburtstag']];
-let fbPage=null,fbTurn=false,envOpen=false;
+let fbPage=null,fbTurn=false,envOpen=false,envTouched=false;
 function agoTxt(t){if(!t)return '';const m=(Date.now()-t)/6e4,d=m/1440;if(m<15)return 'just now';if(m<60)return Math.round(m/5)*5+' min ago';if(m<24*60&&new Date(t).toDateString()===new Date().toDateString())return Math.floor(m/60)+(Math.floor(m/60)===1?' hour ago':' hours ago');
   if(d<2&&new Date(t).toDateString()===new Date(Date.now()-864e5).toDateString())return 'yesterday';if(d<30)return Math.max(1,Math.round(d))+' days ago';
   return new Date(t).toLocaleDateString(undefined,{day:'numeric',month:'short'});}
@@ -87,11 +87,13 @@ function drawEnvelope(open){const c=document.getElementById('fbEnvCv'),x=c.getCo
   // heart seal
   [[19,14,6,1],[18,15,8,5],[19,20,6,1]].forEach(([a,b,w,h])=>r(a,b,w,h,'#c9584f'));r(20,16,4,3,'#a8443d');r(19,15,1,1,'#e07a70');
 }
-document.getElementById('fbEnvBtn').onclick=()=>{envOpen=!envOpen;renderEnv();if(envOpen)setTimeout(()=>document.getElementById('gEnterIn').focus(),60);};
+document.getElementById('fbEnvBtn').onclick=()=>{envOpen=!envOpen;envTouched=true;envMsg('');renderEnv();if(envOpen)setTimeout(()=>document.getElementById('gEnterIn').focus(),60);};
 document.getElementById('fbSet').onclick=()=>{const r2=document.getElementById('gListedRow');r2.hidden=!r2.hidden;};
+function envMsg(t,ok){const m=document.getElementById('fbEnvMsg');if(!m)return;m.textContent=t||'';m.classList.toggle('ok',!!ok);}
+window.__envMsg=envMsg;
 function renderEnv(){drawEnvelope(envOpen);document.getElementById('fbEnvForm').hidden=!envOpen;document.getElementById('fbEnvBtn').setAttribute('aria-expanded',envOpen);
   const L=document.getElementById('fbLetters');L.innerHTML='';const n=incoming().length;
-  L.appendChild(el('span','elab',envOpen?'schließen':'hinzufügen'));if(n)L.appendChild(el('span','ebadge',String(n)));}
+  L.appendChild(el('span','elab',envOpen?'× schließen':'+ Freund hinzufügen'));if(n)L.appendChild(el('span','ebadge',String(n)));}
 
 /* ---------- left page: polaroids on the twine, memory notes, requests ---------- */
 function polaroid(gd,i,mine){const d=mine?home:gd.data,id=mine?myId||'me':gd.id,b=photoBg(id);
@@ -112,7 +114,7 @@ function renderGardens(keep){
   const inc=incoming();
   inc.forEach(gd=>{const r=el('div','areq');r.appendChild(avatarCv(gd.data.look,'fbav sm'));const tx=el('div','');tx.appendChild(el('b','',gd.data.name+' möchte deine Freund:in sein'));
       if(gd.data.handle)tx.appendChild(el('span','fh','@'+gd.data.handle));r.appendChild(tx);
-      const ok=el('button','fbtn red','Annehmen ♡');ok.type='button';ok.onclick=()=>{addFriend(gd.id);toast('Ihr seid jetzt Freunde ♥',2600);updateReqBadge();renderGardens(true);};
+      const ok=el('button','fbtn red','Annehmen');ok.type='button';ok.onclick=()=>{addFriend(gd.id);toast('Ihr seid jetzt Freunde.',2600);updateReqBadge();renderGardens(true);};
       const no=el('button','blink','später');no.type='button';no.onclick=()=>{home.fdecl=(home.fdecl||[]).concat([gd.id]).slice(-200);persist();updateReqBadge();renderGardens(true);};
       const bt=el('div','fbrb');bt.appendChild(ok);bt.appendChild(no);r.appendChild(bt);side.appendChild(r);});
   const q=(document.getElementById('gSearch').value||'').trim().toLowerCase().replace(/^@/,''),on=onlineIds();
@@ -122,14 +124,15 @@ function renderGardens(keep){
   const friends=all.filter(gd=>(isFriend(gd)||isPending(gd))&&match(gd)).sort(ord),others=all.filter(gd=>!isFriend(gd)&&!isPending(gd)&&match(gd)).sort(ord);
   const pols=[];let i=0;if(home&&!q)pols.push(polaroid(null,i++,true));friends.forEach(gd=>pols.push(polaroid(gd,i++)));
   if(pols.length){const g=el('div','apols');pols.forEach(n=>g.appendChild(n));box.appendChild(g);}
-  if(!friends.length)box.appendChild(note([['Noch keine Freunde hier.','b'],['Über den Umschlag oben fügst du jemanden per Benutzername hinzu.']],'plain',0));
+  const none=!friends.length&&!q;if(none&&!envTouched&&!envOpen){envOpen=true;renderEnv();}
+  document.getElementById('fbEnvForm').classList.toggle('first',none);
   if(others.length){box.appendChild(el('div','asec','andere Gärten'));const row=el('div','aothers');others.forEach(gd=>{const b=el('button','aoth');b.type='button';b.appendChild(avatarCv(gd.data.look,'fbav sm'));b.appendChild(el('span','',gd.data.name));b.onclick=()=>openFb(gd.id);row.appendChild(b);});box.appendChild(row);}
   renderFbPage();
 }
 function openFb(id){fbPage=id;fbTurn=true;renderGardens(true);if(innerWidth<=760)document.getElementById('fbR').scrollIntoView({block:'start',behavior:'smooth'});}
 function handleBox(){
   const box=el('form','aname');box.autocomplete='off';
-  box.appendChild(el('b','','Wähl deinen Benutzernamen ♡'));box.appendChild(el('span','fsmall','Damit finden dich deine Freunde. Ändern geht auf deiner Seite.'));
+  box.appendChild(el('b','','Wähl deinen Benutzernamen'));box.appendChild(el('span','fsmall','Damit finden dich deine Freunde. Ändern geht auf deiner Seite.'));
   const row=el('div','fbin');row.appendChild(el('span','at','@'));const i=el('input','inp');i.maxLength=15;i.value=suggestHandle();i.setAttribute('autocapitalize','none');i.spellcheck=false;row.appendChild(i);box.appendChild(row);
   const b=el('button','fbtn red','Speichern');b.type='submit';box.appendChild(b);const er=el('div','fberr');box.appendChild(er);
   box.onsubmit=e=>{e.preventDefault();const h=i.value.trim().replace(/^@/,'').toLowerCase(),m=handleError(h);if(m){er.textContent=m;return;}home.handle=h;persist();toast('Du bist jetzt @'+h,2200);renderGardens(true);};
@@ -143,10 +146,10 @@ function renderFbPage(){
   const box=document.getElementById('fbPageBox');box.innerHTML='';
   let sel=fbPage;if(!sel){const f=gardensList.find(g=>isFriend(g));sel=f?f.id:'me';}
   const own=sel==='me',gd=own?null:gardensList.find(x=>x.id===sel);
-  if(own&&!home||!own&&!gd){if(home)box.appendChild(el('div','empty','Wähl links jemanden aus ♡'));return;}
+  if(own&&!home||!own&&!gd){if(home)box.appendChild(el('div','empty','Wähl links jemanden aus.'));return;}
   const d=own?home:gd.data,id=own?(myId||'me'):gd.id,bg=photoBg(id),fb=d.fb||{};
   const pg=el('div','apage');box.appendChild(pg);
-  const back=el('button','fbback','← zum Album');back.type='button';back.onclick=()=>document.getElementById('fbL').scrollIntoView({block:'start',behavior:'smooth'});pg.appendChild(back);
+  const back=el('button','fbback','← zurück');back.type='button';back.onclick=()=>document.getElementById('fbL').scrollIntoView({block:'start',behavior:'smooth'});pg.appendChild(back);
   const hd=el('div','ahead');const h=el('h3','',own?'Meine Seite':d.name);hd.appendChild(h);
   if(d.handle)hd.appendChild(el('span','fh','@'+d.handle));pg.appendChild(hd);
   const ph=el('div','aphoto');const inner=el('div','ph');inner.style.backgroundColor=bg.c;inner.appendChild(avatarCv(d.look,'big'));ph.appendChild(inner);
@@ -162,14 +165,14 @@ function renderFbPage(){
     const tk=el('div','atix');const st=fbStatusDe(gd);
     const tick=(a,b,c)=>{const t=el('div','tix');t.appendChild(el('span','small',a));t.appendChild(el('b','',b));tk.appendChild(t);};
     if(home&&home.frT&&home.frT[gd.id])tick('Freunde seit',new Date(home.frT[gd.id]).toLocaleDateString('de-DE',{day:'numeric',month:'short'}),'pink');
-    if(st.t)tick(st.on?'gerade':'zuletzt da',st.on?'im Garten ♡':st.t,'blue');
+    if(st.t)tick(st.on?'gerade':'zuletzt da',st.on?'im Garten':st.t,'blue');
     const fc=fishCount(gd.id,()=>{if(gardensM.classList.contains('show'))renderFbPage();});if(fc)tick('Fische gefangen',fc+' 🐟','yellow');
     pg.appendChild(tk);
     const acts=el('div','aacts');const friend=isFriend(gd),pend=isPending(gd);
     const here=visiting&&visiting.id===gd.id,v=el('button','fbtn red',here?'du bist in diesem Garten':'✿ Garten besuchen');v.type='button';v.disabled=here;
     v.onclick=()=>{gardensM.classList.remove('show');fbPage=null;visit(gd);};acts.appendChild(v);
-    if(home&&!friend&&!pend){const inc=(d.fr||[]).includes(myId),a=el('button','fbtn blue',inc?'Anfrage annehmen ♡':'Freundschaftsanfrage ♡');a.type='button';
-      a.onclick=()=>{addFriend(gd.id);toast(inc?'Ihr seid jetzt Freunde ♥':'Anfrage an '+d.name+' geschickt.',2600);updateReqBadge();renderGardens(true);};acts.appendChild(a);}
+    if(home&&!friend&&!pend){const inc=(d.fr||[]).includes(myId),a=el('button','fbtn blue',inc?'Anfrage annehmen':'Freundschaftsanfrage');a.type='button';
+      a.onclick=()=>{addFriend(gd.id);toast(inc?'Ihr seid jetzt Freunde.':'Anfrage an '+d.name+' geschickt.',2600);updateReqBadge();renderGardens(true);};acts.appendChild(a);}
     else if(pend)acts.appendChild(el('span','fsmall','Anfrage gesendet, wartet auf '+d.name));
     else if(friend){const u=el('button','blink','Freundschaft beenden');u.type='button';u.onclick=()=>{if(!u.dataset.a){u.dataset.a=1;u.textContent='nochmal tippen zum Beenden';return;}home.fr=myFr().filter(x=>x!==gd.id);persist();renderGardens(true);};acts.appendChild(u);}
     pg.appendChild(acts);
@@ -178,13 +181,15 @@ function renderFbPage(){
     const f=el('form','afill');f.autocomplete='off';
     const field=(name,lab,val,max,ph)=>{const l=el('label','');l.appendChild(el('span','small',lab));const i=el('input','');i.name=name;i.maxLength=max;i.value=val||'';if(ph)i.placeholder=ph;l.appendChild(i);f.appendChild(l);return i;};
     const hi=field('handle','Benutzername',home.handle||suggestHandle(),15);hi.setAttribute('autocapitalize','none');hi.spellcheck=false;
-    FB_Q.forEach(([k,lab])=>field(k,lab,fb[k],40,k==='bday'?'z.B. 12.03.':''));
-    field('motto','Eine kleine Nachricht',fb.motto,40);
+    FB_Q.forEach(([k,lab])=>field(k,lab,fb[k],40,k==='bday'?'TT.MM.':''));
+    field('motto','Eine kleine Nachricht',fb.motto,40,'für deine Freunde');
     const er=el('div','fberr');f.appendChild(er);
-    const sv=el('button','fbtn red','Seite speichern ♡');sv.type='submit';f.appendChild(sv);
+    const sv=el('button','fbtn red','Speichern');sv.type='submit';sv.disabled=true;const done=el('span','fsaved','');
+    const row=el('div','fsrow');row.appendChild(sv);row.appendChild(done);f.appendChild(row);
+    f.oninput=()=>{sv.disabled=false;done.textContent='';er.textContent='';};
     f.onsubmit=e=>{e.preventDefault();const hh=f.elements.handle.value.trim().replace(/^@/,'').toLowerCase();if(hh!==home.handle){const m=handleError(hh);if(m){er.textContent=m;f.elements.handle.focus();return;}home.handle=hh;}
       const bd=f.elements.bday.value.trim();if(bd&&!/^\d{1,2}\.\d{1,2}\.?$/.test(bd)){er.textContent='Geburtstag bitte als TT.MM., z.B. 12.03.';return;}
-      const nfb={};FB_Q.concat([['motto']]).forEach(([k])=>{const v=nodot(f.elements[k].value.trim()).slice(0,40);if(v)nfb[k]=v;});home.fb=nfb;persist();toast('Gespeichert ♡ Deine Freunde können es jetzt lesen.',2400);renderGardens(true);};
+      const nfb={};FB_Q.concat([['motto']]).forEach(([k])=>{const v=nodot(f.elements[k].value.trim()).slice(0,40);if(v)nfb[k]=v;});home.fb=nfb;persist();renderGardens(true);const s2=document.querySelector('#fbPageBox .fsaved');if(s2)s2.textContent='✓ gespeichert';};
     pg.appendChild(f);
   }
   if(fbTurn){pg.classList.add('turn');fbTurn=false;}

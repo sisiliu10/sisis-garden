@@ -338,18 +338,19 @@ document.getElementById('gSearch').addEventListener('input',()=>renderGardens(tr
 // friendship = both sides have each other in their (public) fr list; adding someone is sending them a request
 function addFriend(id){if(!home||!id||id===myId)return;home.fr=home.fr||[];if(!home.fr.includes(id)){home.fr.push(id);home.frT=Object.assign({},home.frT,{[id]:Date.now()});home.fdecl=(home.fdecl||[]).filter(x=>x!==id);persist();}}
 // add a friend by username: sends a friend request (they accept it in their friend book)
-document.getElementById('gEnter').addEventListener('submit',e=>{e.preventDefault();const inp=document.getElementById('gEnterIn'),h=inp.value.trim().replace(/^@/,'').toLowerCase();if(!h)return;
-  if(!home){toast('Make your garden first.',2400);return;}
-  if(home.handle&&h===home.handle){toast('That is you 🙂',2400);return;}
+document.getElementById('gEnter').addEventListener('submit',e=>{e.preventDefault();const inp=document.getElementById('gEnterIn'),h=inp.value.trim().replace(/^@/,'').toLowerCase();const msg=window.__envMsg||(()=>{});if(!h){msg('Gib einen Benutzernamen ein.');inp.focus();return;}
+  if(!home){msg('Leg zuerst deinen Garten an.');return;}
+  if(home.handle&&h===home.handle){msg('Das bist du selbst.');return;}
   const gd=gardensList.find(x=>x.id!==myId&&x.data.handle===h);
-  if(!gd){toast('Nobody with the username @'+h+'. Check the spelling.',3000);return;}
+  if(!gd){msg('Niemand heißt @'+h+'. Tippfehler?');inp.select();return;}
+  if((home.fr||[]).includes(gd.id)){msg((gd.data.fr||[]).includes(myId)?gd.data.name+' ist schon dein:e Freund:in.':'Anfrage an '+gd.data.name+' ist schon unterwegs.');return;}
   const back=(gd.data.fr||[]).includes(myId);addFriend(gd.id);inp.value='';
-  toast(back?'You and '+gd.data.name+' are friends now ♥':'Friend request sent to '+gd.data.name+'.',2800);renderGardens(true);});
+  renderGardens(true);msg(back?'Ihr seid jetzt Freunde.':'Anfrage an '+gd.data.name+' geschickt.',true);});
 function isListed(){return !!home&&(home.listed===undefined?!!home.owner:!!home.listed);}
 const inviteUrl=()=>location.origin+location.pathname+'?g='+encodeURIComponent(myId||'');
 document.getElementById('gInvite').addEventListener('click',async()=>{if(!myId)return;const u=inviteUrl();
   try{if(navigator.share&&innerWidth<700){await navigator.share({title:"Come visit my garden",text:'Come visit my garden 🌱',url:u});return;}}catch(e){if(e&&e.name==='AbortError')return;}
-  try{await navigator.clipboard.writeText(u);toast('Invite link copied. Whoever opens it lands in your garden.',3000);}catch(e){window.prompt('Copy your invite link:',u);}});
+  try{await navigator.clipboard.writeText(u);(window.__envMsg||toast)('Link kopiert. Wer ihn öffnet, ist direkt mit dir befreundet.',true);}catch(e){window.prompt('Dein Einladungslink:',u);}});
 // invite links: ?g=<garden id> brings a friend straight into that garden and remembers it as a friend
 let inviteId='';try{inviteId=new URLSearchParams(location.search).get('g')||localStorage.getItem('garden-invite')||'';}catch(e){}
 function handleInvite(){
