@@ -53,20 +53,18 @@ sad = move(move(base, EARS, 0, 1), TAIL, 0, 2)
 sad = recolor(sad, [(x, y) for (x, y) in mouth if y == min(m[1] for m in mouth)], 'l')  # smile corners gone
 F['sad'] = sad
 F['sadb'] = move(sad, (0, 0, 19, 12), 0, 1)
-sl = recolor(recolor(base, eyes, 'o'), mouth, 'l')
-sl = move(sl, EARS, 0, 1)
-sl = move(sl, (0, 0, 19, 14), 0, 3)      # lie down: body sinks over the legs
-# close the belly with the sprite's own outline colour, so the lying dog does not look cut off by the floor or the rug
-row = sl[NY - 1]; cols = [x for x, c in enumerate(row) if c != '.']
-if cols:
-    for x in range(min(cols), max(cols) + 1): row[x] = 'o'
-for y in range(NY - 3, NY - 1):  # the rows just above it: fill gaps between the legs with the body colour
-    r = sl[y]; cols = [x for x, c in enumerate(r) if c != '.']
-    if cols:
-        for x in range(min(cols) + 1, max(cols)):
-            if r[x] == '.': r[x] = 'b'
+# lying down: the dog folds its legs (the middle leg rows go, the paws stay under the body),
+# closes its eyes (each eye becomes a short dark line) and closes its mouth (open part turns cream, the smile corners stay)
+sl = copy(base)
+for x, y in eyes:
+    sl[y][x] = 'o'
+    if sl[y][x + 1] in 'bm': sl[y][x + 1] = 'o'
+mrow = max(m[1] for m in mouth)
+for x, y in mouth:
+    if y == mrow: sl[y][x] = 'l'
+sl = [['.'] * W, ['.'] * W] + sl[:15] + [sl[17]]
 F['sleep'] = sl
-F['sleepb'] = move(sl, (0, 3, 19, 12), 0, 1)
+F['sleepb'] = move(sl, (0, 0, 19, 13), 0, 1)  # breathing while asleep: the whole upper body rises and falls together
 F['eat1'] = move(base, HEAD, 0, 1)
 F['eat2'] = move(base, HEAD, 0, 2)
 names = list(F)
