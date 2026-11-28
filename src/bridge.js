@@ -259,7 +259,8 @@
     async save(o) {
       if (!uid || !o || typeof o.c !== 'object') return false;
       const c = {}; for (const k in o.c) { const v = +o.c[k]; if (/^[a-z]{2,6}$/.test(k) && Number.isFinite(v) && v > 0) c[k] = Math.min(9999, Math.floor(v)); }
-      try { await setDoc('gardens/' + uid + '/x/fish', { c }); return true; } catch (e) { return false; }
+      const g = {}; if (o.g && typeof o.g === 'object') for (const k in o.g) { const v = +o.g[k]; if (c[k] && Number.isFinite(v) && v > 0) g[k] = Math.min(c[k], Math.floor(v)); }
+      try { await setDoc('gardens/' + uid + '/x/fish', { c, g }); return true; } catch (e) { return false; }
     },
   };
 
@@ -375,20 +376,28 @@
   const KEEPER = 'b813b566-08f0-40c8-b392-6cc38a770940';
   const inviteCode = () => { try { const v = localStorage.getItem('garden-invite') || ''; return /^[\w-]{6,64}$/.test(v) ? v : ''; } catch (e) { return ''; } };
   let sbUserEmail = '';
-  gForm.addEventListener('submit', async e => {
-    e.preventDefault();
-    const email = gEmail.value.trim(); if (!email) return;
-    gBtn.disabled = true; gMsg.textContent = 'Sending…';
+  // every new login email makes the one before it stop working, so we never send two within a minute
+  const SENT = 'garden-sent', WAIT = 60;
+  function setSent(email) { try { localStorage.setItem(SENT, JSON.stringify({ email: email.toLowerCase(), t: Date.now() })); } catch (e) {} }
+  function waitLeft(email) { try { const p = JSON.parse(localStorage.getItem(SENT) || 'null'); if (!p || p.email !== String(email).toLowerCase()) return 0; return Math.max(0, Math.ceil(WAIT - (Date.now() - p.t) / 1000)); } catch (e) { return 0; } }
+  async function sendMail(email) {
     // open to everyone: without a friend's invite link you come in as the garden keeper's guest and land in her garden
     const inv = inviteCode() || KEEPER;
     const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname, shouldCreateUser: true, data: { invite: inv } } });
-    gBtn.disabled = false;
     if (error && (/signups? not allowed|not allowed for otp|user not found|database error|invite/i.test(error.message || '') || error.code === 'otp_disabled' || error.code === 'signup_disabled' || error.code === 'unexpected_failure')) {
-      console.warn('[garden] invite only', error);
-      gMsg.textContent = 'That did not work. Please try again in a minute.';
-      return; }
-    if (error && /only request this (once|after)|seconds/i.test(error.message || '')) { setPending(email); askCode(email); gMsg.textContent = 'We just sent you a code. Type it here.'; return; }
-    if (error) { console.warn('[garden] login link', error); gMsg.textContent = (/rate|limit|too many/i.test(error.message || '') || error.status === 429) ? 'The garden has sent all its login emails for this hour. Please try again a little later.' : 'Hmm, the login email did not go out. Check the address and try again.'; return; }
+      console.warn('[garden] invite only', error); return 'That did not work. Please try again in a minute.'; }
+    if (error && /only request this (once|after)|seconds/i.test(error.message || '')) { setSent(email); return ''; }
+    if (error) { console.warn('[garden] login link', error); return (/rate|limit|too many/i.test(error.message || '') || error.status === 429) ? 'The garden has sent all its login emails for this hour. Please try again a little later.' : 'Hmm, the login email did not go out. Check the address and try again.'; }
+    setSent(email); return '';
+  }
+  gForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = gEmail.value.trim(); if (!email) return;
+    if (waitLeft(email)) { setPending(email); askCode(email); return; }
+    gBtn.disabled = true; gMsg.textContent = 'Sending…';
+    const bad = await sendMail(email);
+    gBtn.disabled = false;
+    if (bad) { gMsg.textContent = bad; return; }
     setPending(email); askCode(email);
   });
   /* ---------- code login: type the code where you play, so this device stays signed in ---------- */
@@ -398,9 +407,21 @@
   function getPending() { try { const p = JSON.parse(localStorage.getItem(PEND) || 'null'); return p && p.email && Date.now() - p.t < 3600000 ? p.email : ''; } catch (e) { return ''; } }
   function clearPending() { try { localStorage.removeItem(PEND); } catch (e) {} }
   let codeEmail = '';
-  function askCode(email) {
+  const gResend = $('gResend'); let resendT = 0;
+  function tickResend() {
+    clearTimeout(resendT); const left = waitLeft(codeEmail);
+    gResend.textContent = left ? 'New email in ' + left + 's' : 'Send a new email';
+    gResend.classList.toggle('off', !!left); if (left) resendT = setTimeout(tickResend, 1000);
+  }
+  gResend.addEventListener('click', async e => {
+    e.preventDefault(); if (waitLeft(codeEmail) || !codeEmail) return;
+    gMsg.textContent = 'Sending…'; const bad = await sendMail(codeEmail);
+    gMsg.textContent = bad || 'New email sent. Only the newest one works.'; tickResend();
+  });
+  function askCode(email, note) {
     codeEmail = email; gate.hidden = false; gForm.hidden = true; gCode.hidden = false;
-    gMsg.textContent = 'We sent a code to ' + email + '. Type it here.';
+    gMsg.textContent = note || ('We sent an email to ' + email + '. It can take a minute. Type the code from it here, or tap its button.');
+    tickResend();
     gTok.value = ''; setTimeout(() => { try { gTok.focus(); } catch (e) {} }, 50);
   }
   gBack.addEventListener('click', e => { e.preventDefault(); clearPending(); gCode.hidden = true; showGate('Sign in with your email.', true); });
@@ -477,6 +498,6 @@
     else if (s) { clearPending(); sbUserEmail = s.user.email || ''; launch(s); }
     else if (getTicket()) { showGate('Sign in in the window that opened. Then come back here.', true); watchTicket(); pickUp(); }
     else if (!/access_token|error_description/.test(location.hash)) { const pe = getPending(); if (pe) askCode(pe); else showGate('Sign in with your email.', true); }
-    else if (/error_description/.test(location.hash)) showGate('That login link has expired. Ask for a new one.', true);
+    else if (/error_description/.test(location.hash)) { const pe = getPending(); try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} if (pe) askCode(pe, 'That button no longer works, because a newer email replaced it or it was already used. Type the code from your newest email.'); else showGate('That login link no longer works. Only the newest email does. Ask for a new one.', true); }
   });
 })();
