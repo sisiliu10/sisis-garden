@@ -251,7 +251,7 @@ function maybeAutoVisit(){
     db.collection('gardens').limit(60).onSnapshot(snap=>{
       gardensList=snap.docs.filter(x=>x.exists).map(x=>({id:x.id,data:cleanGarden(x.data())})).filter(x=>x.data);
       if(OWNER_ID!=='__none__')gardensList.forEach(x=>{x.data.owner=x.id===OWNER_ID;});
-      handleInvite();
+      handleInvite();updateReqBadge();
       if(visiting){const v=gardensList.find(x=>x.id===visiting.id);if(v){visiting.data=v.data;rebuildLabels();refreshChrome();}}
       if(gardensM.classList.contains('show')) renderGardens();
       maybeAutoVisit();

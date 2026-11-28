@@ -290,7 +290,7 @@ mapM.querySelector('#mapClose').onclick=()=>mapM.classList.remove('show');
 mapM.addEventListener('click',e=>{if(e.target===mapM)mapM.classList.remove('show');});
 let mapTimer=null;
 function openMap(){mapM.classList.add('show');renderMap();if(Date.now()-isleLoaded>30000)loadIsle();clearInterval(mapTimer);mapTimer=setInterval(()=>{if(!mapM.classList.contains('show')){clearInterval(mapTimer);return;}renderMap(true);},2000);}
-function mapGardens(){const fr=(home&&home.friends)||[];
+function mapGardens(){const fr=(home&&home.fr)||[];
   const all=myId&&home&&!gardensList.some(gd=>gd.id===myId)?gardensList.concat([{id:myId,data:home}]):gardensList;
   return all.filter(gd=>gd.id===myId||gd.data.owner||gd.data.listed||fr.includes(gd.id)||(visiting&&visiting.id===gd.id))
     .sort((a,b)=>(b.data.owner-a.data.owner)||((b.id===myId)-(a.id===myId))||a.data.name.localeCompare(b.data.name));}

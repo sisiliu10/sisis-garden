@@ -180,10 +180,10 @@
     <div class="lead" id="fbLead">Everyone you garden with. Tap someone to open their page.</div>
     <input class="inp" id="gSearch" placeholder="Search by name…" maxlength="20" style="margin:10px 0 0;width:100%" hidden>
     <div class="glist" id="glist"></div>
-    <div class="dsec">ENTER A FRIEND'S GARDEN</div>
-    <form id="gEnter" autocomplete="off" style="display:flex;gap:8px"><input class="inp" id="gEnterIn" maxlength="300" placeholder="Paste their invite link" style="flex:1;min-width:0;margin:0"><button class="btn dark" type="submit">Visit</button></form>
-    <div class="dsec">INVITE A FRIEND</div>
-    <div class="lead">Send your link. Whoever opens it lands in your garden and can start their own.</div>
+    <div class="dsec">ADD A FRIEND</div>
+    <form id="gEnter" autocomplete="off" class="fbadd"><span class="at">@</span><input class="inp" id="gEnterIn" maxlength="16" placeholder="their username" autocapitalize="none" autocorrect="off" spellcheck="false"><button class="btn dark" type="submit">Send request</button></form>
+    <div class="dsec">INVITE SOMEONE NEW</div>
+    <div class="lead">Not playing yet? New accounts start with your invite link. Once they are in, you are friends.</div>
     <button class="btn dark" type="button" id="gInvite" style="margin-top:8px">Copy my invite link</button>
     <label class="chk" id="gListedRow" style="margin-top:10px"><input type="checkbox" id="gListed"> Everyone here can find my garden</label>
     <div class="pfoot"><span></span><button class="btn" id="gClose">Close</button></div>

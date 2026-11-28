@@ -621,6 +621,21 @@
 .fbform{display:flex;flex-direction:column;gap:9px;margin-top:14px}
 .fbq{display:flex;flex-direction:column;gap:3px}.fbq span{font-family:Silkscreen,monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#8b8490}
 .fbq .inp{margin:0;width:100%}
+.fbadd{display:flex;gap:8px;align-items:center}.fbadd .inp{flex:1;min-width:0;margin:0}
+.fbadd .at{font-family:Silkscreen,monospace;font-size:16px;color:var(--muted)}
+.fh{font-family:Silkscreen,monospace;font-size:10px;letter-spacing:.5px;color:#8e6cc8;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fbht .fh{margin-top:1px}
+.fbname{margin-top:12px;padding:12px;background:#fff6d8;border:2px solid var(--ink);display:flex;flex-direction:column;gap:6px}
+.fbnt{font-weight:700;font-size:16px}.fbname .fs{text-align:left}
+.fberr{color:#c8344c;font-size:13px;min-height:0}
+.fbreq{display:flex;align-items:center;gap:10px;padding:8px 10px;background:#fff;border:2px solid var(--ink);margin-top:6px}
+.fbreq .fbrt{flex:1;min-width:0;display:flex;flex-direction:column}.fbreq .fbrt .fs{text-align:left}
+.fbreq .btn{padding:5px 9px;font-size:13px}
+.fbav.sm{width:26px;height:39px}
+.fbt.pend{opacity:.7;border-style:dashed}
+#gardens .dsec{margin-top:16px}
+#bGardens{position:relative}
+#bGardens.req::after{content:attr(data-n);position:absolute;top:-7px;right:-7px;min-width:16px;height:16px;padding:0 3px;box-sizing:border-box;background:#e8506c;color:#fff;font-size:11px;line-height:16px;text-align:center;border:2px solid var(--ink)}
 </style>
 </head>
 <body>
@@ -787,10 +802,10 @@
     <div class="lead" id="fbLead">Everyone you garden with. Tap someone to open their page.</div>
     <input class="inp" id="gSearch" placeholder="Search by name…" maxlength="20" style="margin:10px 0 0;width:100%" hidden>
     <div class="glist" id="glist"></div>
-    <div class="dsec">ENTER A FRIEND'S GARDEN</div>
-    <form id="gEnter" autocomplete="off" style="display:flex;gap:8px"><input class="inp" id="gEnterIn" maxlength="300" placeholder="Paste their invite link" style="flex:1;min-width:0;margin:0"><button class="btn dark" type="submit">Visit</button></form>
-    <div class="dsec">INVITE A FRIEND</div>
-    <div class="lead">Send your link. Whoever opens it lands in your garden and can start their own.</div>
+    <div class="dsec">ADD A FRIEND</div>
+    <form id="gEnter" autocomplete="off" class="fbadd"><span class="at">@</span><input class="inp" id="gEnterIn" maxlength="16" placeholder="their username" autocapitalize="none" autocorrect="off" spellcheck="false"><button class="btn dark" type="submit">Send request</button></form>
+    <div class="dsec">INVITE SOMEONE NEW</div>
+    <div class="lead">Not playing yet? New accounts start with your invite link. Once they are in, you are friends.</div>
     <button class="btn dark" type="button" id="gInvite" style="margin-top:8px">Copy my invite link</button>
     <label class="chk" id="gListedRow" style="margin-top:10px"><input type="checkbox" id="gListed"> Everyone here can find my garden</label>
     <div class="pfoot"><span></span><button class="btn" id="gClose">Close</button></div>
@@ -898,7 +913,7 @@ function cleanGarden(g){
   rawS.slice(0,BED_SLOTS.length).forEach((p,i)=>{const c=cleanProject(p,i,true);if(!c)return;
     if(used2.has(c.slot)){for(let s=0;s<BED_SLOTS.length;s++)if(!used2.has(s)){c.slot=s;break;}}
     used2.add(c.slot);skills.push(c);});
-  return {v:2,name:str(g.name,14)||'Someone',look:cleanLook(g.look),projects,skills,saved:num(g.saved,0),owner:!!g.owner,cat:!!g.cat,sb:g.sb!==false,listed:g.listed===undefined?!!g.owner:!!g.listed,friends:Array.isArray(g.friends)?g.friends.filter(x=>typeof x==='string'&&x.length<64).slice(0,100):[],nb:Array.isArray(g.nb)?g.nb.filter(x=>x&&/^https:\/\//.test(x.u||'')).slice(0,10).map(x=>({n:str(x.n,30)||'Friend',u:str(x.u,300)})):[],created:g.created!==false,hs:!!g.hs,since:num(g.since,0),fb:(g.fb&&typeof g.fb==='object')?Object.fromEntries(['food','hobby','like','dream','motto'].filter(k=>typeof g.fb[k]==='string'&&g.fb[k].trim()).map(k=>[k,nodot(str(g.fb[k],40))])):{},ask:(g.ask&&typeof g.ask==='object')?Object.fromEntries(Object.entries(g.ask).slice(0,40).map(([k,v])=>[str(k,24),num(v,0)])):{},askDay:str(g.askDay,12),ai:!!g.ai,aiDay:str(g.aiDay,12),
+  return {v:2,name:str(g.name,14)||'Someone',look:cleanLook(g.look),projects,skills,saved:num(g.saved,0),owner:!!g.owner,cat:!!g.cat,sb:g.sb!==false,listed:g.listed===undefined?!!g.owner:!!g.listed,friends:Array.isArray(g.friends)?g.friends.filter(x=>typeof x==='string'&&x.length<64).slice(0,100):[],nb:Array.isArray(g.nb)?g.nb.filter(x=>x&&/^https:\/\//.test(x.u||'')).slice(0,10).map(x=>({n:str(x.n,30)||'Friend',u:str(x.u,300)})):[],created:g.created!==false,hs:!!g.hs,since:num(g.since,0),inv:/^[\w-]{1,64}$/.test(String(g.inv||''))?String(g.inv):'',handle:/^[a-z0-9_]{3,15}$/.test(String(g.handle||''))?String(g.handle):'',fr:(Array.isArray(g.fr)?g.fr:Array.isArray(g.friends)?g.friends:[]).filter(x=>typeof x==='string'&&/^[\w-]{1,64}$/.test(x)).slice(0,200),fdecl:Array.isArray(g.fdecl)?g.fdecl.filter(x=>typeof x==='string'&&x.length<64).slice(0,200):[],fb:(g.fb&&typeof g.fb==='object')?Object.fromEntries(['food','hobby','like','dream','motto'].filter(k=>typeof g.fb[k]==='string'&&g.fb[k].trim()).map(k=>[k,nodot(str(g.fb[k],40))])):{},ask:(g.ask&&typeof g.ask==='object')?Object.fromEntries(Object.entries(g.ask).slice(0,40).map(([k,v])=>[str(k,24),num(v,0)])):{},askDay:str(g.askDay,12),ai:!!g.ai,aiDay:str(g.aiDay,12),
     aiRep:(g.aiRep&&typeof g.aiRep==='object'&&g.aiRep.lines&&typeof g.aiRep.lines==='object')?{d:str(g.aiRep.d,12),lines:Object.fromEntries(Object.entries(g.aiRep.lines).slice(0,8).map(([k,v])=>[str(k,24),str(v,140)]))}:null,
     od:(g.od&&typeof g.od==='object')?Object.fromEntries(Object.entries(g.od).slice(0,20).map(([k,v])=>[str(k,24),str(v,12)])):{},
     on:Array.isArray(g.on)?g.on.filter(x=>x&&typeof x.text==='string').slice(-8).map(x=>Object.assign({id:str(x.id,24),pid:str(x.pid,24),code:str(x.code,14),d:str(x.d,12),st:['new','done','gone'].includes(x.st)?x.st:'gone',text:str(x.text,60)},x.ai?{ai:true}:{})):[],
@@ -982,7 +997,7 @@ const pubRef=()=>(db&&myId&&canWrite!==false)?db.doc('gardens/'+myId):null;
 const writePriv=makeWriter(privRef,()=>JSON.parse(JSON.stringify(home)));
 const open_=a=>(a||[]).filter(x=>!x.lk);
 function sharedPart(obj){const out={};home.projects.concat(home.skills||[]).forEach(p=>{if(p.vis!==false&&!p.lk&&obj&&obj[p.id])out[p.id]=obj[p.id];});return out;}
-const writePub=makeWriter(pubRef,()=>({v:2,name:home.name,look:home.look,listed:isListed(),owner:isOwner,saved:home.saved,since:home.since||0,fb:home.fb||{},projects:open_(home.projects),skills:open_(home.skills),notes:sharedPart(home.notes),logs:sharedPart(home.logs),todos:(home.todos||[]).slice(0,10).map(td=>({id:td.id,text:'private',t:td.t||0,k:tdKind(td),c:tdCi(td)})),compost:open_(home.compost).map(c=>({id:c.id,code:c.code,name:c.name,sub:c.sub,bed:c.bed,kind:c.kind,ct:c.ct})),sb:home.sb!==false}));
+const writePub=makeWriter(pubRef,()=>({v:2,name:home.name,look:home.look,listed:isListed(),owner:isOwner,saved:home.saved,since:home.since||0,fb:home.fb||{},handle:home.handle||'',fr:home.fr||[],inv:home.inv||'',projects:open_(home.projects),skills:open_(home.skills),notes:sharedPart(home.notes),logs:sharedPart(home.logs),todos:(home.todos||[]).slice(0,10).map(td=>({id:td.id,text:'private',t:td.t||0,k:tdKind(td),c:tdCi(td)})),compost:open_(home.compost).map(c=>({id:c.id,code:c.code,name:c.name,sub:c.sub,bed:c.bed,kind:c.kind,ct:c.ct})),sb:home.sb!==false}));
 const pubBooksRef=()=>(db&&myId&&canWrite!==false)?db.doc('gardens/'+myId+'/x/books'):null;
 const writePubBooks=makeWriter(pubBooksRef,()=>({saved:Date.now(),list:(home&&home.sb!==false&&books)?books.list.slice(0,400):[]}));
 let pTimer=null;
@@ -3595,7 +3610,7 @@ mapM.querySelector('#mapClose').onclick=()=>mapM.classList.remove('show');
 mapM.addEventListener('click',e=>{if(e.target===mapM)mapM.classList.remove('show');});
 let mapTimer=null;
 function openMap(){mapM.classList.add('show');renderMap();if(Date.now()-isleLoaded>30000)loadIsle();clearInterval(mapTimer);mapTimer=setInterval(()=>{if(!mapM.classList.contains('show')){clearInterval(mapTimer);return;}renderMap(true);},2000);}
-function mapGardens(){const fr=(home&&home.friends)||[];
+function mapGardens(){const fr=(home&&home.fr)||[];
   const all=myId&&home&&!gardensList.some(gd=>gd.id===myId)?gardensList.concat([{id:myId,data:home}]):gardensList;
   return all.filter(gd=>gd.id===myId||gd.data.owner||gd.data.listed||fr.includes(gd.id)||(visiting&&visiting.id===gd.id))
     .sort((a,b)=>(b.data.owner-a.data.owner)||((b.id===myId)-(a.id===myId))||a.data.name.localeCompare(b.data.name));}
@@ -3956,15 +3971,16 @@ document.getElementById('nbAdd').addEventListener('submit',e=>{e.preventDefault(
 document.getElementById('gSB').addEventListener('change',e=>{if(!home)return;home.sb=e.target.checked;persist();writePubBooks();});
 document.getElementById('gListed').addEventListener('change',e=>{if(!home)return;home.listed=e.target.checked;persist();toast(home.listed?'Your garden is now in the list for everyone.':'Your garden is hidden from the list. Friends with your invite link can still visit.',3200);});
 document.getElementById('gSearch').addEventListener('input',()=>renderGardens(true));
-function addFriend(id){if(!home)return;home.friends=home.friends||[];if(!home.friends.includes(id)){home.friends.push(id);persist();}}
-// enter a friend's garden by pasting their invite link (or just the code at its end)
-document.getElementById('gEnter').addEventListener('submit',e=>{e.preventDefault();const inp=document.getElementById('gEnterIn'),raw=inp.value.trim();if(!raw)return;
-  let id='';const m=raw.match(/[?&]g=([\w-]{6,64})/);if(m)id=m[1];else if(/^[\w-]{6,64}$/.test(raw))id=raw;
-  if(id&&id===myId){toast('That is your own link 🙂',2400);return;}
-  const gd=id&&gardensList.find(x=>x.id===id);
-  if(!gd){toast(id?'No garden found for this link. Ask your friend to send it again.':'That does not look like an invite link.',3200);return;}
-  addFriend(gd.id);
-  inp.value='';gardensM.classList.remove('show');visit(gd);toast('Welcome to '+gd.data.name+"'s garden 🌱",3000);});
+// friendship = both sides have each other in their (public) fr list; adding someone is sending them a request
+function addFriend(id){if(!home||!id||id===myId)return;home.fr=home.fr||[];if(!home.fr.includes(id)){home.fr.push(id);home.fdecl=(home.fdecl||[]).filter(x=>x!==id);persist();}}
+// add a friend by username: sends a friend request (they accept it in their friend book)
+document.getElementById('gEnter').addEventListener('submit',e=>{e.preventDefault();const inp=document.getElementById('gEnterIn'),h=inp.value.trim().replace(/^@/,'').toLowerCase();if(!h)return;
+  if(!home){toast('Make your garden first.',2400);return;}
+  if(home.handle&&h===home.handle){toast('That is you 🙂',2400);return;}
+  const gd=gardensList.find(x=>x.id!==myId&&x.data.handle===h);
+  if(!gd){toast('Nobody with the username @'+h+'. Check the spelling.',3000);return;}
+  const back=(gd.data.fr||[]).includes(myId);addFriend(gd.id);inp.value='';
+  toast(back?'You and '+gd.data.name+' are friends now ♥':'Friend request sent to '+gd.data.name+'.',2800);renderGardens(true);});
 function isListed(){return !!home&&(home.listed===undefined?!!home.owner:!!home.listed);}
 const inviteUrl=()=>location.origin+location.pathname+'?g='+encodeURIComponent(myId||'');
 document.getElementById('gInvite').addEventListener('click',async()=>{if(!myId)return;const u=inviteUrl();
@@ -3975,7 +3991,7 @@ let inviteId='';try{inviteId=new URLSearchParams(location.search).get('g')||loca
 function handleInvite(){
   if(!inviteId||!myId||stayHome)return false; if(inviteId===myId){inviteId='';try{localStorage.removeItem('garden-invite');}catch(e){}return false;}
   const gd=gardensList.find(x=>x.id===inviteId); if(!gd)return false;
-  addFriend(gd.id);
+  if(home&&!home.inv){home.inv=gd.id;}addFriend(gd.id);
   inviteId='';try{localStorage.removeItem('garden-invite');history.replaceState(null,'',location.pathname+location.hash);}catch(e){}
   ownerVisited=true;visiting={id:gd.id,data:gd.data};visBooksFor=null;if(started)enterGarden();toast('Welcome to '+gd.data.name+"'s garden 🌱",3000);return true;
 }
@@ -4009,10 +4025,35 @@ function agoTxt(t){if(!t)return '';const d=(Date.now()-t)/864e5;if(d<1/24)return
   return new Date(t).toLocaleDateString(undefined,{day:'numeric',month:'short'});}
 function avatarCv(look,cls){const c=document.createElement('canvas');c.width=20;c.height=30;c.className=cls||'fbav';const keep=X;
   try{X=c.getContext('2d');drawAvatar(X,10,28,look,{shadow:false,t:0});}catch(e){}finally{X=keep;}return c;}
-function fbVisible(){const fr=(home&&home.friends)||[];
-  return gardensList.filter(gd=>gd.id!==myId&&(gd.data.owner||gd.data.listed||fr.includes(gd.id)||(visiting&&visiting.id===gd.id)));}
+// friends: both sides have each other in fr. a request: they have me, I don't have them (and I did not decline)
+function myFr(){return (home&&home.fr)||[];}
+function isFriend(gd){return myFr().includes(gd.id)&&(gd.data.fr||[]).includes(myId);}
+function isPending(gd){return myFr().includes(gd.id)&&!(gd.data.fr||[]).includes(myId);}
+function incoming(){if(!home||!myId)return [];const dec=home.fdecl||[];
+  return gardensList.filter(gd=>gd.id!==myId&&(gd.data.fr||[]).includes(myId)&&!myFr().includes(gd.id)&&!dec.includes(gd.id));}
+// someone who joined through my invite link is my friend straight away
+function autoAccept(){if(!home||!myId)return;incoming().filter(gd=>gd.data.inv===myId).forEach(gd=>addFriend(gd.id));}
+function updateReqBadge(){autoAccept();const n=incoming().length,b=document.getElementById('bGardens');b.classList.toggle('req',n>0);b.dataset.n=n||'';
+  if(gardensM.classList.contains('show')&&!fbPage)renderGardens(true);}
+function fbVisible(){const fr=myFr();
+  return gardensList.filter(gd=>gd.id!==myId&&(gd.data.owner||gd.data.listed||fr.includes(gd.id)||(gd.data.fr||[]).includes(myId)||(visiting&&visiting.id===gd.id)));}
 function fbStatus(gd){if(onlineIds().has(gd.id))return {on:true,t:'here now'};return {on:false,t:gd.data.saved?'last around '+agoTxt(gd.data.saved):''};}
 function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;}
+function handleTaken(h){return gardensList.some(gd=>gd.id!==myId&&gd.data.handle===h);}
+function handleError(h){if(!/^[a-z0-9_]{3,15}$/.test(h))return 'Use 3 to 15 letters, numbers or _';if(handleTaken(h))return '@'+h+' is taken';return '';}
+function suggestHandle(){const b=(home&&home.name||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9_]/g,'').slice(0,12)||'gardener';
+  let h=b.length<3?b+'_gr':b,i=1;while(handleTaken(h)&&i<99){h=(b+i).slice(0,15);i++;}return h;}
+function handleBox(){
+  const box=el('form','fbname');box.autocomplete='off';
+  box.appendChild(el('div','fbnt','Pick your username'));box.appendChild(el('div','fs','Friends add you with it. You can change it later on your page.'));
+  const row=el('div','fbadd');row.appendChild(el('span','at','@'));const i=el('input','inp');i.maxLength=15;i.value=suggestHandle();i.setAttribute('autocapitalize','none');i.spellcheck=false;row.appendChild(i);
+  const b=el('button','btn dark','Save');b.type='submit';row.appendChild(b);box.appendChild(row);const er=el('div','fberr');box.appendChild(er);
+  box.onsubmit=e=>{e.preventDefault();const h=i.value.trim().replace(/^@/,'').toLowerCase(),m=handleError(h);if(m){er.textContent=m;return;}home.handle=h;persist();toast('You are @'+h+' now.',2200);renderGardens(true);};
+  return box;}
+function tile(gd,extra){const t=el('button','fbt');t.type='button';t.appendChild(avatarCv(gd.data.look));t.appendChild(el('b','',gd.data.name));
+  if(gd.data.handle)t.appendChild(el('span','fh','@'+gd.data.handle));
+  const st=fbStatus(gd),s=el('span','fs'+(st.on?' on':''),extra||st.t);t.appendChild(s);
+  t.onclick=()=>{fbPage=gd.id;renderGardens(true);};return t;}
 function renderGardens(keep){
   if(!keep)renderNeighbours();
   const panel=document.querySelector('#gardens .panel'),box=document.getElementById('glist');box.innerHTML='';
@@ -4020,19 +4061,31 @@ function renderGardens(keep){
   document.getElementById('fbLead').hidden=!!fbPage;
   if(fbPage){document.getElementById('gSearch').hidden=true;renderFbPage(box);return;}
   if(!db){box.appendChild(el('div','empty','Gardens sync once you are signed in.'));return;}
-  const q=(document.getElementById('gSearch').value||'').trim().toLowerCase(),fr=(home&&home.friends)||[],on=onlineIds();
-  const all=fbVisible();document.getElementById('gSearch').hidden=all.length<6&&!q;
-  const list=all.filter(gd=>!q||gd.data.name.toLowerCase().includes(q))
-    .sort((a,b)=>(on.has(b.id)-on.has(a.id))||(fr.includes(b.id)-fr.includes(a.id))||((b.data.saved||0)-(a.data.saved||0)));
+  if(home&&!home.handle)box.appendChild(handleBox());
+  // friend requests first
+  const inc=incoming();
+  if(inc.length){box.appendChild(el('div','dsec','FRIEND REQUESTS'));
+    inc.forEach(gd=>{const r=el('div','fbreq');r.appendChild(avatarCv(gd.data.look,'fbav sm'));const tx=el('div','fbrt');tx.appendChild(el('b','',gd.data.name));
+      tx.appendChild(el('span','fs',(gd.data.handle?'@'+gd.data.handle+' ':'')+'wants to be friends'));r.appendChild(tx);
+      const ok=el('button','btn dark','Accept');ok.type='button';ok.onclick=()=>{addFriend(gd.id);toast('You and '+gd.data.name+' are friends now ♥',2600);updateReqBadge();renderGardens(true);};
+      const no=el('button','btn','Not now');no.type='button';no.onclick=()=>{home.fdecl=(home.fdecl||[]).concat([gd.id]).slice(-200);persist();updateReqBadge();renderGardens(true);};
+      r.appendChild(ok);r.appendChild(no);box.appendChild(r);});}
+  const q=(document.getElementById('gSearch').value||'').trim().toLowerCase().replace(/^@/,''),on=onlineIds();
+  const all=fbVisible().filter(gd=>!inc.includes(gd));document.getElementById('gSearch').hidden=all.length<6&&!q;
+  const match=gd=>!q||gd.data.name.toLowerCase().includes(q)||(gd.data.handle||'').includes(q);
+  const ord=(a,b)=>(on.has(b.id)-on.has(a.id))||((b.data.saved||0)-(a.data.saved||0));
+  const friends=all.filter(gd=>isFriend(gd)&&match(gd)).sort(ord),pend=all.filter(gd=>isPending(gd)&&match(gd)).sort(ord),
+        others=all.filter(gd=>!isFriend(gd)&&!isPending(gd)&&match(gd)).sort(ord);
+  box.appendChild(el('div','dsec','FRIENDS'));
   const grid=el('div','fbgrid');box.appendChild(grid);
   if(home&&!q){const me=el('button','fbt me');me.type='button';me.appendChild(avatarCv(home.look));me.appendChild(el('b','',home.name||'You'));
+    if(home.handle)me.appendChild(el('span','fh','@'+home.handle));
     const filled=FB_Q.some(([k])=>home.fb&&home.fb[k]);me.appendChild(el('span','fs',filled?'your page':'fill in your page'));
     me.onclick=()=>{fbPage='me';renderGardens(true);};grid.appendChild(me);}
-  list.forEach(gd=>{const t=el('button','fbt');t.type='button';t.appendChild(avatarCv(gd.data.look));
-    t.appendChild(el('b','',gd.data.name));
-    const st=fbStatus(gd),s=el('span','fs'+(st.on?' on':''),st.t);if(fr.includes(gd.id))s.appendChild(el('span','hrt','♥'));t.appendChild(s);
-    t.onclick=()=>{fbPage=gd.id;renderGardens(true);};grid.appendChild(t);});
-  if(!list.length)box.appendChild(el('div','empty',q?'Nobody with that name. Paste their invite link below.':'No friends here yet. Paste a friend’s invite link below, or send them yours.'));
+  friends.forEach(gd=>grid.appendChild(tile(gd)));
+  pend.forEach(gd=>{const t=tile(gd,'request sent');t.classList.add('pend');grid.appendChild(t);});
+  if(!friends.length&&!pend.length)box.appendChild(el('div','empty',q?'Nobody with that name.':'No friends yet. Add someone by their username below.'));
+  if(others.length){box.appendChild(el('div','dsec','OTHER GARDENS'));const g2=el('div','fbgrid');others.forEach(gd=>g2.appendChild(tile(gd)));box.appendChild(g2);}
 }
 function renderFbPage(box){
   const back=el('button','fbback','← Friend book');back.type='button';back.onclick=()=>{fbPage=null;renderGardens(true);};box.appendChild(back);
@@ -4042,14 +4095,16 @@ function renderFbPage(box){
     const hd=el('div','fbhd');hd.appendChild(avatarCv(home.look,'fbbig'));const ht=el('div','fbht');ht.appendChild(el('h3','',home.name||'You'));
     ht.appendChild(el('div','fs','Your page. Friends see these answers in their friend book.'));hd.appendChild(ht);pg.appendChild(hd);
     const f=el('form','fbform');f.autocomplete='off';
+    {const l=el('label','fbq');l.appendChild(el('span','','Username'));const i=el('input','inp');i.name='handle';i.maxLength=15;i.value=home.handle||suggestHandle();i.setAttribute('autocapitalize','none');i.spellcheck=false;l.appendChild(i);f.appendChild(l);}
+    const er=el('div','fberr');
     FB_Q.forEach(([k,lab])=>{const l=el('label','fbq');l.appendChild(el('span','',lab));const i=el('input','inp');i.name=k;i.maxLength=40;i.value=(home.fb&&home.fb[k])||'';l.appendChild(i);f.appendChild(l);});
     const sv=el('button','btn dark','Save my page');sv.type='submit';f.appendChild(sv);
-    f.onsubmit=e=>{e.preventDefault();const fb={};FB_Q.forEach(([k])=>{const v=nodot(f.elements[k].value.trim()).slice(0,40);if(v)fb[k]=v;});home.fb=fb;persist();toast('Saved. Your friends can read it now.',2200);fbPage=null;renderGardens(true);};
-    pg.appendChild(f);return;}
+    f.onsubmit=e=>{e.preventDefault();const h=f.elements.handle.value.trim().replace(/^@/,'').toLowerCase();if(h!==home.handle){const m=handleError(h);if(m){er.textContent=m;f.elements.handle.focus();return;}home.handle=h;}const fb={};FB_Q.forEach(([k])=>{const v=nodot(f.elements[k].value.trim()).slice(0,40);if(v)fb[k]=v;});home.fb=fb;persist();toast('Saved. Your friends can read it now.',2200);fbPage=null;renderGardens(true);};
+    f.insertBefore(er,sv);pg.appendChild(f);return;}
   const gd=gardensList.find(x=>x.id===fbPage);if(!gd){fbPage=null;renderGardens(true);return;}
-  const d=gd.data,fr=(home&&home.friends)||[],st=fbStatus(gd);
+  const d=gd.data,st=fbStatus(gd),friend=isFriend(gd),pend=isPending(gd);
   const hd=el('div','fbhd');hd.appendChild(avatarCv(d.look,'fbbig'));const ht=el('div','fbht');
-  const h=el('h3','',d.name);if(fr.includes(gd.id))h.appendChild(el('span','hrt','♥'));ht.appendChild(h);
+  const h=el('h3','',d.name);if(friend)h.appendChild(el('span','hrt','♥'));ht.appendChild(h);if(d.handle)ht.appendChild(el('div','fh','@'+d.handle));
   if(st.t)ht.appendChild(el('div','fs'+(st.on?' on':''),st.t));
   if(d.since)ht.appendChild(el('div','fs','gardening since '+new Date(d.since).toLocaleDateString(undefined,{month:'long',year:'numeric'})));
   hd.appendChild(ht);pg.appendChild(hd);
@@ -4061,7 +4116,11 @@ function renderFbPage(box){
   const acts=el('div','fbacts');
   const here=visiting&&visiting.id===gd.id,v=el('button','btn dark',here?'You are here':'Visit '+d.name+'’s garden');v.type='button';v.disabled=here;
   v.onclick=()=>{gardensM.classList.remove('show');fbPage=null;visit(gd);};acts.appendChild(v);
-  if(home&&!fr.includes(gd.id)){const a=el('button','btn','Add to my friends ♥');a.type='button';a.onclick=()=>{addFriend(gd.id);renderGardens(true);};acts.appendChild(a);}
+  if(home&&!friend&&!pend){const inc=(d.fr||[]).includes(myId),a=el('button','btn',inc?'Accept friend request':'Send friend request');a.type='button';
+    a.onclick=()=>{addFriend(gd.id);toast(inc?'You and '+d.name+' are friends now ♥':'Friend request sent to '+d.name+'.',2600);updateReqBadge();renderGardens(true);};acts.appendChild(a);}
+  else if(pend)acts.appendChild(el('span','fs','Request sent, waiting for '+d.name));
+  else if(friend){const u=el('button','fbback','Remove friend');u.type='button';u.onclick=()=>{if(!u.dataset.a){u.dataset.a=1;u.textContent='Tap again to remove';return;}
+    home.fr=myFr().filter(x=>x!==gd.id);persist();renderGardens(true);};acts.appendChild(u);}
   pg.appendChild(acts);
 }
 /* ================= one shared audio context, woken up by every tap ================= */
@@ -5530,7 +5589,7 @@ function maybeAutoVisit(){
     db.collection('gardens').limit(60).onSnapshot(snap=>{
       gardensList=snap.docs.filter(x=>x.exists).map(x=>({id:x.id,data:cleanGarden(x.data())})).filter(x=>x.data);
       if(OWNER_ID!=='__none__')gardensList.forEach(x=>{x.data.owner=x.id===OWNER_ID;});
-      handleInvite();
+      handleInvite();updateReqBadge();
       if(visiting){const v=gardensList.find(x=>x.id===visiting.id);if(v){visiting.data=v.data;rebuildLabels();refreshChrome();}}
       if(gardensM.classList.contains('show')) renderGardens();
       maybeAutoVisit();
@@ -5578,7 +5637,7 @@ function edgeTint(){
 #gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gAlt{display:flex;flex-direction:column;gap:10px;margin-top:4px}#gAlt[hidden],.galt[hidden]{display:none}.gor{margin:6px 0 0;font-size:14px;opacity:.6}.galt{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;color:#2a2430;cursor:pointer}.galt:active{transform:translate(2px,2px)}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;outline:none;border-radius:0;-webkit-appearance:none;appearance:none;box-shadow:none;-webkit-tap-highlight-color:transparent}#gEmail:focus,#gTok:focus{outline:none;background:#fff8e6}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
 #gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795861921"></script>
+<script src="config.js?v=1795862119"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -5609,7 +5668,7 @@ function edgeTint(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '28.11. 11:32';
+  const BUILD = '28.11. 11:35';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -5899,7 +5958,7 @@ function edgeTint(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 28.11. 11:32';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 28.11. 11:35';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid', 'garden-pending').forEach(k => localStorage.removeItem(k)); } catch (e) {}

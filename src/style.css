@@ -606,3 +606,18 @@
 .fbform{display:flex;flex-direction:column;gap:9px;margin-top:14px}
 .fbq{display:flex;flex-direction:column;gap:3px}.fbq span{font-family:Silkscreen,monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#8b8490}
 .fbq .inp{margin:0;width:100%}
+.fbadd{display:flex;gap:8px;align-items:center}.fbadd .inp{flex:1;min-width:0;margin:0}
+.fbadd .at{font-family:Silkscreen,monospace;font-size:16px;color:var(--muted)}
+.fh{font-family:Silkscreen,monospace;font-size:10px;letter-spacing:.5px;color:#8e6cc8;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fbht .fh{margin-top:1px}
+.fbname{margin-top:12px;padding:12px;background:#fff6d8;border:2px solid var(--ink);display:flex;flex-direction:column;gap:6px}
+.fbnt{font-weight:700;font-size:16px}.fbname .fs{text-align:left}
+.fberr{color:#c8344c;font-size:13px;min-height:0}
+.fbreq{display:flex;align-items:center;gap:10px;padding:8px 10px;background:#fff;border:2px solid var(--ink);margin-top:6px}
+.fbreq .fbrt{flex:1;min-width:0;display:flex;flex-direction:column}.fbreq .fbrt .fs{text-align:left}
+.fbreq .btn{padding:5px 9px;font-size:13px}
+.fbav.sm{width:26px;height:39px}
+.fbt.pend{opacity:.7;border-style:dashed}
+#gardens .dsec{margin-top:16px}
+#bGardens{position:relative}
+#bGardens.req::after{content:attr(data-n);position:absolute;top:-7px;right:-7px;min-width:16px;height:16px;padding:0 3px;box-sizing:border-box;background:#e8506c;color:#fff;font-size:11px;line-height:16px;text-align:center;border:2px solid var(--ink)}
