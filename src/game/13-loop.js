@@ -109,9 +109,12 @@ function updateRest(dt,t){
   parts=parts.filter(q=>q.age<q.life);
   flies.forEach(f=>{
     f.next-=dt;
-    if(f.next<=0){const ok=items().filter(p=>stageOf(p)>=3&&waterOf(p)>=35&&!weedsOf(p)),p=ok.length?pick(ok):null;
-      if(p){const [px,py]=posOf(p);f.tx=px+(Math.random()*20-10);f.ty=py-plantTop(p)-4-Math.random()*8;}else{f.tx=40+Math.random()*160;f.ty=170+Math.random()*120;}
-      f.next=3+Math.random()*4;}
+    // each little flier belongs to one plant and only circles that plant; it never crosses the garden
+    const all=items();let p=all.find(q=>q.id===f.pid);
+    if(!p){const ok=all.filter(q=>stageOf(q)>=3&&waterOf(q)>=35&&!weedsOf(q)),pool=ok.length?ok:all;p=pool.length?pick(pool):null;f.pid=p?p.id:null;f.next=0;
+      if(p){const [px,py]=posOf(p);f.x=px;f.y=py-plantTop(p)-6;}}
+    f.hide=!p;if(!p)return;
+    if(f.next<=0){const [px,py]=posOf(p);f.tx=px+(Math.random()*20-10);f.ty=py-plantTop(p)-4-Math.random()*8;f.next=1.5+Math.random()*2.5;}
     f.x+=(f.tx-f.x)*dt*.8;f.y+=(f.ty-f.y)*dt*.8+Math.sin(t*4+f.ph)*.25;
   });
   clouds.forEach(cl=>{cl.x+=cl.v*dt;if(cl.x>W+30)cl.x=-30;});
@@ -175,7 +178,7 @@ function render(t){
     else if(q.kind==='heart'){g.globalAlpha=Math.min(1,2*(1-q.age/q.life));[[0,0],[2,0],[-1,1],[0,1],[1,1],[2,1],[3,1],[0,2],[1,2],[2,2],[1,3]].forEach(([a,b])=>R(x+a-1,y+b,1,1,'#e8506c'));R(x-1,y+1,1,1,'#ffb3c4');g.globalAlpha=1;}
     else if(q.kind==='smoke'){g.globalAlpha=.55*(1-q.age/q.life);const r=1+Math.floor(q.age*1.5);R(x-r+1,y-r+1,r*2,r*2,'#eef2f6');g.globalAlpha=1;}
   });
-  flies.forEach(f=>{const x=Math.round(f.x),y=Math.round(f.y),fl=Math.floor(t*10+f.ph*3)%2;if(fl){R(x-2,y-1,2,2,f.c);R(x+1,y-1,2,2,f.c);}else{R(x-1,y,1,1,f.c);R(x+1,y,1,1,f.c);}R(x,y-1,1,2,'#3a2a2a');});
+  flies.forEach(f=>{if(f.hide)return;const x=Math.round(f.x),y=Math.round(f.y),fl=Math.floor(t*10+f.ph*3)%2;if(fl){R(x-2,y-1,2,2,f.c);R(x+1,y-1,2,2,f.c);}else{R(x-1,y,1,1,f.c);R(x+1,y,1,1,f.c);}R(x,y-1,1,2,'#3a2a2a');});
   g.restore();
   drawAtmosphere(t);
   placeTags(livePeers().filter(p=>p.scene==='garden').map(p=>p.pl?Object.assign({},p,{y:p.y-9}):p).concat(sleeping?[{id:'host-zz',name:roomLive()?visiting.data.name+' is asleep':visiting.data.name,x:host.x,y:host.y+19}]:[]),(x,y)=>[(OX+x)*S,(OY+y-camR)*S]);
