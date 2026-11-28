@@ -294,7 +294,7 @@ const gardensM=document.getElementById('gardens');
 document.getElementById('bGardens').onclick=()=>{fbPage=null;renderGardens();gardensM.classList.add('show');};
 document.getElementById('gClose').onclick=()=>gardensM.classList.remove('show');
 document.getElementById('bHome').onclick=()=>{hideHomeHint(true);goHome();};
-function closeModals(){shopM.classList.remove('show');if(fishM.classList.contains('show'))closeAquarium();document.querySelectorAll('.modal.pgm.show').forEach(m=>m._close());compM.classList.remove('show');mapM.classList.remove('show');isleM.classList.remove('show');lineM.classList.remove('show');askM.classList.remove('show');if(quizM.classList.contains('show'))closeQuiz();if(c4M.classList.contains('show'))closeC4();stillM.classList.remove('show');dashM.classList.remove('show');booksM.classList.remove('show');if(creator.classList.contains('show'))closeCreator();help.classList.remove('show');gardensM.classList.remove('show');addM.classList.remove('show');}
+function closeModals(){shopM.classList.remove('show');ideasM.classList.remove('show');if(fishM.classList.contains('show'))closeAquarium();document.querySelectorAll('.modal.pgm.show').forEach(m=>m._close());compM.classList.remove('show');mapM.classList.remove('show');isleM.classList.remove('show');lineM.classList.remove('show');askM.classList.remove('show');if(quizM.classList.contains('show'))closeQuiz();if(c4M.classList.contains('show'))closeC4();stillM.classList.remove('show');dashM.classList.remove('show');booksM.classList.remove('show');if(creator.classList.contains('show'))closeCreator();help.classList.remove('show');gardensM.classList.remove('show');addM.classList.remove('show');}
 
 /* ================= gardens (visiting) ================= */
 function renderNeighbours(){

@@ -26,7 +26,7 @@ function drawBubbles(){
 function frame(now){
   const dt=Math.min(.05,(now-last)/1000);last=now;const t=(now-t0)/1000;
   update(dt,t);updateAlpaca(dt);render(t);drawBubbles();processActs();sendPresence(now);tickLive(now);
-  uiTick+=dt;if(waterFx)refreshLabels();if(uiTick>.5){uiTick=0;refreshLabels();paintCoins();edgeTint();if(!editing)updateDialog(false);}
+  uiTick+=dt;if(waterFx)refreshLabels();if(uiTick>.5){uiTick=0;refreshLabels();paintCoins();edgeTint();markSeen();if(!editing)updateDialog(false);}
   requestAnimationFrame(frame);
 }
 function isWater(x,y){if(!av.swim&&x>BOARD.x0-2&&Math.abs(y-BOARD.y)<4)return false;return x>POOL.x0+3&&x<POOL.x1-3&&y>POOL.y0+5&&y<POOL.y1-2;}
@@ -287,3 +287,7 @@ function edgeTint(){
     document.documentElement.style.background='linear-gradient('+top+' 50%,'+bot+' 50%)';document.body.style.background='transparent';
   }catch(e){}
 }
+
+// "last around": while the game is open and visible, note the time in your garden about every 10 minutes
+function markSeen(){if(!started||loadFailed||!home||!home.created||!db||!myId||document.hidden)return;
+  if(Date.now()-(home.seen||0)>10*60e3){home.seen=Date.now();persist();}}

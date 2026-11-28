@@ -278,6 +278,24 @@
     },
   };
 
+  /* ---------- ideas: everyone keeps their own ideas and votes; all signed-in players can read them ---------- */
+  window.__ideas = {
+    async load(id) {
+      const who = id || uid; if (!who || !/^[\w-]{1,64}$/.test(who)) return null;
+      try { const d = await getDoc('gardens/' + who + '/x/ideas'); return d.exists ? (d.data() || null) : null; } catch (e) { return null; }
+    },
+    async save(o) {
+      if (!uid || !o) return false;
+      const s = (v, n) => String(v == null ? '' : v).slice(0, n);
+      const doc = {
+        list: (Array.isArray(o.list) ? o.list : []).slice(0, 30).map(x => ({ id: s(x.id, 16).replace(/[^\w-]/g, ''), text: s(x.text, 200), t: Number(x.t) || 0 })).filter(x => x.id && x.text.trim()),
+        votes: (Array.isArray(o.votes) ? o.votes : []).filter(v => typeof v === 'string').map(v => s(v, 90)).slice(0, 300),
+        st: (o.st && typeof o.st === 'object') ? Object.fromEntries(Object.entries(o.st).slice(0, 300).filter(([k, v]) => ['planned', 'done', 'hidden'].includes(v)).map(([k, v]) => [s(k, 90), v])) : {},
+      };
+      try { await setDoc('gardens/' + uid + '/x/ideas', doc); return true; } catch (e) { return false; }
+    },
+  };
+
   /* ---------- AI quiz questions for an own topic (limits are enforced on the server) ---------- */
   window.__quiz = {
     // the server already tries several models, so one call is enough

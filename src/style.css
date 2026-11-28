@@ -619,5 +619,23 @@
 .fbav.sm{width:26px;height:39px}
 .fbt.pend{opacity:.7;border-style:dashed}
 #gardens .dsec{margin-top:16px}
-#bGardens{position:relative}
-#bGardens.req::after{content:attr(data-n);position:absolute;top:-7px;right:-7px;min-width:16px;height:16px;padding:0 3px;box-sizing:border-box;background:#e8506c;color:#fff;font-size:11px;line-height:16px;text-align:center;border:2px solid var(--ink)}
+#bGardens,#bHelp{position:relative}
+#bGardens.req::after,#bHelp.req::after{content:attr(data-n);position:absolute;top:-7px;right:-7px;min-width:16px;height:16px;padding:0 3px;box-sizing:border-box;background:#e8506c;color:#fff;font-size:11px;line-height:16px;text-align:center;border:2px solid var(--ink)}
+
+/* ideas */
+.ideab{margin:4px 0 10px}
+#ideasM .ideap{max-height:min(88vh,760px);overflow:auto}
+.ideaf{display:flex;flex-direction:column;gap:8px;margin-top:10px}.ideaf textarea{margin:0;width:100%;resize:vertical;font:inherit;font-size:16px}
+.ideaf .btn{align-self:flex-start}
+.idealist{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.idea{background:#fff;border:2px solid var(--ink);padding:9px 11px}
+.idea.done{opacity:.65}.idea.hidden{opacity:.45;border-style:dashed}
+.itop{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.iby{font-weight:700;font-size:14px}.iwhen{font-size:12px;color:var(--muted)}
+.ist{font-family:Silkscreen,monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;background:#e9f5e4;border:2px solid #5aa84a;color:#2f7a2a}
+.idea.done .ist{background:#f1ede4;border-color:#b9b0a4;color:#6b6475}
+.itx{font-size:16px;margin-top:4px;line-height:1.3;white-space:pre-wrap;word-break:break-word}
+.irow{display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
+.ivote{font:inherit;font-size:14px;padding:3px 9px;background:#fff;border:2px solid #e2dccf;color:var(--muted);cursor:pointer}
+.ivote.on{border-color:#e8506c;color:#e8506c;background:#fff0f3}
+.ilink{font:inherit;font-size:13px;color:var(--muted);background:none;border:0;padding:2px 0;cursor:pointer;text-decoration:underline dotted}
+.ilink.on{color:var(--ink);font-weight:700}

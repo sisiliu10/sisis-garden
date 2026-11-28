@@ -634,8 +634,26 @@
 .fbav.sm{width:26px;height:39px}
 .fbt.pend{opacity:.7;border-style:dashed}
 #gardens .dsec{margin-top:16px}
-#bGardens{position:relative}
-#bGardens.req::after{content:attr(data-n);position:absolute;top:-7px;right:-7px;min-width:16px;height:16px;padding:0 3px;box-sizing:border-box;background:#e8506c;color:#fff;font-size:11px;line-height:16px;text-align:center;border:2px solid var(--ink)}
+#bGardens,#bHelp{position:relative}
+#bGardens.req::after,#bHelp.req::after{content:attr(data-n);position:absolute;top:-7px;right:-7px;min-width:16px;height:16px;padding:0 3px;box-sizing:border-box;background:#e8506c;color:#fff;font-size:11px;line-height:16px;text-align:center;border:2px solid var(--ink)}
+
+/* ideas */
+.ideab{margin:4px 0 10px}
+#ideasM .ideap{max-height:min(88vh,760px);overflow:auto}
+.ideaf{display:flex;flex-direction:column;gap:8px;margin-top:10px}.ideaf textarea{margin:0;width:100%;resize:vertical;font:inherit;font-size:16px}
+.ideaf .btn{align-self:flex-start}
+.idealist{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.idea{background:#fff;border:2px solid var(--ink);padding:9px 11px}
+.idea.done{opacity:.65}.idea.hidden{opacity:.45;border-style:dashed}
+.itop{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.iby{font-weight:700;font-size:14px}.iwhen{font-size:12px;color:var(--muted)}
+.ist{font-family:Silkscreen,monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;background:#e9f5e4;border:2px solid #5aa84a;color:#2f7a2a}
+.idea.done .ist{background:#f1ede4;border-color:#b9b0a4;color:#6b6475}
+.itx{font-size:16px;margin-top:4px;line-height:1.3;white-space:pre-wrap;word-break:break-word}
+.irow{display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
+.ivote{font:inherit;font-size:14px;padding:3px 9px;background:#fff;border:2px solid #e2dccf;color:var(--muted);cursor:pointer}
+.ivote.on{border-color:#e8506c;color:#e8506c;background:#fff0f3}
+.ilink{font:inherit;font-size:13px;color:var(--muted);background:none;border:0;padding:2px 0;cursor:pointer;text-decoration:underline dotted}
+.ilink.on{color:var(--ink);font-weight:700}
 </style>
 </head>
 <body>
@@ -812,9 +830,20 @@
   </div>
 </div>
 
+<div class="modal" id="ideasM">
+  <div class="panel ideap" role="dialog" aria-labelledby="ideasT">
+    <h2 id="ideasT">Ideas</h2>
+    <div class="lead">What would make the garden better? Everyone can read the ideas and give a ♥ to the ones they want too.</div>
+    <form id="ideaF" autocomplete="off" class="ideaf"><textarea class="inp" id="ideaIn" maxlength="200" rows="3" placeholder="My idea …"></textarea><button class="btn dark" type="submit">Send idea</button></form>
+    <div id="ideaList" class="idealist"></div>
+    <div class="pfoot"><span></span><button class="btn" type="button" id="ideasNo">Close</button></div>
+  </div>
+</div>
+
 <div class="modal" id="help">
   <div class="panel help">
     <h2>How it works</h2>
+    <button class="btn dark ideab" type="button" id="bIdeas">Suggest a feature</button>
     <p><b>Projects</b> are plants you water.</p>
     <p><b>Skills</b> are flower beds.</p>
     <p><b>To-dos</b> hang on the clothesline.</p>
@@ -913,7 +942,7 @@ function cleanGarden(g){
   rawS.slice(0,BED_SLOTS.length).forEach((p,i)=>{const c=cleanProject(p,i,true);if(!c)return;
     if(used2.has(c.slot)){for(let s=0;s<BED_SLOTS.length;s++)if(!used2.has(s)){c.slot=s;break;}}
     used2.add(c.slot);skills.push(c);});
-  return {v:2,name:str(g.name,14)||'Someone',look:cleanLook(g.look),projects,skills,saved:num(g.saved,0),owner:!!g.owner,cat:!!g.cat,sb:g.sb!==false,listed:g.listed===undefined?!!g.owner:!!g.listed,friends:Array.isArray(g.friends)?g.friends.filter(x=>typeof x==='string'&&x.length<64).slice(0,100):[],nb:Array.isArray(g.nb)?g.nb.filter(x=>x&&/^https:\/\//.test(x.u||'')).slice(0,10).map(x=>({n:str(x.n,30)||'Friend',u:str(x.u,300)})):[],created:g.created!==false,hs:!!g.hs,since:num(g.since,0),inv:/^[\w-]{1,64}$/.test(String(g.inv||''))?String(g.inv):'',handle:/^[a-z0-9_]{3,15}$/.test(String(g.handle||''))?String(g.handle):'',fr:(Array.isArray(g.fr)?g.fr:Array.isArray(g.friends)?g.friends:[]).filter(x=>typeof x==='string'&&/^[\w-]{1,64}$/.test(x)).slice(0,200),fdecl:Array.isArray(g.fdecl)?g.fdecl.filter(x=>typeof x==='string'&&x.length<64).slice(0,200):[],fb:(g.fb&&typeof g.fb==='object')?Object.fromEntries(['food','hobby','like','dream','motto'].filter(k=>typeof g.fb[k]==='string'&&g.fb[k].trim()).map(k=>[k,nodot(str(g.fb[k],40))])):{},ask:(g.ask&&typeof g.ask==='object')?Object.fromEntries(Object.entries(g.ask).slice(0,40).map(([k,v])=>[str(k,24),num(v,0)])):{},askDay:str(g.askDay,12),ai:!!g.ai,aiDay:str(g.aiDay,12),
+  return {v:2,name:str(g.name,14)||'Someone',look:cleanLook(g.look),projects,skills,saved:num(g.saved,0),owner:!!g.owner,cat:!!g.cat,sb:g.sb!==false,listed:g.listed===undefined?!!g.owner:!!g.listed,friends:Array.isArray(g.friends)?g.friends.filter(x=>typeof x==='string'&&x.length<64).slice(0,100):[],nb:Array.isArray(g.nb)?g.nb.filter(x=>x&&/^https:\/\//.test(x.u||'')).slice(0,10).map(x=>({n:str(x.n,30)||'Friend',u:str(x.u,300)})):[],created:g.created!==false,hs:!!g.hs,since:num(g.since,0),inv:/^[\w-]{1,64}$/.test(String(g.inv||''))?String(g.inv):'',seen:num(g.seen,0),handle:/^[a-z0-9_]{3,15}$/.test(String(g.handle||''))?String(g.handle):'',fr:(Array.isArray(g.fr)?g.fr:Array.isArray(g.friends)?g.friends:[]).filter(x=>typeof x==='string'&&/^[\w-]{1,64}$/.test(x)).slice(0,200),fdecl:Array.isArray(g.fdecl)?g.fdecl.filter(x=>typeof x==='string'&&x.length<64).slice(0,200):[],fb:(g.fb&&typeof g.fb==='object')?Object.fromEntries(['food','hobby','like','dream','motto'].filter(k=>typeof g.fb[k]==='string'&&g.fb[k].trim()).map(k=>[k,nodot(str(g.fb[k],40))])):{},ask:(g.ask&&typeof g.ask==='object')?Object.fromEntries(Object.entries(g.ask).slice(0,40).map(([k,v])=>[str(k,24),num(v,0)])):{},askDay:str(g.askDay,12),ai:!!g.ai,aiDay:str(g.aiDay,12),
     aiRep:(g.aiRep&&typeof g.aiRep==='object'&&g.aiRep.lines&&typeof g.aiRep.lines==='object')?{d:str(g.aiRep.d,12),lines:Object.fromEntries(Object.entries(g.aiRep.lines).slice(0,8).map(([k,v])=>[str(k,24),str(v,140)]))}:null,
     od:(g.od&&typeof g.od==='object')?Object.fromEntries(Object.entries(g.od).slice(0,20).map(([k,v])=>[str(k,24),str(v,12)])):{},
     on:Array.isArray(g.on)?g.on.filter(x=>x&&typeof x.text==='string').slice(-8).map(x=>Object.assign({id:str(x.id,24),pid:str(x.pid,24),code:str(x.code,14),d:str(x.d,12),st:['new','done','gone'].includes(x.st)?x.st:'gone',text:str(x.text,60)},x.ai?{ai:true}:{})):[],
@@ -997,7 +1026,7 @@ const pubRef=()=>(db&&myId&&canWrite!==false)?db.doc('gardens/'+myId):null;
 const writePriv=makeWriter(privRef,()=>JSON.parse(JSON.stringify(home)));
 const open_=a=>(a||[]).filter(x=>!x.lk);
 function sharedPart(obj){const out={};home.projects.concat(home.skills||[]).forEach(p=>{if(p.vis!==false&&!p.lk&&obj&&obj[p.id])out[p.id]=obj[p.id];});return out;}
-const writePub=makeWriter(pubRef,()=>({v:2,name:home.name,look:home.look,listed:isListed(),owner:isOwner,saved:home.saved,since:home.since||0,fb:home.fb||{},handle:home.handle||'',fr:home.fr||[],inv:home.inv||'',projects:open_(home.projects),skills:open_(home.skills),notes:sharedPart(home.notes),logs:sharedPart(home.logs),todos:(home.todos||[]).slice(0,10).map(td=>({id:td.id,text:'private',t:td.t||0,k:tdKind(td),c:tdCi(td)})),compost:open_(home.compost).map(c=>({id:c.id,code:c.code,name:c.name,sub:c.sub,bed:c.bed,kind:c.kind,ct:c.ct})),sb:home.sb!==false}));
+const writePub=makeWriter(pubRef,()=>({v:2,name:home.name,look:home.look,listed:isListed(),owner:isOwner,saved:home.saved,since:home.since||0,fb:home.fb||{},handle:home.handle||'',seen:home.seen||0,fr:home.fr||[],inv:home.inv||'',projects:open_(home.projects),skills:open_(home.skills),notes:sharedPart(home.notes),logs:sharedPart(home.logs),todos:(home.todos||[]).slice(0,10).map(td=>({id:td.id,text:'private',t:td.t||0,k:tdKind(td),c:tdCi(td)})),compost:open_(home.compost).map(c=>({id:c.id,code:c.code,name:c.name,sub:c.sub,bed:c.bed,kind:c.kind,ct:c.ct})),sb:home.sb!==false}));
 const pubBooksRef=()=>(db&&myId&&canWrite!==false)?db.doc('gardens/'+myId+'/x/books'):null;
 const writePubBooks=makeWriter(pubBooksRef,()=>({saved:Date.now(),list:(home&&home.sb!==false&&books)?books.list.slice(0,400):[]}));
 let pTimer=null;
@@ -3951,7 +3980,7 @@ const gardensM=document.getElementById('gardens');
 document.getElementById('bGardens').onclick=()=>{fbPage=null;renderGardens();gardensM.classList.add('show');};
 document.getElementById('gClose').onclick=()=>gardensM.classList.remove('show');
 document.getElementById('bHome').onclick=()=>{hideHomeHint(true);goHome();};
-function closeModals(){shopM.classList.remove('show');if(fishM.classList.contains('show'))closeAquarium();document.querySelectorAll('.modal.pgm.show').forEach(m=>m._close());compM.classList.remove('show');mapM.classList.remove('show');isleM.classList.remove('show');lineM.classList.remove('show');askM.classList.remove('show');if(quizM.classList.contains('show'))closeQuiz();if(c4M.classList.contains('show'))closeC4();stillM.classList.remove('show');dashM.classList.remove('show');booksM.classList.remove('show');if(creator.classList.contains('show'))closeCreator();help.classList.remove('show');gardensM.classList.remove('show');addM.classList.remove('show');}
+function closeModals(){shopM.classList.remove('show');ideasM.classList.remove('show');if(fishM.classList.contains('show'))closeAquarium();document.querySelectorAll('.modal.pgm.show').forEach(m=>m._close());compM.classList.remove('show');mapM.classList.remove('show');isleM.classList.remove('show');lineM.classList.remove('show');askM.classList.remove('show');if(quizM.classList.contains('show'))closeQuiz();if(c4M.classList.contains('show'))closeC4();stillM.classList.remove('show');dashM.classList.remove('show');booksM.classList.remove('show');if(creator.classList.contains('show'))closeCreator();help.classList.remove('show');gardensM.classList.remove('show');addM.classList.remove('show');}
 
 /* ================= gardens (visiting) ================= */
 function renderNeighbours(){
@@ -4021,7 +4050,8 @@ function enterGarden(){
 // Your own page is the first tile: five short answers that your friends can read.
 const FB_Q=[['food','Favourite food'],['hobby','Hobbies'],['like','I really like'],['dream','My dream'],['motto','My motto']];
 let fbPage=null;
-function agoTxt(t){if(!t)return '';const d=(Date.now()-t)/864e5;if(d<1/24)return 'just now';if(d<1)return 'today';if(d<2)return 'yesterday';if(d<30)return Math.floor(d)+' days ago';
+function agoTxt(t){if(!t)return '';const m=(Date.now()-t)/6e4,d=m/1440;if(m<15)return 'just now';if(m<60)return Math.round(m/5)*5+' min ago';if(m<24*60&&new Date(t).toDateString()===new Date().toDateString())return Math.floor(m/60)+(Math.floor(m/60)===1?' hour ago':' hours ago');
+  if(d<2&&new Date(t).toDateString()===new Date(Date.now()-864e5).toDateString())return 'yesterday';if(d<30)return Math.max(1,Math.round(d))+' days ago';
   return new Date(t).toLocaleDateString(undefined,{day:'numeric',month:'short'});}
 function avatarCv(look,cls){const c=document.createElement('canvas');c.width=20;c.height=30;c.className=cls||'fbav';const keep=X;
   try{X=c.getContext('2d');drawAvatar(X,10,28,look,{shadow:false,t:0});}catch(e){}finally{X=keep;}return c;}
@@ -4037,7 +4067,8 @@ function updateReqBadge(){autoAccept();const n=incoming().length,b=document.getE
   if(gardensM.classList.contains('show')&&!fbPage)renderGardens(true);}
 function fbVisible(){const fr=myFr();
   return gardensList.filter(gd=>gd.id!==myId&&(gd.data.owner||gd.data.listed||fr.includes(gd.id)||(gd.data.fr||[]).includes(myId)||(visiting&&visiting.id===gd.id)));}
-function fbStatus(gd){if(onlineIds().has(gd.id))return {on:true,t:'here now'};return {on:false,t:gd.data.saved?'last around '+agoTxt(gd.data.saved):''};}
+function lastAround(d){return Math.max(d.seen||0,d.saved||0);}
+function fbStatus(gd){if(onlineIds().has(gd.id))return {on:true,t:'here now'};const t=lastAround(gd.data);return {on:false,t:t?'last around '+agoTxt(t):'not around yet'};}
 function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;}
 function handleTaken(h){return gardensList.some(gd=>gd.id!==myId&&gd.data.handle===h);}
 function handleError(h){if(!/^[a-z0-9_]{3,15}$/.test(h))return 'Use 3 to 15 letters, numbers or _';if(handleTaken(h))return '@'+h+' is taken';return '';}
@@ -4073,7 +4104,7 @@ function renderGardens(keep){
   const q=(document.getElementById('gSearch').value||'').trim().toLowerCase().replace(/^@/,''),on=onlineIds();
   const all=fbVisible().filter(gd=>!inc.includes(gd));document.getElementById('gSearch').hidden=all.length<6&&!q;
   const match=gd=>!q||gd.data.name.toLowerCase().includes(q)||(gd.data.handle||'').includes(q);
-  const ord=(a,b)=>(on.has(b.id)-on.has(a.id))||((b.data.saved||0)-(a.data.saved||0));
+  const ord=(a,b)=>(on.has(b.id)-on.has(a.id))||(lastAround(b.data)-lastAround(a.data));
   const friends=all.filter(gd=>isFriend(gd)&&match(gd)).sort(ord),pend=all.filter(gd=>isPending(gd)&&match(gd)).sort(ord),
         others=all.filter(gd=>!isFriend(gd)&&!isPending(gd)&&match(gd)).sort(ord);
   box.appendChild(el('div','dsec','FRIENDS'));
@@ -4106,6 +4137,7 @@ function renderFbPage(box){
   const hd=el('div','fbhd');hd.appendChild(avatarCv(d.look,'fbbig'));const ht=el('div','fbht');
   const h=el('h3','',d.name);if(friend)h.appendChild(el('span','hrt','♥'));ht.appendChild(h);if(d.handle)ht.appendChild(el('div','fh','@'+d.handle));
   if(st.t)ht.appendChild(el('div','fs'+(st.on?' on':''),st.t));
+  {const la=lastAround(d);if(!st.on&&la)ht.appendChild(el('div','fs',new Date(la).toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})+', '+new Date(la).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})));}
   if(d.since)ht.appendChild(el('div','fs','gardening since '+new Date(d.since).toLocaleDateString(undefined,{month:'long',year:'numeric'})));
   hd.appendChild(ht);pg.appendChild(hd);
   const ps=d.projects||[],sk=d.skills||[],chips=el('div','fbchips');
@@ -4123,6 +4155,64 @@ function renderFbPage(box){
     home.fr=myFr().filter(x=>x!==gd.id);persist();renderGardens(true);};acts.appendChild(u);}
   pg.appendChild(acts);
 }
+/* ================= ideas (feature requests) ================= */
+// Players send ideas for the game; everyone can read them and give a heart. Sisi (the owner) can mark one
+// as planned, done or hide it. Each player's ideas and hearts live in their own doc (gardens/<id>/x/ideas).
+const ideasM=document.getElementById('ideasM');
+let ideaDocs={}, ideaLoaded=0, myIdeas=null;
+function ideaKey(by,id){return by+':'+id;}
+async function loadIdeas(force){
+  if(!window.__ideas||!myId)return;
+  if(!force&&Date.now()-ideaLoaded<20000)return;ideaLoaded=Date.now();
+  const ids=[...new Set(gardensList.map(g=>g.id).concat([myId]))];
+  const res=await Promise.all(ids.map(id=>window.__ideas.load(id).catch(()=>null)));
+  ideaDocs={};ids.forEach((id,i)=>{if(res[i])ideaDocs[id]=res[i];});
+  myIdeas=ideaDocs[myId]||{list:[],votes:[],st:{}};
+  renderIdeas();ideaBadge();
+}
+function mine(){return myIdeas||(myIdeas={list:[],votes:[],st:{}});}
+function saveIdeas(){ideaDocs[myId]=mine();if(window.__ideas)window.__ideas.save(mine());}
+function nameOf(id){if(id===myId)return home?home.name:'You';const g=gardensList.find(x=>x.id===id);return g?g.data.name:'Someone';}
+function allIdeas(){
+  const st=(ideaDocs[OWNER_ID]&&ideaDocs[OWNER_ID].st)||{},votes={};
+  Object.values(ideaDocs).forEach(d=>(d.votes||[]).forEach(k=>{votes[k]=(votes[k]||0)+1;}));
+  const L=[];Object.entries(ideaDocs).forEach(([by,d])=>(d.list||[]).forEach(x=>{const k=ideaKey(by,x.id);L.push({by,id:x.id,k,text:x.text,t:x.t,st:st[k]||'',v:votes[k]||0});}));
+  return L;
+}
+function renderIdeas(){
+  const box=document.getElementById('ideaList');if(!box)return;box.innerHTML='';
+  if(!window.__ideas||!myId){box.appendChild(el('div','empty','Ideas sync once you are signed in.'));return;}
+  const owner=myId===OWNER_ID,my=mine();
+  let L=allIdeas().filter(x=>x.st!=='hidden'||owner);
+  const rank=x=>x.st==='done'?2:x.st==='hidden'?3:0;
+  L.sort((a,b)=>rank(a)-rank(b)||b.v-a.v||b.t-a.t);
+  if(!L.length){box.appendChild(el('div','empty','No ideas yet. Be the first.'));return;}
+  L.forEach(x=>{
+    const c=el('div','idea'+(x.st?' '+x.st:''));
+    const top=el('div','itop');top.appendChild(el('span','iby',nameOf(x.by)));top.appendChild(el('span','iwhen',agoTxt(x.t)));
+    if(x.st==='planned')top.appendChild(el('span','ist','planned'));if(x.st==='done')top.appendChild(el('span','ist','done'));if(x.st==='hidden')top.appendChild(el('span','ist','hidden'));
+    c.appendChild(top);c.appendChild(el('div','itx',x.text));
+    const row=el('div','irow');
+    const voted=(my.votes||[]).includes(x.k),h=el('button','ivote'+(voted?' on':''),'♥ '+x.v);h.type='button';h.setAttribute('aria-label','Heart this idea');
+    h.onclick=()=>{const m=mine();m.votes=voted?m.votes.filter(v=>v!==x.k):(m.votes||[]).concat([x.k]);saveIdeas();renderIdeas();};row.appendChild(h);
+    if(x.by===myId){const d=el('button','ilink','Delete');d.type='button';d.onclick=()=>{if(!d.dataset.a){d.dataset.a=1;d.textContent='Tap again to delete';return;}const m=mine();m.list=m.list.filter(y=>y.id!==x.id);saveIdeas();renderIdeas();};row.appendChild(d);}
+    if(owner)[['planned','Planned'],['done','Done'],['hidden','Hide']].forEach(([k,lab])=>{const b=el('button','ilink'+(x.st===k?' on':''),lab);b.type='button';
+      b.onclick=()=>{const m=mine();m.st=m.st||{};if(m.st[x.k]===k)delete m.st[x.k];else m.st[x.k]=k;saveIdeas();renderIdeas();};row.appendChild(b);});
+    c.appendChild(row);box.appendChild(c);});
+}
+document.getElementById('ideaF').addEventListener('submit',e=>{e.preventDefault();const i=document.getElementById('ideaIn'),t=nodot(i.value.trim()).slice(0,200);if(!t)return;
+  if(!myId||!window.__ideas){toast('Sign in to send ideas.',2400);return;}
+  const m=mine();m.list=(m.list||[]).concat([{id:Date.now().toString(36),text:t,t:Date.now()}]).slice(-30);saveIdeas();i.value='';toast('Thanks! Your idea is in the list.',2400);renderIdeas();});
+function openIdeas(){help.classList.remove('show');ideasM.classList.add('show');renderIdeas();loadIdeas(true);
+  if(myId===OWNER_ID){try{localStorage.setItem('ideas-seen',String(Date.now()));}catch(e){}ideaBadge();}}
+document.getElementById('bIdeas').onclick=openIdeas;
+document.getElementById('ideasNo').onclick=()=>ideasM.classList.remove('show');
+ideasM.addEventListener('click',e=>{if(e.target===ideasM)ideasM.classList.remove('show');});
+// Sisi gets a little number on the ? button when someone sent a new idea
+function ideaBadge(){if(myId!==OWNER_ID)return;let seen=0;try{seen=+localStorage.getItem('ideas-seen')||0;}catch(e){}
+  const n=allIdeas().filter(x=>x.by!==myId&&x.t>seen).length,b=document.getElementById('bHelp');b.classList.toggle('req',n>0);b.dataset.n=n||'';}
+setInterval(()=>{if(myId===OWNER_ID&&!document.hidden)loadIdeas();},120000);
+setTimeout(()=>{if(myId===OWNER_ID)loadIdeas(true);},8000);
 /* ================= one shared audio context, woken up by every tap ================= */
 const Snd=(()=>{
   let ctx=null;
@@ -5364,7 +5454,7 @@ function drawBubbles(){
 function frame(now){
   const dt=Math.min(.05,(now-last)/1000);last=now;const t=(now-t0)/1000;
   update(dt,t);updateAlpaca(dt);render(t);drawBubbles();processActs();sendPresence(now);tickLive(now);
-  uiTick+=dt;if(waterFx)refreshLabels();if(uiTick>.5){uiTick=0;refreshLabels();paintCoins();edgeTint();if(!editing)updateDialog(false);}
+  uiTick+=dt;if(waterFx)refreshLabels();if(uiTick>.5){uiTick=0;refreshLabels();paintCoins();edgeTint();markSeen();if(!editing)updateDialog(false);}
   requestAnimationFrame(frame);
 }
 function isWater(x,y){if(!av.swim&&x>BOARD.x0-2&&Math.abs(y-BOARD.y)<4)return false;return x>POOL.x0+3&&x<POOL.x1-3&&y>POOL.y0+5&&y<POOL.y1-2;}
@@ -5625,6 +5715,10 @@ function edgeTint(){
     document.documentElement.style.background='linear-gradient('+top+' 50%,'+bot+' 50%)';document.body.style.background='transparent';
   }catch(e){}
 }
+
+// "last around": while the game is open and visible, note the time in your garden about every 10 minutes
+function markSeen(){if(!started||loadFailed||!home||!home.created||!db||!myId||document.hidden)return;
+  if(Date.now()-(home.seen||0)>10*60e3){home.seen=Date.now();persist();}}
 })();
 </script>
 <div id="gate" hidden><div class="gcard"><div class="gt">Sisi's<br>Garden</div><p id="gCount" hidden></p><p id="gMsg">Loading…</p>
@@ -5637,7 +5731,7 @@ function edgeTint(){
 #gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gAlt{display:flex;flex-direction:column;gap:10px;margin-top:4px}#gAlt[hidden],.galt[hidden]{display:none}.gor{margin:6px 0 0;font-size:14px;opacity:.6}.galt{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;color:#2a2430;cursor:pointer}.galt:active{transform:translate(2px,2px)}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;outline:none;border-radius:0;-webkit-appearance:none;appearance:none;box-shadow:none;-webkit-tap-highlight-color:transparent}#gEmail:focus,#gTok:focus{outline:none;background:#fff8e6}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
 #gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795862119"></script>
+<script src="config.js?v=1795863229"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -5668,7 +5762,7 @@ function edgeTint(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '28.11. 11:35';
+  const BUILD = '28.11. 11:53';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -5919,6 +6013,24 @@ function edgeTint(){
     },
   };
 
+  /* ---------- ideas: everyone keeps their own ideas and votes; all signed-in players can read them ---------- */
+  window.__ideas = {
+    async load(id) {
+      const who = id || uid; if (!who || !/^[\w-]{1,64}$/.test(who)) return null;
+      try { const d = await getDoc('gardens/' + who + '/x/ideas'); return d.exists ? (d.data() || null) : null; } catch (e) { return null; }
+    },
+    async save(o) {
+      if (!uid || !o) return false;
+      const s = (v, n) => String(v == null ? '' : v).slice(0, n);
+      const doc = {
+        list: (Array.isArray(o.list) ? o.list : []).slice(0, 30).map(x => ({ id: s(x.id, 16).replace(/[^\w-]/g, ''), text: s(x.text, 200), t: Number(x.t) || 0 })).filter(x => x.id && x.text.trim()),
+        votes: (Array.isArray(o.votes) ? o.votes : []).filter(v => typeof v === 'string').map(v => s(v, 90)).slice(0, 300),
+        st: (o.st && typeof o.st === 'object') ? Object.fromEntries(Object.entries(o.st).slice(0, 300).filter(([k, v]) => ['planned', 'done', 'hidden'].includes(v)).map(([k, v]) => [s(k, 90), v])) : {},
+      };
+      try { await setDoc('gardens/' + uid + '/x/ideas', doc); return true; } catch (e) { return false; }
+    },
+  };
+
   /* ---------- AI quiz questions for an own topic (limits are enforced on the server) ---------- */
   window.__quiz = {
     // the server already tries several models, so one call is enough
@@ -5958,7 +6070,7 @@ function edgeTint(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 28.11. 11:35';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 28.11. 11:53';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid', 'garden-pending').forEach(k => localStorage.removeItem(k)); } catch (e) {}

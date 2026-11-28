@@ -4,7 +4,8 @@
 // Your own page is the first tile: five short answers that your friends can read.
 const FB_Q=[['food','Favourite food'],['hobby','Hobbies'],['like','I really like'],['dream','My dream'],['motto','My motto']];
 let fbPage=null;
-function agoTxt(t){if(!t)return '';const d=(Date.now()-t)/864e5;if(d<1/24)return 'just now';if(d<1)return 'today';if(d<2)return 'yesterday';if(d<30)return Math.floor(d)+' days ago';
+function agoTxt(t){if(!t)return '';const m=(Date.now()-t)/6e4,d=m/1440;if(m<15)return 'just now';if(m<60)return Math.round(m/5)*5+' min ago';if(m<24*60&&new Date(t).toDateString()===new Date().toDateString())return Math.floor(m/60)+(Math.floor(m/60)===1?' hour ago':' hours ago');
+  if(d<2&&new Date(t).toDateString()===new Date(Date.now()-864e5).toDateString())return 'yesterday';if(d<30)return Math.max(1,Math.round(d))+' days ago';
   return new Date(t).toLocaleDateString(undefined,{day:'numeric',month:'short'});}
 function avatarCv(look,cls){const c=document.createElement('canvas');c.width=20;c.height=30;c.className=cls||'fbav';const keep=X;
   try{X=c.getContext('2d');drawAvatar(X,10,28,look,{shadow:false,t:0});}catch(e){}finally{X=keep;}return c;}
@@ -20,7 +21,8 @@ function updateReqBadge(){autoAccept();const n=incoming().length,b=document.getE
   if(gardensM.classList.contains('show')&&!fbPage)renderGardens(true);}
 function fbVisible(){const fr=myFr();
   return gardensList.filter(gd=>gd.id!==myId&&(gd.data.owner||gd.data.listed||fr.includes(gd.id)||(gd.data.fr||[]).includes(myId)||(visiting&&visiting.id===gd.id)));}
-function fbStatus(gd){if(onlineIds().has(gd.id))return {on:true,t:'here now'};return {on:false,t:gd.data.saved?'last around '+agoTxt(gd.data.saved):''};}
+function lastAround(d){return Math.max(d.seen||0,d.saved||0);}
+function fbStatus(gd){if(onlineIds().has(gd.id))return {on:true,t:'here now'};const t=lastAround(gd.data);return {on:false,t:t?'last around '+agoTxt(t):'not around yet'};}
 function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;}
 function handleTaken(h){return gardensList.some(gd=>gd.id!==myId&&gd.data.handle===h);}
 function handleError(h){if(!/^[a-z0-9_]{3,15}$/.test(h))return 'Use 3 to 15 letters, numbers or _';if(handleTaken(h))return '@'+h+' is taken';return '';}
@@ -56,7 +58,7 @@ function renderGardens(keep){
   const q=(document.getElementById('gSearch').value||'').trim().toLowerCase().replace(/^@/,''),on=onlineIds();
   const all=fbVisible().filter(gd=>!inc.includes(gd));document.getElementById('gSearch').hidden=all.length<6&&!q;
   const match=gd=>!q||gd.data.name.toLowerCase().includes(q)||(gd.data.handle||'').includes(q);
-  const ord=(a,b)=>(on.has(b.id)-on.has(a.id))||((b.data.saved||0)-(a.data.saved||0));
+  const ord=(a,b)=>(on.has(b.id)-on.has(a.id))||(lastAround(b.data)-lastAround(a.data));
   const friends=all.filter(gd=>isFriend(gd)&&match(gd)).sort(ord),pend=all.filter(gd=>isPending(gd)&&match(gd)).sort(ord),
         others=all.filter(gd=>!isFriend(gd)&&!isPending(gd)&&match(gd)).sort(ord);
   box.appendChild(el('div','dsec','FRIENDS'));
@@ -89,6 +91,7 @@ function renderFbPage(box){
   const hd=el('div','fbhd');hd.appendChild(avatarCv(d.look,'fbbig'));const ht=el('div','fbht');
   const h=el('h3','',d.name);if(friend)h.appendChild(el('span','hrt','♥'));ht.appendChild(h);if(d.handle)ht.appendChild(el('div','fh','@'+d.handle));
   if(st.t)ht.appendChild(el('div','fs'+(st.on?' on':''),st.t));
+  {const la=lastAround(d);if(!st.on&&la)ht.appendChild(el('div','fs',new Date(la).toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})+', '+new Date(la).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})));}
   if(d.since)ht.appendChild(el('div','fs','gardening since '+new Date(d.since).toLocaleDateString(undefined,{month:'long',year:'numeric'})));
   hd.appendChild(ht);pg.appendChild(hd);
   const ps=d.projects||[],sk=d.skills||[],chips=el('div','fbchips');
