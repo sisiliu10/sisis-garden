@@ -3,7 +3,7 @@
 // friends as polaroids hanging on a twine with little pegs, memory notes with scalloped edges, an envelope
 // pocket to add or invite friends, and on the right page the selected friend's own scrapbook page.
 // All friend logic (usernames, requests, invite) is unchanged; only the art direction is new.
-const FB_Q=[['flower','Lieblingsblume'],['bday','Geburtstag']];
+const FB_Q=[['bday','Geburtstag']];
 let fbPage=null,fbTurn=false,envOpen=false;
 function agoTxt(t){if(!t)return '';const m=(Date.now()-t)/6e4,d=m/1440;if(m<15)return 'just now';if(m<60)return Math.round(m/5)*5+' min ago';if(m<24*60&&new Date(t).toDateString()===new Date().toDateString())return Math.floor(m/60)+(Math.floor(m/60)===1?' hour ago':' hours ago');
   if(d<2&&new Date(t).toDateString()===new Date(Date.now()-864e5).toDateString())return 'yesterday';if(d<30)return Math.max(1,Math.round(d))+' days ago';
@@ -98,7 +98,7 @@ function polaroid(gd,i,mine){const d=mine?home:gd.data,id=mine?myId||'me':gd.id,
   const t=el('button','apol');t.type='button';
   if((fbPage||'')===(mine?'me':gd.id))t.classList.add('sel');
   const ph=el('span','ph');ph.style.backgroundColor=b.c;ph.appendChild(avatarCv(d.look));t.appendChild(ph);
-  t.appendChild(el('b','',mine?'ich ♡':d.name));
+  t.appendChild(el('b','',mine?'ich':d.name));
   if(!mine){const st=fbStatusDe(gd);if(isPending(gd))t.appendChild(el('span','pst','Anfrage gesendet'));else if(st.on)t.appendChild(el('span','pst on','im Garten'));}
   t.onclick=()=>openFb(mine?'me':gd.id);return t;}
 function garland(items){const w=el('div','garland');const tw=el('div','twine');w.appendChild(tw);const row=el('div','gpols');items.forEach(n=>row.appendChild(n));w.appendChild(row);return w;}
@@ -152,7 +152,7 @@ function renderFbPage(){
   const ph=el('div','aphoto');const inner=el('div','ph');inner.style.backgroundColor=bg.c;inner.appendChild(avatarCv(d.look,'big'));ph.appendChild(inner);
   pg.appendChild(ph);
   const facts=el('div','afacts');
-  const facts3=[['flower','Lieblingsblume'],['bday','Geburtstag']].filter(([k])=>fb[k]);
+  const facts3=[['bday','Geburtstag']].filter(([k])=>fb[k]);
   facts3.forEach(([k,lab],j)=>{const f=el('div','afact');const t=el('div','');t.appendChild(el('span','small',lab));t.appendChild(el('b','',k==='bday'?prettyBday(fb[k]):fb[k]));f.appendChild(t);facts.appendChild(f);});
   if(!own&&!facts3.length)facts.appendChild(el('div','fsmall',d.name+' hat die Seite noch nicht ausgefüllt.'));
   if(!own)pg.appendChild(facts);
