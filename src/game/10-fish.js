@@ -6,6 +6,14 @@ function inPond(x,y,m){m=m||0;const a=(x-POND.x)/(POND.rx+m),b=(y-POND.y)/(POND.
 function onDock(x,y){return x>DOCK.x0-2&&x<DOCK.x1+2&&y>DOCK.y0-6&&y<DOCK.y1+1;}
 function pondBlocked(x,y){return inPond(x,y,3)&&!(x>DOCK.x0+2&&x<DOCK.x1-2&&y<DOCK.y1-1);}
 function onPondTap(x,y){return inPond(x,y,4)||onDock(x,y);}
+// your catch lives in a little wooden bucket next to the dock: tap it to see all your fish
+const BUCKET={x:138,y:500};
+function bucketAt(x,y){return Math.abs(x-BUCKET.x)<7&&y>BUCKET.y-12&&y<BUCKET.y+3;}
+function bucketBlocked(x,y){return Math.abs(x-BUCKET.x)<5&&Math.abs(y-BUCKET.y)<3;}
+function drawBucket(t){const x=BUCKET.x,y=BUCKET.y,n=FISH.filter(f=>tankFish().c[f.id]).length;
+  R(x-5,y-9,10,9,'#a8744a');R(x-5,y-9,10,1,'#c99260');R(x-6,y-10,12,2,'#6a4228');R(x-4,y-11,8,1,'#7cc0cc');R(x-5,y-5,10,1,'#6a4228');R(x-4,y,8,1,'#5a3420');
+  R(x-6,y-14,1,4,'#3a3440');R(x+5,y-14,1,4,'#3a3440');R(x-5,y-15,10,1,'#3a3440');
+  if(n&&Math.floor(t*1.3)%5===0){R(x-1,y-13,3,2,'#f28c28');R(x+2,y-12,1,1,'#f7a54a');}}
 
 /* ---------- fish: little pixel sprites, facing right ---------- */
 const FT={
@@ -230,8 +238,8 @@ fishM.addEventListener('click',e=>{if(e.target===fishM)closeAquarium();});
 function renderAquarium(){
   const b=tankFish(),got=FISH.filter(f=>b.c[f.id]),total=got.reduce((a,f)=>a+b.c[f.id],0);
   const who=visiting&&visiting.data&&visiting.data.name;
-  document.getElementById('fishT').textContent=who?who+'s Aquarium':'Aquarium';
-  document.getElementById('fishS').textContent=!got.length?(visiting?'Noch keine Fische drin.':'Noch leer. Unten im Garten ist ein Teich, dort kannst du angeln.'):got.length+' von '+FISH.length+' Arten, '+total+(total===1?' Fisch':' Fische')+' insgesamt.';
+  document.getElementById('fishT').textContent=who?who+'s Fang':'Dein Fang';
+  document.getElementById('fishS').textContent=!got.length?(visiting?'Noch keine Fische gefangen.':'Noch leer. Tipp aufs Wasser, dann wirfst du am Steg die Angel aus.'):got.length+' von '+FISH.length+' Arten, '+total+(total===1?' Fisch':' Fische')+' insgesamt.';
   const grid=document.getElementById('aqGrid');grid.innerHTML='';
   FISH.forEach(f=>{const n=b.c[f.id]||0,d=document.createElement('div');d.className='aqf'+(n?'':' no');
     const cv=document.createElement('canvas'),im=fishImg(f.id,!n);cv.width=16;cv.height=8;cv.getContext('2d').drawImage(im,Math.floor((16-im.width)/2),Math.floor((8-im.height)/2));

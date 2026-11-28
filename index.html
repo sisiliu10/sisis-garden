@@ -232,7 +232,10 @@
   .mcard.live::after{content:'';position:absolute;top:7px;right:7px;width:8px;height:8px;background:#7cf08a;box-shadow:0 0 0 2px var(--ink);animation:glive 1s steps(2) infinite}
   @keyframes glive{50%{background:#2f8a3a}}
   .mcard.g-quiz{grid-column:1/-1}.mcard.g-quiz canvas{aspect-ratio:128/40}
-  @media (min-width:640px){#askM .askp{width:min(560px,100%)}.gcards{grid-template-columns:repeat(3,minmax(0,1fr))}.mcard.g-quiz{grid-column:span 2}}
+  @media (min-width:640px){#askM .askp{width:min(560px,100%)}}
+  .gcards{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  /* phones: the quiz stage on top, the other games as rows (small picture left, name right) so names are never cut */
+  @media (max-width:480px){.gcards{grid-template-columns:1fr!important;gap:8px}.gcards .mcard:not(.g-quiz){flex-direction:row;align-items:center}.gcards .mcard:not(.g-quiz) canvas{width:34%;flex:none;border-bottom:0;border-right:3px solid var(--ink)}.gcards .mcard:not(.g-quiz) .gtx{padding:6px 12px}}
   @media (prefers-reduced-motion:reduce){.mcard.live::after{animation:none}}
   .gclose{display:block;margin:12px auto 10px;background:none;border:0;font:inherit;font-size:15px;color:#6d6472;cursor:pointer;text-decoration:underline dotted 1px;text-underline-offset:3px}
   .c4c.drop{animation:c4drop .32s cubic-bezier(.4,0,1,1)}
@@ -591,6 +594,33 @@
 .shb:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(42,36,48,.25)}
 .shb:disabled{background:#f1ede4;color:#9a919e;box-shadow:none;cursor:default}
 .shi.have{background:#f4fbef}.shi.have .shb{background:none;border-color:transparent;color:#4f9e43}
+
+/* friend book */
+.fbgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media (max-width:420px){.fbgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.fbt{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 6px 9px;background:#fff;border:2px solid var(--ink);box-shadow:2px 2px 0 rgba(42,36,48,.2);font:inherit;color:var(--ink);cursor:pointer;min-width:0}
+.fbt:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(42,36,48,.2)}
+.fbt.me{background:#fff6d8}
+.fbt b{font-size:15px;font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fbav{width:40px;height:60px;image-rendering:pixelated}
+.fs{font-size:12.5px;color:var(--muted);line-height:1.25;text-align:center}
+.fs.on{color:#2f9e52;font-weight:600}.fs.on::before{content:"";display:inline-block;width:7px;height:7px;background:#3fb45e;margin-right:5px;vertical-align:1px}
+.hrt{color:#e8506c;margin-left:4px;font-size:.85em}
+#gardens .panel.fbopen .dsec,#gardens .panel.fbopen #gEnter,#gardens .panel.fbopen #gInvite,#gardens .panel.fbopen #gInvite~.lead,#gardens .panel.fbopen .dsec+.lead,#gardens .panel.fbopen #gListedRow,#gardens .panel.fbopen #gMine{display:none!important}
+.fbback{display:block;margin-right:auto;text-align:left;font:inherit;font-size:14px;color:var(--muted);background:none;border:0;padding:2px 0;cursor:pointer}
+.fbpg{margin-top:8px;background:#fff;border:2px solid var(--ink);padding:14px 14px 12px;background-image:repeating-linear-gradient(transparent 0 25px,#e9f0f8 25px 26px)}
+.fbhd{display:flex;gap:14px;align-items:center}
+.fbbig{width:60px;height:90px;image-rendering:pixelated;flex:none;background:#eef6e6;border:2px solid var(--ink)}
+.fbht h3{margin:0;font-size:22px;font-weight:700}.fbht .fs{text-align:left;margin-top:2px}
+.fbchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.fbchip{font-size:13px;padding:3px 8px;background:#f1ede4;border:2px solid #e2dccf}
+.fbqa{margin:14px 0 0}.fbqa dt{font-family:Silkscreen,monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#8b8490;margin-top:10px}
+.fbqa dd{margin:2px 0 0;font-size:16px}
+.fbnone{margin-top:14px;color:var(--muted);font-size:14px}
+.fbacts{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.fbform{display:flex;flex-direction:column;gap:9px;margin-top:14px}
+.fbq{display:flex;flex-direction:column;gap:3px}.fbq span{font-family:Silkscreen,monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#8b8490}
+.fbq .inp{margin:0;width:100%}
 </style>
 </head>
 <body>
@@ -753,8 +783,8 @@
 
 <div class="modal" id="gardens">
   <div class="panel">
-    <h2>Friends</h2>
-    <div class="lead">Visit your friends and see how their projects are growing.</div>
+    <h2>Friend book</h2>
+    <div class="lead" id="fbLead">Everyone you garden with. Tap someone to open their page.</div>
     <input class="inp" id="gSearch" placeholder="Search by name…" maxlength="20" style="margin:10px 0 0;width:100%" hidden>
     <div class="glist" id="glist"></div>
     <div class="dsec">ENTER A FRIEND'S GARDEN</div>
@@ -775,7 +805,7 @@
     <p><b>To-dos</b> hang on the clothesline.</p>
     <p><b>Your outfit</b> is in the wardrobe in your cottage.</p>
     <p><b>Coins</b> come from watering, fishing, mini game wins and the grass. Tap the coin counter for the shop.</p>
-    <p><b>Fishing</b> at the pond: tap when the bobber goes under. Your catch swims in the aquarium.</p>
+    <p><b>Fishing</b> at the pond: tap when the bobber goes under. Your catch is in the bucket next to the dock.</p>
     <div hidden><div id="gMine"><div id="nbList"></div><form id="nbAdd"><input id="nbN"><input id="nbU"></form><input type="checkbox" id="gSB"></div></div>
     <div class="pfoot"><span></span><button class="btn dark" id="helpOk">Got it</button></div>
   </div>
@@ -868,7 +898,7 @@ function cleanGarden(g){
   rawS.slice(0,BED_SLOTS.length).forEach((p,i)=>{const c=cleanProject(p,i,true);if(!c)return;
     if(used2.has(c.slot)){for(let s=0;s<BED_SLOTS.length;s++)if(!used2.has(s)){c.slot=s;break;}}
     used2.add(c.slot);skills.push(c);});
-  return {v:2,name:str(g.name,14)||'Someone',look:cleanLook(g.look),projects,skills,saved:num(g.saved,0),owner:!!g.owner,cat:!!g.cat,sb:g.sb!==false,listed:g.listed===undefined?!!g.owner:!!g.listed,friends:Array.isArray(g.friends)?g.friends.filter(x=>typeof x==='string'&&x.length<64).slice(0,100):[],nb:Array.isArray(g.nb)?g.nb.filter(x=>x&&/^https:\/\//.test(x.u||'')).slice(0,10).map(x=>({n:str(x.n,30)||'Friend',u:str(x.u,300)})):[],created:g.created!==false,hs:!!g.hs,ask:(g.ask&&typeof g.ask==='object')?Object.fromEntries(Object.entries(g.ask).slice(0,40).map(([k,v])=>[str(k,24),num(v,0)])):{},askDay:str(g.askDay,12),ai:!!g.ai,aiDay:str(g.aiDay,12),
+  return {v:2,name:str(g.name,14)||'Someone',look:cleanLook(g.look),projects,skills,saved:num(g.saved,0),owner:!!g.owner,cat:!!g.cat,sb:g.sb!==false,listed:g.listed===undefined?!!g.owner:!!g.listed,friends:Array.isArray(g.friends)?g.friends.filter(x=>typeof x==='string'&&x.length<64).slice(0,100):[],nb:Array.isArray(g.nb)?g.nb.filter(x=>x&&/^https:\/\//.test(x.u||'')).slice(0,10).map(x=>({n:str(x.n,30)||'Friend',u:str(x.u,300)})):[],created:g.created!==false,hs:!!g.hs,since:num(g.since,0),fb:(g.fb&&typeof g.fb==='object')?Object.fromEntries(['food','hobby','like','dream','motto'].filter(k=>typeof g.fb[k]==='string'&&g.fb[k].trim()).map(k=>[k,nodot(str(g.fb[k],40))])):{},ask:(g.ask&&typeof g.ask==='object')?Object.fromEntries(Object.entries(g.ask).slice(0,40).map(([k,v])=>[str(k,24),num(v,0)])):{},askDay:str(g.askDay,12),ai:!!g.ai,aiDay:str(g.aiDay,12),
     aiRep:(g.aiRep&&typeof g.aiRep==='object'&&g.aiRep.lines&&typeof g.aiRep.lines==='object')?{d:str(g.aiRep.d,12),lines:Object.fromEntries(Object.entries(g.aiRep.lines).slice(0,8).map(([k,v])=>[str(k,24),str(v,140)]))}:null,
     od:(g.od&&typeof g.od==='object')?Object.fromEntries(Object.entries(g.od).slice(0,20).map(([k,v])=>[str(k,24),str(v,12)])):{},
     on:Array.isArray(g.on)?g.on.filter(x=>x&&typeof x.text==='string').slice(-8).map(x=>Object.assign({id:str(x.id,24),pid:str(x.pid,24),code:str(x.code,14),d:str(x.d,12),st:['new','done','gone'].includes(x.st)?x.st:'gone',text:str(x.text,60)},x.ai?{ai:true}:{})):[],
@@ -952,13 +982,13 @@ const pubRef=()=>(db&&myId&&canWrite!==false)?db.doc('gardens/'+myId):null;
 const writePriv=makeWriter(privRef,()=>JSON.parse(JSON.stringify(home)));
 const open_=a=>(a||[]).filter(x=>!x.lk);
 function sharedPart(obj){const out={};home.projects.concat(home.skills||[]).forEach(p=>{if(p.vis!==false&&!p.lk&&obj&&obj[p.id])out[p.id]=obj[p.id];});return out;}
-const writePub=makeWriter(pubRef,()=>({v:2,name:home.name,look:home.look,listed:isListed(),owner:isOwner,saved:home.saved,projects:open_(home.projects),skills:open_(home.skills),notes:sharedPart(home.notes),logs:sharedPart(home.logs),todos:(home.todos||[]).slice(0,10).map(td=>({id:td.id,text:'private',t:td.t||0,k:tdKind(td),c:tdCi(td)})),compost:open_(home.compost).map(c=>({id:c.id,code:c.code,name:c.name,sub:c.sub,bed:c.bed,kind:c.kind,ct:c.ct})),sb:home.sb!==false}));
+const writePub=makeWriter(pubRef,()=>({v:2,name:home.name,look:home.look,listed:isListed(),owner:isOwner,saved:home.saved,since:home.since||0,fb:home.fb||{},projects:open_(home.projects),skills:open_(home.skills),notes:sharedPart(home.notes),logs:sharedPart(home.logs),todos:(home.todos||[]).slice(0,10).map(td=>({id:td.id,text:'private',t:td.t||0,k:tdKind(td),c:tdCi(td)})),compost:open_(home.compost).map(c=>({id:c.id,code:c.code,name:c.name,sub:c.sub,bed:c.bed,kind:c.kind,ct:c.ct})),sb:home.sb!==false}));
 const pubBooksRef=()=>(db&&myId&&canWrite!==false)?db.doc('gardens/'+myId+'/x/books'):null;
 const writePubBooks=makeWriter(pubBooksRef,()=>({saved:Date.now(),list:(home&&home.sb!==false&&books)?books.list.slice(0,400):[]}));
 let pTimer=null;
 function persist(){
   if(!home) { localSave(); return; }
-  home.saved=Date.now(); localSave();
+  home.saved=Date.now(); if(home.created&&!home.since)home.since=Date.now(); localSave();
   clearTimeout(pTimer); pTimer=setTimeout(flushSave,700);
 }
 function flushSave(){ clearTimeout(pTimer); pTimer=null; if(!db||!myId||loadFailed||!home) return; writePriv(); if(home.created) writePub(); }
@@ -1379,14 +1409,13 @@ function drawCottage(t){
 /* ================= cottage (inside) ================= */
 const RW=196, RH=172, WALL=54;
 let scene='garden', RX=0, RY=0, houseNear=null, napT=0, napping=false;
-const HCOL=[[5,0,35,69],[39,0,99,77],[100,0,122,65],[120,0,158,91],[156,0,192,69],[5,118,33,152],[166,148,190,164],[158,108,194,130]];
+const HCOL=[[5,0,35,69],[39,0,99,77],[100,0,122,65],[120,0,158,91],[156,0,192,69],[5,118,33,152],[166,148,190,164]];
 const HOBJ=[
   {x:66,y:84,label:'Open dashboard',act:()=>openDash(),box:[40,30,100,78]},
   {x:139,y:97,get label(){return napping?'Get up':(bedSleepers().length?'Lie down next to '+(livePeers().find(p=>p.scene==='house'&&p.nap)||{name:'them'}).name:'Take a nap');},act:()=>{napping=!napping;napT=napping?.01:0;av.target=null;av.moving=false;av.back=false;},box:[120,32,158,92]},
   {x:20,y:76,label:'Open bookshelf',act:()=>openBooks(),box:[4,16,36,68]},
   {x:42,y:140,label:'Play a game',act:()=>askQuiz(),box:[4,100,34,152]},
   // the wardrobe: only in your own cottage, it is where you change your outfit
-  {x:152,y:124,label:'Watch the fish',act:()=>openAquarium(),box:[158,84,194,130]},
   {x:174,y:78,own:true,label:'Open wardrobe',act:()=>{if(!visiting)openCreator(true);},box:[156,12,192,68]},
 ];
 function roomOrigin(){RX=Math.floor((W-RW)/2);RY=Math.max(52,Math.floor((H-RH)/2)+6);}
@@ -1537,7 +1566,6 @@ function renderHouse(t){
       R(8,128,22,7,'#53318a');R(12,129,2,4,'#2a2430');R(11,128,4,2,'#e8506c');R(19,130,3,2,'#f2c94c');R(24,130,3,2,'#4fb3e8');
       R(9,135,20,14,'#5b3690');R(13,138,12,7,'#4a2a78');R(17,140,4,1,'#f2c94c');R(7,149,24,1,'#2a2430');
     }},
-    {y:129,d:()=>drawRoomTank(t)},
     {y:hereOwns('lamp')?130:-99,d:()=>{if(hereOwns('lamp'))drawFloorLamp(nt>.3);}},
     {y:163,d:()=>{ // plant
       R(170,150,16,13,'#a8462c');R(169,150,18,3,'#d9744c');R(171,153,14,1,'#c0573a');
@@ -2486,7 +2514,6 @@ function pgStrip(W,players,score,mark,win){
 const GAMES=[
  {k:'quiz',n:'Quiz Show',s:'Fragen raten, startet sofort',open:()=>openQuiz(),live:()=>{const q=quizState();return q&&!q.mine?`Läuft bei ${q.by}`:'';}},
  {k:'draw',n:'Montagsmaler',s:'Einer malt, alle raten',open:()=>openDraw(),live:()=>pgLive('draw')},
- {k:'slf',n:'Stadt Land Fluss',s:'Ein Buchstabe, sechs Wörter',open:()=>openSlf(),live:()=>pgLive('slf')},
  {k:'hang',n:'Galgenmännchen',s:'Wort erraten, bevor die Blume welkt',open:()=>openHang(),live:()=>pgLive('hang')},
  {k:'c4',n:'Vier gewinnt',s:'Zu zweit oder gegen den Computer',open:()=>openC4(),live:()=>{const L=c4Leader(),c=c4State();return !L.self&&c?(c.ph==='wait'?`${c.p1[1]} sucht jemanden`:`${c.p1[1]} spielt`):'';}},
 ];
@@ -3798,7 +3825,7 @@ function blocked(x,y){
 
   if(scene==='garden'&&Math.hypot(x-(SL.x+15),(y-(SL.y-1))*1.5)<7) return true;
   if(scene==='garden'&&lineBlocked(x,y)) return true;
-  if(scene==='garden'&&pondBlocked(x,y)) return true;
+  if(scene==='garden'&&(pondBlocked(x,y)||bucketBlocked(x,y))) return true;
   if(decoBlocked(x,y)) return true;
   if(scene==='garden'&&x>COMP.x-14&&x<COMP.x+19&&y>COMP.y-6&&y<COMP.y+2) return true;
   if(visiting&&Math.abs(x-host.x)<14&&Math.abs(y-host.y)<5) return true;
@@ -3835,6 +3862,7 @@ cvs.addEventListener('pointerdown',e=>{
   if(fish){if(fish.ph==='bite'||fish.ph==='show'||fish.ph==='reel'||onPondTap(lx,ly)){fishTap();return;}fish=null;}
   if(moving){av.run=false;placeAt(lx,ly);return;}
   if(passOf){hopOff();return;}
+  if(bucketAt(lx,ly)){av.target={x:BUCKET.x-9,y:BUCKET.y+1,onArrive:openAquarium};return;}
   if(onPondTap(lx,ly)){goFish();return;}
   if(lx>=BOARD.x0-4&&lx<=BOARD.x1+2&&Math.abs(ly-BOARD.y)<8&&!av.swim){av.run=false;av.target={x:BOARD.x1-3,y:BOARD.y,onArrive:()=>{av.target={x:BOARD.x0+2,y:BOARD.y,onArrive:()=>startJump(BOARD.x0-20,BOARD.y+4,true)};}};return;}
   if(lx>40&&lx<92&&ly>HB-46&&ly<HB+2){goToDoor();return;}
@@ -3905,7 +3933,7 @@ const help=document.getElementById('help');
 document.getElementById('bHelp').onclick=()=>{renderNeighbours();help.classList.add('show');};
 document.getElementById('helpOk').onclick=()=>help.classList.remove('show');
 const gardensM=document.getElementById('gardens');
-document.getElementById('bGardens').onclick=()=>{renderGardens();gardensM.classList.add('show');};
+document.getElementById('bGardens').onclick=()=>{fbPage=null;renderGardens();gardensM.classList.add('show');};
 document.getElementById('gClose').onclick=()=>gardensM.classList.remove('show');
 document.getElementById('bHome').onclick=()=>{hideHomeHint(true);goHome();};
 function closeModals(){shopM.classList.remove('show');if(fishM.classList.contains('show'))closeAquarium();document.querySelectorAll('.modal.pgm.show').forEach(m=>m._close());compM.classList.remove('show');mapM.classList.remove('show');isleM.classList.remove('show');lineM.classList.remove('show');askM.classList.remove('show');if(quizM.classList.contains('show'))closeQuiz();if(c4M.classList.contains('show'))closeC4();stillM.classList.remove('show');dashM.classList.remove('show');booksM.classList.remove('show');if(creator.classList.contains('show'))closeCreator();help.classList.remove('show');gardensM.classList.remove('show');addM.classList.remove('show');}
@@ -3951,29 +3979,6 @@ function handleInvite(){
   inviteId='';try{localStorage.removeItem('garden-invite');history.replaceState(null,'',location.pathname+location.hash);}catch(e){}
   ownerVisited=true;visiting={id:gd.id,data:gd.data};visBooksFor=null;if(started)enterGarden();toast('Welcome to '+gd.data.name+"'s garden 🌱",3000);return true;
 }
-function renderGardens(keep){
-  if(!keep)renderNeighbours();
-  const box=document.getElementById('glist'); box.innerHTML='';
-  if(!db){const e=document.createElement('div');e.className='empty';e.textContent='Gardens sync once you are signed in.';box.appendChild(e);return;}
-  const q=(document.getElementById('gSearch').value||'').trim().toLowerCase(),fr=(home&&home.friends)||[];
-  const list=gardensList.filter(gd=>gd.id!==myId&&(gd.data.owner||gd.data.listed||fr.includes(gd.id)||(visiting&&visiting.id===gd.id))).filter(gd=>!q||gd.data.name.toLowerCase().includes(q)).sort((a,b)=>(b.id===myId)-(a.id===myId)||(b.data.owner-a.data.owner)||a.data.name.localeCompare(b.data.name));
-  const all=gardensList.filter(gd=>gd.id!==myId&&(gd.data.owner||gd.data.listed||fr.includes(gd.id)||(visiting&&visiting.id===gd.id))).length;document.getElementById('gSearch').hidden=all<6&&!q;
-  if(!list.length){const e=document.createElement('div');e.className='empty';e.textContent=q?'Nobody with that name. Paste their invite link below.':'No friends here yet. Paste a friend’s invite link below, or send them yours.';box.appendChild(e);return;}
-  list.forEach(gd=>{
-    const row=document.createElement('div');row.className='grow';
-    const l=document.createElement('div');const b=document.createElement('b');b.textContent=gd.data.name+(gd.id===myId?' (you)':fr.includes(gd.id)?' ♥':'');l.appendChild(b);
-    if(gd.id!==myId&&onlineIds().has(gd.id)){const on=document.createElement('span');on.className='online';on.textContent='  ● here now';b.appendChild(on);}
-    const m=document.createElement('div');m.className='m';
-    const ps=gd.data.projects, avgP=ps.length?Math.round(ps.reduce((a,p)=>a+p.progress,0)/ps.length):0;
-    const sk=gd.data.skills||[];m.textContent=`${ps.length} project${ps.length!==1?'s':''}, ${sk.length} skill${sk.length!==1?'s':''}, avg progress ${avgP}%, water ${Math.round(gardenAvg(gd.data))}%`;l.appendChild(m);
-    const btn=document.createElement('button');btn.className='btn';
-    const isMine=gd.id===myId;
-    btn.textContent=isMine?(visiting?'Go home':'You are here'):(visiting&&visiting.id===gd.id?'You are here':'Visit');
-    btn.disabled=isMine?!visiting:(visiting&&visiting.id===gd.id);
-    btn.onclick=()=>{gardensM.classList.remove('show');isMine?goHome():visit(gd);};
-    row.appendChild(l);row.appendChild(btn);box.appendChild(row);
-  });
-}
 function visit(gd){visiting={id:gd.id,data:gd.data};visBooksFor=null;enterGarden();}
 let stayHome=false;
 function goHome(){if(!home)return;stayHome=true;if(home.created&&!home.hs){home.hs=true;persist();}visiting=null;enterGarden();}
@@ -3994,6 +3999,71 @@ function enterGarden(){
   rebuildLabels();refreshChrome();
 }
 
+/* ================= friend book ================= */
+// The Friends button opens a little friend book: everyone you garden with as a tile (online first),
+// tap one for their page (avatar, when they were last around, their garden, their own answers) and visit from there.
+// Your own page is the first tile: five short answers that your friends can read.
+const FB_Q=[['food','Favourite food'],['hobby','Hobbies'],['like','I really like'],['dream','My dream'],['motto','My motto']];
+let fbPage=null;
+function agoTxt(t){if(!t)return '';const d=(Date.now()-t)/864e5;if(d<1/24)return 'just now';if(d<1)return 'today';if(d<2)return 'yesterday';if(d<30)return Math.floor(d)+' days ago';
+  return new Date(t).toLocaleDateString(undefined,{day:'numeric',month:'short'});}
+function avatarCv(look,cls){const c=document.createElement('canvas');c.width=20;c.height=30;c.className=cls||'fbav';const keep=X;
+  try{X=c.getContext('2d');drawAvatar(X,10,28,look,{shadow:false,t:0});}catch(e){}finally{X=keep;}return c;}
+function fbVisible(){const fr=(home&&home.friends)||[];
+  return gardensList.filter(gd=>gd.id!==myId&&(gd.data.owner||gd.data.listed||fr.includes(gd.id)||(visiting&&visiting.id===gd.id)));}
+function fbStatus(gd){if(onlineIds().has(gd.id))return {on:true,t:'here now'};return {on:false,t:gd.data.saved?'last around '+agoTxt(gd.data.saved):''};}
+function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;}
+function renderGardens(keep){
+  if(!keep)renderNeighbours();
+  const panel=document.querySelector('#gardens .panel'),box=document.getElementById('glist');box.innerHTML='';
+  panel.classList.toggle('fbopen',!!fbPage);
+  document.getElementById('fbLead').hidden=!!fbPage;
+  if(fbPage){document.getElementById('gSearch').hidden=true;renderFbPage(box);return;}
+  if(!db){box.appendChild(el('div','empty','Gardens sync once you are signed in.'));return;}
+  const q=(document.getElementById('gSearch').value||'').trim().toLowerCase(),fr=(home&&home.friends)||[],on=onlineIds();
+  const all=fbVisible();document.getElementById('gSearch').hidden=all.length<6&&!q;
+  const list=all.filter(gd=>!q||gd.data.name.toLowerCase().includes(q))
+    .sort((a,b)=>(on.has(b.id)-on.has(a.id))||(fr.includes(b.id)-fr.includes(a.id))||((b.data.saved||0)-(a.data.saved||0)));
+  const grid=el('div','fbgrid');box.appendChild(grid);
+  if(home&&!q){const me=el('button','fbt me');me.type='button';me.appendChild(avatarCv(home.look));me.appendChild(el('b','',home.name||'You'));
+    const filled=FB_Q.some(([k])=>home.fb&&home.fb[k]);me.appendChild(el('span','fs',filled?'your page':'fill in your page'));
+    me.onclick=()=>{fbPage='me';renderGardens(true);};grid.appendChild(me);}
+  list.forEach(gd=>{const t=el('button','fbt');t.type='button';t.appendChild(avatarCv(gd.data.look));
+    t.appendChild(el('b','',gd.data.name));
+    const st=fbStatus(gd),s=el('span','fs'+(st.on?' on':''),st.t);if(fr.includes(gd.id))s.appendChild(el('span','hrt','♥'));t.appendChild(s);
+    t.onclick=()=>{fbPage=gd.id;renderGardens(true);};grid.appendChild(t);});
+  if(!list.length)box.appendChild(el('div','empty',q?'Nobody with that name. Paste their invite link below.':'No friends here yet. Paste a friend’s invite link below, or send them yours.'));
+}
+function renderFbPage(box){
+  const back=el('button','fbback','← Friend book');back.type='button';back.onclick=()=>{fbPage=null;renderGardens(true);};box.appendChild(back);
+  const pg=el('div','fbpg');box.appendChild(pg);
+  if(fbPage==='me'){
+    if(!home){fbPage=null;return;}
+    const hd=el('div','fbhd');hd.appendChild(avatarCv(home.look,'fbbig'));const ht=el('div','fbht');ht.appendChild(el('h3','',home.name||'You'));
+    ht.appendChild(el('div','fs','Your page. Friends see these answers in their friend book.'));hd.appendChild(ht);pg.appendChild(hd);
+    const f=el('form','fbform');f.autocomplete='off';
+    FB_Q.forEach(([k,lab])=>{const l=el('label','fbq');l.appendChild(el('span','',lab));const i=el('input','inp');i.name=k;i.maxLength=40;i.value=(home.fb&&home.fb[k])||'';l.appendChild(i);f.appendChild(l);});
+    const sv=el('button','btn dark','Save my page');sv.type='submit';f.appendChild(sv);
+    f.onsubmit=e=>{e.preventDefault();const fb={};FB_Q.forEach(([k])=>{const v=nodot(f.elements[k].value.trim()).slice(0,40);if(v)fb[k]=v;});home.fb=fb;persist();toast('Saved. Your friends can read it now.',2200);fbPage=null;renderGardens(true);};
+    pg.appendChild(f);return;}
+  const gd=gardensList.find(x=>x.id===fbPage);if(!gd){fbPage=null;renderGardens(true);return;}
+  const d=gd.data,fr=(home&&home.friends)||[],st=fbStatus(gd);
+  const hd=el('div','fbhd');hd.appendChild(avatarCv(d.look,'fbbig'));const ht=el('div','fbht');
+  const h=el('h3','',d.name);if(fr.includes(gd.id))h.appendChild(el('span','hrt','♥'));ht.appendChild(h);
+  if(st.t)ht.appendChild(el('div','fs'+(st.on?' on':''),st.t));
+  if(d.since)ht.appendChild(el('div','fs','gardening since '+new Date(d.since).toLocaleDateString(undefined,{month:'long',year:'numeric'})));
+  hd.appendChild(ht);pg.appendChild(hd);
+  const ps=d.projects||[],sk=d.skills||[],chips=el('div','fbchips');
+  [ps.length+(ps.length===1?' project':' projects'),sk.length+(sk.length===1?' skill':' skills'),'watered '+Math.round(gardenAvg(d))+'%'].forEach(t=>chips.appendChild(el('span','fbchip',t)));pg.appendChild(chips);
+  const qa=FB_Q.filter(([k])=>d.fb&&d.fb[k]);
+  if(qa.length){const dl=el('dl','fbqa');qa.forEach(([k,lab])=>{dl.appendChild(el('dt','',lab));dl.appendChild(el('dd','',d.fb[k]));});pg.appendChild(dl);}
+  else pg.appendChild(el('div','fbnone',d.name+' has not filled in their page yet.'));
+  const acts=el('div','fbacts');
+  const here=visiting&&visiting.id===gd.id,v=el('button','btn dark',here?'You are here':'Visit '+d.name+'’s garden');v.type='button';v.disabled=here;
+  v.onclick=()=>{gardensM.classList.remove('show');fbPage=null;visit(gd);};acts.appendChild(v);
+  if(home&&!fr.includes(gd.id)){const a=el('button','btn','Add to my friends ♥');a.type='button';a.onclick=()=>{addFriend(gd.id);renderGardens(true);};acts.appendChild(a);}
+  pg.appendChild(acts);
+}
 /* ================= one shared audio context, woken up by every tap ================= */
 const Snd=(()=>{
   let ctx=null;
@@ -4427,6 +4497,14 @@ function inPond(x,y,m){m=m||0;const a=(x-POND.x)/(POND.rx+m),b=(y-POND.y)/(POND.
 function onDock(x,y){return x>DOCK.x0-2&&x<DOCK.x1+2&&y>DOCK.y0-6&&y<DOCK.y1+1;}
 function pondBlocked(x,y){return inPond(x,y,3)&&!(x>DOCK.x0+2&&x<DOCK.x1-2&&y<DOCK.y1-1);}
 function onPondTap(x,y){return inPond(x,y,4)||onDock(x,y);}
+// your catch lives in a little wooden bucket next to the dock: tap it to see all your fish
+const BUCKET={x:138,y:500};
+function bucketAt(x,y){return Math.abs(x-BUCKET.x)<7&&y>BUCKET.y-12&&y<BUCKET.y+3;}
+function bucketBlocked(x,y){return Math.abs(x-BUCKET.x)<5&&Math.abs(y-BUCKET.y)<3;}
+function drawBucket(t){const x=BUCKET.x,y=BUCKET.y,n=FISH.filter(f=>tankFish().c[f.id]).length;
+  R(x-5,y-9,10,9,'#a8744a');R(x-5,y-9,10,1,'#c99260');R(x-6,y-10,12,2,'#6a4228');R(x-4,y-11,8,1,'#7cc0cc');R(x-5,y-5,10,1,'#6a4228');R(x-4,y,8,1,'#5a3420');
+  R(x-6,y-14,1,4,'#3a3440');R(x+5,y-14,1,4,'#3a3440');R(x-5,y-15,10,1,'#3a3440');
+  if(n&&Math.floor(t*1.3)%5===0){R(x-1,y-13,3,2,'#f28c28');R(x+2,y-12,1,1,'#f7a54a');}}
 
 /* ---------- fish: little pixel sprites, facing right ---------- */
 const FT={
@@ -4651,8 +4729,8 @@ fishM.addEventListener('click',e=>{if(e.target===fishM)closeAquarium();});
 function renderAquarium(){
   const b=tankFish(),got=FISH.filter(f=>b.c[f.id]),total=got.reduce((a,f)=>a+b.c[f.id],0);
   const who=visiting&&visiting.data&&visiting.data.name;
-  document.getElementById('fishT').textContent=who?who+'s Aquarium':'Aquarium';
-  document.getElementById('fishS').textContent=!got.length?(visiting?'Noch keine Fische drin.':'Noch leer. Unten im Garten ist ein Teich, dort kannst du angeln.'):got.length+' von '+FISH.length+' Arten, '+total+(total===1?' Fisch':' Fische')+' insgesamt.';
+  document.getElementById('fishT').textContent=who?who+'s Fang':'Dein Fang';
+  document.getElementById('fishS').textContent=!got.length?(visiting?'Noch keine Fische gefangen.':'Noch leer. Tipp aufs Wasser, dann wirfst du am Steg die Angel aus.'):got.length+' von '+FISH.length+' Arten, '+total+(total===1?' Fisch':' Fische')+' insgesamt.';
   const grid=document.getElementById('aqGrid');grid.innerHTML='';
   FISH.forEach(f=>{const n=b.c[f.id]||0,d=document.createElement('div');d.className='aqf'+(n?'':' no');
     const cv=document.createElement('canvas'),im=fishImg(f.id,!n);cv.width=16;cv.height=8;cv.getContext('2d').drawImage(im,Math.floor((16-im.width)/2),Math.floor((8-im.height)/2));
@@ -4678,7 +4756,7 @@ function aqLoop(now){
   aqRaf=requestAnimationFrame(aqLoop);
 }
 /* generated by tools/dog_sheet.py from art/dog-sprite.png; do not edit by hand */
-const DOG_SHEET="data:image/png;base64,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", DOG_W=22, DOG_H=18, DOG_FR={"idle": 0, "breath": 1, "blink": 2, "walk1": 3, "walk2": 4, "wag1": 5, "wag2": 6, "sad": 7, "sadb": 8, "sleep": 9, "sleepb": 10, "eat1": 11, "eat2": 12};
+const DOG_SHEET="data:image/png;base64,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", DOG_W=22, DOG_H=18, DOG_FR={"idle": 0, "breath": 1, "blink": 2, "walk1": 3, "walk2": 4, "wag1": 5, "wag2": 6, "sad": 7, "sadb": 8, "sleep": 9, "sleepb": 10, "eat1": 11, "eat2": 12};
 /* ================= shiba (lives in Sisi's cottage) ================= */
 // The dog is Sisi's own sprite (art/dog-sprite.png), drawn straight from the sprite sheet that
 // tools/dog_sheet.py cuts from it: no redrawing, no smoothing, no shadow, no filters.
@@ -5227,7 +5305,7 @@ function drawBubbles(){
 function frame(now){
   const dt=Math.min(.05,(now-last)/1000);last=now;const t=(now-t0)/1000;
   update(dt,t);updateAlpaca(dt);render(t);drawBubbles();processActs();sendPresence(now);tickLive(now);
-  uiTick+=dt;if(waterFx)refreshLabels();if(uiTick>.5){uiTick=0;refreshLabels();paintCoins();if(!editing)updateDialog(false);}
+  uiTick+=dt;if(waterFx)refreshLabels();if(uiTick>.5){uiTick=0;refreshLabels();paintCoins();edgeTint();if(!editing)updateDialog(false);}
   requestAnimationFrame(frame);
 }
 function isWater(x,y){if(!av.swim&&x>BOARD.x0-2&&Math.abs(y-BOARD.y)<4)return false;return x>POOL.x0+3&&x<POOL.x1-3&&y>POOL.y0+5&&y<POOL.y1-2;}
@@ -5333,6 +5411,7 @@ function render(t){
   drawPool(t);drawPond(t);drawGroundCoins(t);
   decoItems(t).forEach(o=>list.push(o));
   REEDS.forEach(([x,y,i])=>list.push({y,d:()=>drawReeds(x,y,i,t)}));
+  list.push({y:BUCKET.y,d:()=>drawBucket(t)});
   list.push({y:FOUNT.y,d:()=>drawFountain(t)});
   list.push({y:SL.y,d:()=>drawSlide(t)});
   for(let r0=0;r0<lineRows();r0++)list.push({y:CLN.rows[r0],d:()=>drawLineRow(r0,t)});
@@ -5472,6 +5551,18 @@ function maybeAutoVisit(){
     start();
   }
 })();
+
+// phone browsers paint the strip under the status bar and around the toolbar themselves: give them the colour
+// the game shows at its top and bottom edge, so there is no blue band above the sky or under the grass
+const themeMeta=document.querySelector('meta[name="theme-color"]');let edgeKey='';
+function edgeTint(){
+  try{const a=g.getImageData(0,0,1,1).data,b=g.getImageData(0,Math.max(0,cvs.height-1),1,1).data;
+    const hex=d=>'#'+[d[0],d[1],d[2]].map(v=>v.toString(16).padStart(2,'0')).join(''),top=hex(a),bot=hex(b),k=top+bot;
+    if(k===edgeKey)return;edgeKey=k;
+    if(themeMeta)themeMeta.setAttribute('content',top);
+    document.documentElement.style.background='linear-gradient('+top+' 50%,'+bot+' 50%)';document.body.style.background='transparent';
+  }catch(e){}
+}
 })();
 </script>
 <div id="gate" hidden><div class="gcard"><div class="gt">Sisi's<br>Garden</div><p id="gCount" hidden></p><p id="gMsg">Loading…</p>
@@ -5484,7 +5575,7 @@ function maybeAutoVisit(){
 #gForm,#gCode{display:flex;flex-direction:column;gap:10px}#gForm[hidden],#gCode[hidden]{display:none}#gAlt{display:flex;flex-direction:column;gap:10px;margin-top:4px}#gAlt[hidden],.galt[hidden]{display:none}.gor{margin:6px 0 0;font-size:14px;opacity:.6}.galt{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;color:#2a2430;cursor:pointer}.galt:active{transform:translate(2px,2px)}#gEmail,#gTok{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#fff;outline:none;border-radius:0;-webkit-appearance:none;appearance:none;box-shadow:none;-webkit-tap-highlight-color:transparent}#gEmail:focus,#gTok:focus{outline:none;background:#fff8e6}#gTok{font-size:22px;letter-spacing:6px;text-align:center}#gTok::placeholder{color:#cfc8b8}#gBack{font-size:13px;color:#8b8490;text-align:center;margin-top:2px}
 #gBtn,#gTokBtn{font:inherit;font-size:17px;padding:10px;border:2px solid #2a2430;background:#2a2430;color:#fff;cursor:pointer}.acct{margin-top:16px;padding-top:12px;border-top:2px solid rgba(42,36,48,.15);font-size:13px;line-height:1.4}#help .pfoot{align-items:flex-end;flex-wrap:wrap}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=1795778783"></script>
+<script src="config.js?v=1795861236"></script>
 <script>
 /* Sisi's Garden web app: login + Supabase bridge.
    Gives the game the same small interface it had inside Claude (db, user, room). */
@@ -5515,7 +5606,7 @@ function maybeAutoVisit(){
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   /* ---------- always the newest version, without hard reloads ---------- */
-  const BUILD = '27.11. 12:26';
+  const BUILD = '28.11. 11:20';
   const goNew = v => location.replace(location.pathname + '?v=' + encodeURIComponent(v) + location.hash);
   let updChip = null;
   async function checkVersion(auto) {
@@ -5805,7 +5896,7 @@ function maybeAutoVisit(){
     const foot = help.querySelector('.pfoot'), left = foot && foot.querySelector('span');
     const info = document.createElement('div'); info.className = 'acct';
     const who = document.createElement('div'); who.textContent = 'Signed in as ' + (sbUserEmail || 'you'); who.style.wordBreak = 'break-all';
-    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 27.11. 12:26';
+    const ver = document.createElement('div'); ver.style.opacity = '.6'; ver.style.marginTop = '2px'; ver.textContent = 'Version 28.11. 11:20';
     info.appendChild(who); info.appendChild(ver);
     const out = document.createElement('button'); out.type = 'button'; out.className = 'btn'; out.textContent = 'Sign out';
     out.onclick = async () => { await sb.auth.signOut(); try { DEVICE_KEYS.concat('garden-uid', 'garden-pending').forEach(k => localStorage.removeItem(k)); } catch (e) {}

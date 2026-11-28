@@ -183,7 +183,7 @@ function blocked(x,y){
 
   if(scene==='garden'&&Math.hypot(x-(SL.x+15),(y-(SL.y-1))*1.5)<7) return true;
   if(scene==='garden'&&lineBlocked(x,y)) return true;
-  if(scene==='garden'&&pondBlocked(x,y)) return true;
+  if(scene==='garden'&&(pondBlocked(x,y)||bucketBlocked(x,y))) return true;
   if(decoBlocked(x,y)) return true;
   if(scene==='garden'&&x>COMP.x-14&&x<COMP.x+19&&y>COMP.y-6&&y<COMP.y+2) return true;
   if(visiting&&Math.abs(x-host.x)<14&&Math.abs(y-host.y)<5) return true;
@@ -220,6 +220,7 @@ cvs.addEventListener('pointerdown',e=>{
   if(fish){if(fish.ph==='bite'||fish.ph==='show'||fish.ph==='reel'||onPondTap(lx,ly)){fishTap();return;}fish=null;}
   if(moving){av.run=false;placeAt(lx,ly);return;}
   if(passOf){hopOff();return;}
+  if(bucketAt(lx,ly)){av.target={x:BUCKET.x-9,y:BUCKET.y+1,onArrive:openAquarium};return;}
   if(onPondTap(lx,ly)){goFish();return;}
   if(lx>=BOARD.x0-4&&lx<=BOARD.x1+2&&Math.abs(ly-BOARD.y)<8&&!av.swim){av.run=false;av.target={x:BOARD.x1-3,y:BOARD.y,onArrive:()=>{av.target={x:BOARD.x0+2,y:BOARD.y,onArrive:()=>startJump(BOARD.x0-20,BOARD.y+4,true)};}};return;}
   if(lx>40&&lx<92&&ly>HB-46&&ly<HB+2){goToDoor();return;}
@@ -290,7 +291,7 @@ const help=document.getElementById('help');
 document.getElementById('bHelp').onclick=()=>{renderNeighbours();help.classList.add('show');};
 document.getElementById('helpOk').onclick=()=>help.classList.remove('show');
 const gardensM=document.getElementById('gardens');
-document.getElementById('bGardens').onclick=()=>{renderGardens();gardensM.classList.add('show');};
+document.getElementById('bGardens').onclick=()=>{fbPage=null;renderGardens();gardensM.classList.add('show');};
 document.getElementById('gClose').onclick=()=>gardensM.classList.remove('show');
 document.getElementById('bHome').onclick=()=>{hideHomeHint(true);goHome();};
 function closeModals(){shopM.classList.remove('show');if(fishM.classList.contains('show'))closeAquarium();document.querySelectorAll('.modal.pgm.show').forEach(m=>m._close());compM.classList.remove('show');mapM.classList.remove('show');isleM.classList.remove('show');lineM.classList.remove('show');askM.classList.remove('show');if(quizM.classList.contains('show'))closeQuiz();if(c4M.classList.contains('show'))closeC4();stillM.classList.remove('show');dashM.classList.remove('show');booksM.classList.remove('show');if(creator.classList.contains('show'))closeCreator();help.classList.remove('show');gardensM.classList.remove('show');addM.classList.remove('show');}
@@ -335,29 +336,6 @@ function handleInvite(){
   addFriend(gd.id);
   inviteId='';try{localStorage.removeItem('garden-invite');history.replaceState(null,'',location.pathname+location.hash);}catch(e){}
   ownerVisited=true;visiting={id:gd.id,data:gd.data};visBooksFor=null;if(started)enterGarden();toast('Welcome to '+gd.data.name+"'s garden 🌱",3000);return true;
-}
-function renderGardens(keep){
-  if(!keep)renderNeighbours();
-  const box=document.getElementById('glist'); box.innerHTML='';
-  if(!db){const e=document.createElement('div');e.className='empty';e.textContent='Gardens sync once you are signed in.';box.appendChild(e);return;}
-  const q=(document.getElementById('gSearch').value||'').trim().toLowerCase(),fr=(home&&home.friends)||[];
-  const list=gardensList.filter(gd=>gd.id!==myId&&(gd.data.owner||gd.data.listed||fr.includes(gd.id)||(visiting&&visiting.id===gd.id))).filter(gd=>!q||gd.data.name.toLowerCase().includes(q)).sort((a,b)=>(b.id===myId)-(a.id===myId)||(b.data.owner-a.data.owner)||a.data.name.localeCompare(b.data.name));
-  const all=gardensList.filter(gd=>gd.id!==myId&&(gd.data.owner||gd.data.listed||fr.includes(gd.id)||(visiting&&visiting.id===gd.id))).length;document.getElementById('gSearch').hidden=all<6&&!q;
-  if(!list.length){const e=document.createElement('div');e.className='empty';e.textContent=q?'Nobody with that name. Paste their invite link below.':'No friends here yet. Paste a friend’s invite link below, or send them yours.';box.appendChild(e);return;}
-  list.forEach(gd=>{
-    const row=document.createElement('div');row.className='grow';
-    const l=document.createElement('div');const b=document.createElement('b');b.textContent=gd.data.name+(gd.id===myId?' (you)':fr.includes(gd.id)?' ♥':'');l.appendChild(b);
-    if(gd.id!==myId&&onlineIds().has(gd.id)){const on=document.createElement('span');on.className='online';on.textContent='  ● here now';b.appendChild(on);}
-    const m=document.createElement('div');m.className='m';
-    const ps=gd.data.projects, avgP=ps.length?Math.round(ps.reduce((a,p)=>a+p.progress,0)/ps.length):0;
-    const sk=gd.data.skills||[];m.textContent=`${ps.length} project${ps.length!==1?'s':''}, ${sk.length} skill${sk.length!==1?'s':''}, avg progress ${avgP}%, water ${Math.round(gardenAvg(gd.data))}%`;l.appendChild(m);
-    const btn=document.createElement('button');btn.className='btn';
-    const isMine=gd.id===myId;
-    btn.textContent=isMine?(visiting?'Go home':'You are here'):(visiting&&visiting.id===gd.id?'You are here':'Visit');
-    btn.disabled=isMine?!visiting:(visiting&&visiting.id===gd.id);
-    btn.onclick=()=>{gardensM.classList.remove('show');isMine?goHome():visit(gd);};
-    row.appendChild(l);row.appendChild(btn);box.appendChild(row);
-  });
 }
 function visit(gd){visiting={id:gd.id,data:gd.data};visBooksFor=null;enterGarden();}
 let stayHome=false;

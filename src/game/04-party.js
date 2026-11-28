@@ -70,7 +70,6 @@ function pgStrip(W,players,score,mark,win){
 const GAMES=[
  {k:'quiz',n:'Quiz Show',s:'Fragen raten, startet sofort',open:()=>openQuiz(),live:()=>{const q=quizState();return q&&!q.mine?`Läuft bei ${q.by}`:'';}},
  {k:'draw',n:'Montagsmaler',s:'Einer malt, alle raten',open:()=>openDraw(),live:()=>pgLive('draw')},
- {k:'slf',n:'Stadt Land Fluss',s:'Ein Buchstabe, sechs Wörter',open:()=>openSlf(),live:()=>pgLive('slf')},
  {k:'hang',n:'Galgenmännchen',s:'Wort erraten, bevor die Blume welkt',open:()=>openHang(),live:()=>pgLive('hang')},
  {k:'c4',n:'Vier gewinnt',s:'Zu zweit oder gegen den Computer',open:()=>openC4(),live:()=>{const L=c4Leader(),c=c4State();return !L.self&&c?(c.ph==='wait'?`${c.p1[1]} sucht jemanden`:`${c.p1[1]} spielt`):'';}},
 ];

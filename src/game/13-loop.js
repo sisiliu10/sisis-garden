@@ -26,7 +26,7 @@ function drawBubbles(){
 function frame(now){
   const dt=Math.min(.05,(now-last)/1000);last=now;const t=(now-t0)/1000;
   update(dt,t);updateAlpaca(dt);render(t);drawBubbles();processActs();sendPresence(now);tickLive(now);
-  uiTick+=dt;if(waterFx)refreshLabels();if(uiTick>.5){uiTick=0;refreshLabels();paintCoins();if(!editing)updateDialog(false);}
+  uiTick+=dt;if(waterFx)refreshLabels();if(uiTick>.5){uiTick=0;refreshLabels();paintCoins();edgeTint();if(!editing)updateDialog(false);}
   requestAnimationFrame(frame);
 }
 function isWater(x,y){if(!av.swim&&x>BOARD.x0-2&&Math.abs(y-BOARD.y)<4)return false;return x>POOL.x0+3&&x<POOL.x1-3&&y>POOL.y0+5&&y<POOL.y1-2;}
@@ -132,6 +132,7 @@ function render(t){
   drawPool(t);drawPond(t);drawGroundCoins(t);
   decoItems(t).forEach(o=>list.push(o));
   REEDS.forEach(([x,y,i])=>list.push({y,d:()=>drawReeds(x,y,i,t)}));
+  list.push({y:BUCKET.y,d:()=>drawBucket(t)});
   list.push({y:FOUNT.y,d:()=>drawFountain(t)});
   list.push({y:SL.y,d:()=>drawSlide(t)});
   for(let r0=0;r0<lineRows();r0++)list.push({y:CLN.rows[r0],d:()=>drawLineRow(r0,t)});
@@ -271,3 +272,15 @@ function maybeAutoVisit(){
     start();
   }
 })();
+
+// phone browsers paint the strip under the status bar and around the toolbar themselves: give them the colour
+// the game shows at its top and bottom edge, so there is no blue band above the sky or under the grass
+const themeMeta=document.querySelector('meta[name="theme-color"]');let edgeKey='';
+function edgeTint(){
+  try{const a=g.getImageData(0,0,1,1).data,b=g.getImageData(0,Math.max(0,cvs.height-1),1,1).data;
+    const hex=d=>'#'+[d[0],d[1],d[2]].map(v=>v.toString(16).padStart(2,'0')).join(''),top=hex(a),bot=hex(b),k=top+bot;
+    if(k===edgeKey)return;edgeKey=k;
+    if(themeMeta)themeMeta.setAttribute('content',top);
+    document.documentElement.style.background='linear-gradient('+top+' 50%,'+bot+' 50%)';document.body.style.background='transparent';
+  }catch(e){}
+}

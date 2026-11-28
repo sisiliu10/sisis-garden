@@ -217,7 +217,10 @@
   .mcard.live::after{content:'';position:absolute;top:7px;right:7px;width:8px;height:8px;background:#7cf08a;box-shadow:0 0 0 2px var(--ink);animation:glive 1s steps(2) infinite}
   @keyframes glive{50%{background:#2f8a3a}}
   .mcard.g-quiz{grid-column:1/-1}.mcard.g-quiz canvas{aspect-ratio:128/40}
-  @media (min-width:640px){#askM .askp{width:min(560px,100%)}.gcards{grid-template-columns:repeat(3,minmax(0,1fr))}.mcard.g-quiz{grid-column:span 2}}
+  @media (min-width:640px){#askM .askp{width:min(560px,100%)}}
+  .gcards{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  /* phones: the quiz stage on top, the other games as rows (small picture left, name right) so names are never cut */
+  @media (max-width:480px){.gcards{grid-template-columns:1fr!important;gap:8px}.gcards .mcard:not(.g-quiz){flex-direction:row;align-items:center}.gcards .mcard:not(.g-quiz) canvas{width:34%;flex:none;border-bottom:0;border-right:3px solid var(--ink)}.gcards .mcard:not(.g-quiz) .gtx{padding:6px 12px}}
   @media (prefers-reduced-motion:reduce){.mcard.live::after{animation:none}}
   .gclose{display:block;margin:12px auto 10px;background:none;border:0;font:inherit;font-size:15px;color:#6d6472;cursor:pointer;text-decoration:underline dotted 1px;text-underline-offset:3px}
   .c4c.drop{animation:c4drop .32s cubic-bezier(.4,0,1,1)}
@@ -576,3 +579,30 @@
 .shb:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(42,36,48,.25)}
 .shb:disabled{background:#f1ede4;color:#9a919e;box-shadow:none;cursor:default}
 .shi.have{background:#f4fbef}.shi.have .shb{background:none;border-color:transparent;color:#4f9e43}
+
+/* friend book */
+.fbgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media (max-width:420px){.fbgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.fbt{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 6px 9px;background:#fff;border:2px solid var(--ink);box-shadow:2px 2px 0 rgba(42,36,48,.2);font:inherit;color:var(--ink);cursor:pointer;min-width:0}
+.fbt:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(42,36,48,.2)}
+.fbt.me{background:#fff6d8}
+.fbt b{font-size:15px;font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fbav{width:40px;height:60px;image-rendering:pixelated}
+.fs{font-size:12.5px;color:var(--muted);line-height:1.25;text-align:center}
+.fs.on{color:#2f9e52;font-weight:600}.fs.on::before{content:"";display:inline-block;width:7px;height:7px;background:#3fb45e;margin-right:5px;vertical-align:1px}
+.hrt{color:#e8506c;margin-left:4px;font-size:.85em}
+#gardens .panel.fbopen .dsec,#gardens .panel.fbopen #gEnter,#gardens .panel.fbopen #gInvite,#gardens .panel.fbopen #gInvite~.lead,#gardens .panel.fbopen .dsec+.lead,#gardens .panel.fbopen #gListedRow,#gardens .panel.fbopen #gMine{display:none!important}
+.fbback{display:block;margin-right:auto;text-align:left;font:inherit;font-size:14px;color:var(--muted);background:none;border:0;padding:2px 0;cursor:pointer}
+.fbpg{margin-top:8px;background:#fff;border:2px solid var(--ink);padding:14px 14px 12px;background-image:repeating-linear-gradient(transparent 0 25px,#e9f0f8 25px 26px)}
+.fbhd{display:flex;gap:14px;align-items:center}
+.fbbig{width:60px;height:90px;image-rendering:pixelated;flex:none;background:#eef6e6;border:2px solid var(--ink)}
+.fbht h3{margin:0;font-size:22px;font-weight:700}.fbht .fs{text-align:left;margin-top:2px}
+.fbchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.fbchip{font-size:13px;padding:3px 8px;background:#f1ede4;border:2px solid #e2dccf}
+.fbqa{margin:14px 0 0}.fbqa dt{font-family:Silkscreen,monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#8b8490;margin-top:10px}
+.fbqa dd{margin:2px 0 0;font-size:16px}
+.fbnone{margin-top:14px;color:var(--muted);font-size:14px}
+.fbacts{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.fbform{display:flex;flex-direction:column;gap:9px;margin-top:14px}
+.fbq{display:flex;flex-direction:column;gap:3px}.fbq span{font-family:Silkscreen,monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#8b8490}
+.fbq .inp{margin:0;width:100%}

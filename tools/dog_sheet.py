@@ -56,6 +56,15 @@ F['sadb'] = move(sad, (0, 0, 19, 12), 0, 1)
 sl = recolor(recolor(base, eyes, 'o'), mouth, 'l')
 sl = move(sl, EARS, 0, 1)
 sl = move(sl, (0, 0, 19, 14), 0, 3)      # lie down: body sinks over the legs
+# close the belly with the sprite's own outline colour, so the lying dog does not look cut off by the floor or the rug
+row = sl[NY - 1]; cols = [x for x, c in enumerate(row) if c != '.']
+if cols:
+    for x in range(min(cols), max(cols) + 1): row[x] = 'o'
+for y in range(NY - 3, NY - 1):  # the rows just above it: fill gaps between the legs with the body colour
+    r = sl[y]; cols = [x for x, c in enumerate(r) if c != '.']
+    if cols:
+        for x in range(min(cols) + 1, max(cols)):
+            if r[x] == '.': r[x] = 'b'
 F['sleep'] = sl
 F['sleepb'] = move(sl, (0, 3, 19, 12), 0, 1)
 F['eat1'] = move(base, HEAD, 0, 1)
