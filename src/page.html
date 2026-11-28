@@ -178,34 +178,31 @@
 </div>
 
 <div class="modal" id="gardens">
-  <div class="panel fbook" role="dialog" aria-labelledby="fbTitle">
+  <div class="panel falb" role="dialog" aria-labelledby="fbTitle">
     <button class="fbx" type="button" id="gClose" aria-label="Close">✕</button>
-    <div class="fbk">
-      <div class="bpg l" id="fbL">
-        <h2 id="fbTitle">My garden friends</h2>
-        <div class="fbsub" id="fbLead">little memories grow here ♡</div>
-        <input class="inp" id="gSearch" placeholder="search by name…" maxlength="20" hidden>
+    <div class="fmarks" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div class="fstack" aria-hidden="true"></div>
+    <div class="fsheet">
+      <div class="apg l" id="fbL">
+        <h2 id="fbTitle">Gartenfreunde</h2>
+        <div class="asub" id="fbLead">die Menschen, mit denen ich gärtnere</div>
+        <div id="fbTools">
+          <button class="fenv" type="button" id="fbEnvBtn" aria-expanded="false" aria-label="Freund:in hinzufügen oder einladen"><span class="letters" id="fbLetters"></span><canvas id="fbEnvCv" width="44" height="28"></canvas></button>
+        </div>
+        <div class="fenvform" id="fbEnvForm" hidden>
+          <form id="gEnter" autocomplete="off" class="fbfind"><div class="fbin"><span class="at">@</span><input class="inp" id="gEnterIn" maxlength="16" placeholder="Benutzername" autocapitalize="none" autocorrect="off" spellcheck="false"></div><button class="fbtn red" type="submit">Anfrage schicken ♡</button></form>
+          <div class="fsmall">Noch nicht dabei? Neue Leute starten mit deiner Einladung und sind sofort mit dir befreundet.</div>
+          <button class="fbtn blue" type="button" id="gInvite">Einladung kopieren</button>
+          <button class="blink" type="button" id="fbSet">⚙ Einstellungen</button>
+          <label class="chk" id="gListedRow" hidden><input type="checkbox" id="gListed"> alle hier können meinen Garten finden</label>
+        </div>
+        <div id="fbSide"></div>
+        <input class="inp" id="gSearch" placeholder="Name suchen …" maxlength="20" hidden>
         <div class="glist" id="glist"></div>
         <div class="pno">– 01 –</div>
       </div>
-      <div class="bspine" aria-hidden="true"></div>
-      <div class="bpg r" id="fbR">
-        <div id="fbSide"></div>
-        <div id="fbTools">
-          <h3 class="fbh">Let's grow together</h3>
-          <div class="fbsub">a garden is better with friends</div>
-          <div class="envw"><img id="fbEnv" class="env big" alt=""></div>
-          <div class="fbsec">find a friend</div>
-          <form id="gEnter" autocomplete="off" class="fbfind"><div class="fbin"><span class="at">@</span><input class="inp" id="gEnterIn" maxlength="16" placeholder="username" autocapitalize="none" autocorrect="off" spellcheck="false"></div><button class="bsage" type="submit">Send a friendship request ♡</button></form>
-          <div class="fbdash"></div>
-          <div class="fbinv">Invite someone to your garden</div>
-          <div class="fbs2">new players start with your invitation and are your friends right away</div>
-          <button class="bpink" type="button" id="gInvite">Copy invitation</button>
-          <div class="fbsetw"><button class="blink" type="button" id="fbSet">⚙ settings</button>
-          <label class="chk" id="gListedRow" hidden><input type="checkbox" id="gListed"> everyone here can find my garden</label></div>
-        </div>
-        <div class="pno">– 02 –</div>
-      </div>
+      <div class="aspine" aria-hidden="true"></div>
+      <div class="apg r" id="fbR"><div id="fbPageBox"></div><div class="pno">– 02 –</div></div>
     </div>
   </div>
 </div>

@@ -336,7 +336,7 @@ document.getElementById('gSB').addEventListener('change',e=>{if(!home)return;hom
 document.getElementById('gListed').addEventListener('change',e=>{if(!home)return;home.listed=e.target.checked;persist();toast(home.listed?'Your garden is now in the list for everyone.':'Your garden is hidden from the list. Friends with your invite link can still visit.',3200);});
 document.getElementById('gSearch').addEventListener('input',()=>renderGardens(true));
 // friendship = both sides have each other in their (public) fr list; adding someone is sending them a request
-function addFriend(id){if(!home||!id||id===myId)return;home.fr=home.fr||[];if(!home.fr.includes(id)){home.fr.push(id);home.fdecl=(home.fdecl||[]).filter(x=>x!==id);persist();}}
+function addFriend(id){if(!home||!id||id===myId)return;home.fr=home.fr||[];if(!home.fr.includes(id)){home.fr.push(id);home.frT=Object.assign({},home.frT,{[id]:Date.now()});home.fdecl=(home.fdecl||[]).filter(x=>x!==id);persist();}}
 // add a friend by username: sends a friend request (they accept it in their friend book)
 document.getElementById('gEnter').addEventListener('submit',e=>{e.preventDefault();const inp=document.getElementById('gEnterIn'),h=inp.value.trim().replace(/^@/,'').toLowerCase();if(!h)return;
   if(!home){toast('Make your garden first.',2400);return;}
